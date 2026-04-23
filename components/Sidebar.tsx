@@ -31,16 +31,14 @@ const iconMap = {
 
 function LogoBlock() {
   return (
-    <Link href="/docs" className="flex items-center gap-3">
+    <Link href="/docs" className="inline-flex items-center">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/agama-logo-beige.svg"
         alt="Agama"
-        className="h-7 w-auto select-none"
+        className="h-10 w-auto select-none"
         draggable={false}
       />
-      <span className="text-[#9BA9B6] opacity-40 text-lg font-light">/</span>
-      <span className="text-base text-[#9BA9B6]">Docs</span>
     </Link>
   );
 }

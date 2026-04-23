@@ -228,7 +228,7 @@ export function Sidebar() {
           className="px-6 pt-[18px] pb-4"
           style={{ borderBottom: '1px solid rgba(233,237,242,0.06)' }}
         >
-          <div className="mb-1.5 -ml-[3px]">
+          <div className="mb-1.5 -ml-[6px]">
             <LogoBlock />
           </div>
           <SearchButton />

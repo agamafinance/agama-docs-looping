@@ -1,13 +1,25 @@
-export interface NavItem {
+export interface NavLink {
   title: string;
-  href?: string;
-  items?: NavItem[];
+  href: string;
 }
 
-export const navigation: NavItem[] = [
-  { title: 'Home', href: '/docs' },
+export interface NavChildGroup {
+  title: string;
+  items: NavLink[];
+}
+
+export type NavChild = NavLink | NavChildGroup;
+
+export interface NavSection {
+  title: string;
+  icon: 'home' | 'cube' | 'code' | 'help' | 'shield';
+  items: NavChild[];
+}
+
+export const navigation: NavSection[] = [
   {
-    title: 'Overview',
+    title: 'Getting Started',
+    icon: 'home',
     items: [
       { title: 'Introduction', href: '/docs/overview/introduction' },
       { title: 'Why Agama', href: '/docs/overview/why-agama' },
@@ -16,7 +28,8 @@ export const navigation: NavItem[] = [
     ],
   },
   {
-    title: 'Core V1',
+    title: 'Protocol',
+    icon: 'cube',
     items: [
       { title: 'Introduction', href: '/docs/core/introduction' },
       { title: 'Architecture', href: '/docs/core/architecture' },
@@ -47,8 +60,8 @@ export const navigation: NavItem[] = [
       {
         title: 'Adapters',
         items: [
-          { title: 'AmFi Adapter', href: '/docs/core/adapters/amfi' },
-          { title: 'Nimofast Adapter', href: '/docs/core/adapters/nimofast' },
+          { title: 'AmFi', href: '/docs/core/adapters/amfi' },
+          { title: 'Nimofast', href: '/docs/core/adapters/nimofast' },
         ],
       },
       {
@@ -76,69 +89,84 @@ export const navigation: NavItem[] = [
         ],
       },
       { title: 'Governance', href: '/docs/core/governance' },
-      {
-        title: 'Appendix',
-        items: [
-          { title: 'RAAC Mapping', href: '/docs/core/appendix/raac-mapping' },
-          { title: 'Error Catalog', href: '/docs/core/appendix/errors' },
-        ],
-      },
-    ],
-  },
-  { title: 'Parameters', href: '/docs/parameters' },
-  { title: 'Design Review', href: '/docs/challenges' },
-  {
-    title: 'Security',
-    items: [
-      { title: 'Overview', href: '/docs/security/overview' },
-      { title: 'Invariants', href: '/docs/security/invariants' },
-      { title: 'Threat Model', href: '/docs/security/threat-model' },
-      { title: 'Audits', href: '/docs/security/audits' },
-      { title: 'Bug Bounty', href: '/docs/security/bug-bounty' },
-      { title: 'Incident Response', href: '/docs/security/incident-response' },
+      { title: 'Parameters', href: '/docs/parameters' },
     ],
   },
   {
-    title: 'Integrate',
+    title: 'Developers',
+    icon: 'code',
     items: [
       { title: 'For Issuers', href: '/docs/integrate/for-issuers' },
       { title: 'For Developers', href: '/docs/integrate/for-developers' },
       { title: 'For Institutions', href: '/docs/integrate/for-institutions' },
     ],
   },
+  {
+    title: 'Reference',
+    icon: 'help',
+    items: [
+      { title: 'Design Review', href: '/docs/challenges' },
+      {
+        title: 'Security',
+        items: [
+          { title: 'Overview', href: '/docs/security/overview' },
+          { title: 'Invariants', href: '/docs/security/invariants' },
+          { title: 'Threat Model', href: '/docs/security/threat-model' },
+          { title: 'Audits', href: '/docs/security/audits' },
+          { title: 'Bug Bounty', href: '/docs/security/bug-bounty' },
+          { title: 'Incident Response', href: '/docs/security/incident-response' },
+        ],
+      },
+      { title: 'RAAC Mapping', href: '/docs/core/appendix/raac-mapping' },
+      { title: 'Error Catalog', href: '/docs/core/appendix/errors' },
+    ],
+  },
 ];
 
-// Flat list for prev/next and lookup
-export function flatten(items: NavItem[] = navigation, out: NavItem[] = []): NavItem[] {
-  for (const it of items) {
-    if (it.href) out.push(it);
-    if (it.items) flatten(it.items, out);
+export function flatten(): NavLink[] {
+  const out: NavLink[] = [];
+  for (const section of navigation) {
+    for (const it of section.items) {
+      if ('href' in it) out.push(it);
+      else for (const sub of it.items) out.push(sub);
+    }
   }
   return out;
 }
 
-export function findBreadcrumbs(pathname: string): { title: string; href?: string }[] {
-  const crumbs: { title: string; href?: string }[] = [];
-  function walk(items: NavItem[], trail: { title: string; href?: string }[]): boolean {
-    for (const it of items) {
-      const nextTrail = [...trail, { title: it.title, href: it.href }];
-      if (it.href === pathname) {
-        crumbs.push(...nextTrail);
-        return true;
+export function findPageInfo(pathname: string): {
+  section?: NavSection;
+  group?: NavChildGroup;
+  current?: NavLink;
+} {
+  for (const section of navigation) {
+    for (const it of section.items) {
+      if ('href' in it && it.href === pathname) {
+        return { section, current: it };
       }
-      if (it.items && walk(it.items, nextTrail)) return true;
+      if ('items' in it) {
+        for (const sub of it.items) {
+          if (sub.href === pathname) {
+            return { section, group: it, current: sub };
+          }
+        }
+      }
     }
-    return false;
   }
-  walk(navigation, []);
-  return crumbs;
+  return {};
 }
 
-export function prevNext(pathname: string) {
+export function prevNext(pathname: string): { prev: NavLink | null; next: NavLink | null } {
   const flat = flatten();
   const idx = flat.findIndex((x) => x.href === pathname);
   return {
     prev: idx > 0 ? flat[idx - 1] : null,
     next: idx >= 0 && idx < flat.length - 1 ? flat[idx + 1] : null,
   };
+}
+
+/** Derive breadcrumb slug from pathname, RAVA-style (shows last segment). */
+export function breadcrumbSlug(pathname: string): string {
+  const parts = pathname.split('/').filter(Boolean);
+  return parts[parts.length - 1] || 'home';
 }

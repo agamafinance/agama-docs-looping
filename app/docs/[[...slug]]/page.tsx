@@ -7,7 +7,6 @@ import rehypePrettyCode from 'rehype-pretty-code';
 import { loadDoc, listAllSlugs, titleFromFrontmatter } from '@/lib/content';
 import { mdxComponents } from '@/components/mdx/mdx-components';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
-import { TableOfContents } from '@/components/TableOfContents';
 import { PrevNext } from '@/components/PrevNext';
 import type { Metadata } from 'next';
 
@@ -45,31 +44,25 @@ export default async function DocPage({
   };
 
   return (
-    <div className="flex">
-      <article className="flex-1 min-w-0 px-6 sm:px-8 lg:px-10 py-8 max-w-4xl">
-        <Breadcrumbs />
-        <div className="prose prose-invert max-w-none">
-          <MDXRemote
-            source={doc.source}
-            components={mdxComponents}
-            options={{
-              mdxOptions: {
-                remarkPlugins: [remarkGfm],
-                rehypePlugins: [
-                  rehypeSlug,
-                  [
-                    rehypeAutolinkHeadings,
-                    { behavior: 'wrap', properties: { className: ['heading-link'] } },
-                  ],
-                  [rehypePrettyCode, prettyCodeOptions],
-                ],
-              },
-            }}
-          />
-        </div>
-        <PrevNext />
-      </article>
-      <TableOfContents toc={doc.toc} />
-    </div>
+    <article>
+      <Breadcrumbs />
+      <div className="prose prose-invert max-w-none">
+        <MDXRemote
+          source={doc.source}
+          components={mdxComponents}
+          options={{
+            mdxOptions: {
+              remarkPlugins: [remarkGfm],
+              rehypePlugins: [
+                rehypeSlug,
+                [rehypeAutolinkHeadings, { behavior: 'wrap', properties: { className: ['heading-link'] } }],
+                [rehypePrettyCode, prettyCodeOptions],
+              ],
+            },
+          }}
+        />
+      </div>
+      <PrevNext />
+    </article>
   );
 }

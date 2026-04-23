@@ -225,10 +225,10 @@ export function Sidebar() {
         }}
       >
         <div
-          className="px-6 pt-6 pb-4"
+          className="px-6 pt-3 pb-4"
           style={{ borderBottom: '1px solid rgba(233,237,242,0.06)' }}
         >
-          <div className="mb-4">
+          <div className="mb-3">
             <LogoBlock />
           </div>
           <SearchButton />

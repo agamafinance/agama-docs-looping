@@ -67,7 +67,7 @@ function SearchButton() {
           color: '#9BA9B6',
           border: '1px solid rgba(233,237,242,0.08)',
           fontFamily:
-            'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
         }}
       >
         ⌘K

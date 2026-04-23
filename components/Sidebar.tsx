@@ -31,15 +31,15 @@ const iconMap = {
 
 function LogoBlock() {
   return (
-    <Link href="/docs" className="flex items-center gap-2">
-      <span
-        className="inline-block w-7 h-7 rounded-full flex-shrink-0"
-        style={{
-          background: 'linear-gradient(135deg, #26E994 0%, #1bb477 100%)',
-        }}
+    <Link href="/docs" className="flex items-center gap-3">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/agama-logo-beige.svg"
+        alt="Agama"
+        className="h-7 w-auto select-none"
+        draggable={false}
       />
-      <span className="text-xl font-medium text-[#E9EDF2]">agama</span>
-      <span className="mx-1 text-[#9BA9B6] opacity-40">/</span>
+      <span className="text-[#9BA9B6] opacity-40 text-lg font-light">/</span>
       <span className="text-base text-[#9BA9B6]">Docs</span>
     </Link>
   );

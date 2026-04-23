@@ -51,7 +51,7 @@ function SearchButton() {
   return (
     <button
       type="button"
-      className="w-full flex items-center gap-3 px-3 py-[11px] rounded-lg text-[15px] text-[#9BA9B6] transition-colors hover:text-[#E9EDF2] cursor-text"
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-base text-[#9BA9B6] transition-colors hover:text-[#E9EDF2] cursor-text"
       style={{
         background: 'rgba(233,237,242,0.03)',
         border: '1px solid rgba(233,237,242,0.06)',
@@ -61,7 +61,7 @@ function SearchButton() {
       <SearchIcon />
       <span style={{ opacity: 0.5 }}>Search...</span>
       <kbd
-        className="ml-auto text-[13px] font-mono leading-none px-2 py-[5px] rounded"
+        className="ml-auto text-[11px] font-mono px-1.5 py-0.5 rounded"
         style={{
           background: 'rgba(233,237,242,0.06)',
           color: '#9BA9B6',

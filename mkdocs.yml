@@ -1,0 +1,150 @@
+site_name: Documentation | Agama
+site_description: Agama Protocol — Decentralized lending against Brazilian RWA on Rayls. RAAC-adapted.
+site_url: https://docs.agama.fi/
+docs_dir: content
+site_dir: _site
+
+repo_url: https://github.com/agamafi/docs
+repo_name: agamafi/docs
+edit_uri: ""
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 4
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/agamafi
+    - icon: fontawesome/brands/x-twitter
+      link: https://x.com/agamafi
+
+nav:
+  - Home: index.md
+  - Overview:
+      - Introduction: overview/introduction.md
+      - Why Agama: overview/why-agama.md
+      - The three actors: overview/actors.md
+      - Glossary: overview/glossary.md
+  - Core V1:
+      - Introduction: core/introduction.md
+      - Architecture: core/architecture.md
+      - Lending Pool:
+          - Overview: core/lending-pool/overview.md
+          - Functions: core/lending-pool/functions.md
+          - Interest Rate Model: core/lending-pool/interest-rate-model.md
+      - Asset Adapter Interface: core/adapters/interface.md
+      - Stability Pool:
+          - Overview: core/stability-pool/overview.md
+          - Functions: core/stability-pool/functions.md
+          - Liquidations: core/stability-pool/liquidations.md
+      - Settlement Vault:
+          - Overview: core/settlement-vault/overview.md
+          - Functions: core/settlement-vault/functions.md
+      - Adapters:
+          - AmFi Adapter: core/adapters/amfi.md
+          - Nimofast Adapter: core/adapters/nimofast.md
+      - Tokens:
+          - agTOKEN: core/tokens/agtoken.md
+          - DebtToken: core/tokens/debt-token.md
+          - agaSP: core/tokens/agasp.md
+          - USDXP: core/tokens/usdxp.md
+      - Compliance:
+          - KYC Registry: core/compliance/kyc-registry.md
+          - Qualified Investors: core/compliance/qualified-investors.md
+      - Collectors:
+          - Fee Collector: core/collectors/fee-collector.md
+          - Treasury: core/collectors/treasury.md
+          - Reserve Fund: core/collectors/reserve-fund.md
+      - Governance: core/governance.md
+      - Appendix:
+          - RAAC Mapping: core/appendix/raac-mapping.md
+          - Error Catalog: core/appendix/errors.md
+  - Parameters: parameters.md
+  - Design Review: challenges.md
+  - Security:
+      - Overview: security/overview.md
+      - Invariants: security/invariants.md
+      - Threat Model: security/threat-model.md
+      - Audits: security/audits.md
+      - Bug Bounty: security/bug-bounty.md
+      - Incident Response: security/incident-response.md
+  - Integrate:
+      - For Issuers: integrate/for-issuers.md
+      - For Developers: integrate/for-developers.md
+      - For Institutions: integrate/for-institutions.md

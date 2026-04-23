@@ -36,7 +36,7 @@ function LogoBlock() {
       <img
         src="/agama-logo-beige.svg"
         alt="Agama"
-        className="h-9 w-auto select-none"
+        className="h-12 w-auto select-none"
         draggable={false}
       />
     </Link>

@@ -2,18 +2,22 @@
 
 Documentation for the [Agama Protocol](https://agama.fi), a decentralized lending and borrowing protocol for Brazilian Real World Assets (RWA) on Rayls. Architecturally mirrored from [RAAC Protocol](https://docs.raac.io/).
 
+## Stack
+
+Custom Next.js 15 + Tailwind CSS documentation site. Inspired by [rava.money/docs](https://www.rava.money/docs/overview).
+
+- **Next.js 15** (App Router, React 19, RSC)
+- **Tailwind CSS 3** with custom dark palette (brand green `#26E994`)
+- **next-mdx-remote** (RSC) for Markdown rendering
+- **rehype-pretty-code** + **shiki** for syntax highlighting
+- **Host Grotesk** (text) + **JetBrains Mono** (code) via `next/font`
+- **lucide-react** icons
+
 ## Local development
 
-### Prerequisites
-
-- Python 3.9+
-
-### Run the docs
-
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install mkdocs-material pymdown-extensions
-.venv/bin/mkdocs serve --dev-addr localhost:3003
+pnpm install
+pnpm dev
 ```
 
 Visit http://localhost:3003
@@ -21,18 +25,41 @@ Visit http://localhost:3003
 ### Build static site
 
 ```bash
-.venv/bin/mkdocs build
+pnpm build
+pnpm start
 ```
 
-Output: `_site/`
+Output: `.next/` (standard Next.js).
 
 ## Structure
 
 ```
-content/
-├── index.md                    # Landing
-├── overview/                   # Positioning, actors, glossary
-├── core/                       # Core V1 specification
+app/
+├── layout.tsx                  # Root layout (fonts, dark theme)
+├── globals.css                 # Tailwind + custom CSS
+└── docs/
+    ├── layout.tsx              # TopNav + Sidebar shell
+    ├── not-found.tsx           # 404
+    └── [[...slug]]/page.tsx    # MDX renderer (all doc pages)
+
+components/
+├── TopNav.tsx                  # Header
+├── Sidebar.tsx                 # Left nav
+├── TableOfContents.tsx         # Right "On this page"
+├── Breadcrumbs.tsx
+├── PrevNext.tsx
+└── mdx/
+    ├── Callout.tsx
+    └── mdx-components.tsx
+
+lib/
+├── navigation.ts               # Sidebar nav tree
+└── content.ts                  # MD loader + admonition converter + link fixer
+
+content/                        # Source markdown (Git-friendly, portable)
+├── index.md
+├── overview/
+├── core/
 │   ├── lending-pool/
 │   ├── stability-pool/
 │   ├── settlement-vault/
@@ -43,12 +70,20 @@ content/
 │   ├── governance.md
 │   └── appendix/
 ├── parameters.md
-├── challenges.md               # Self-critical design review
-├── security/                   # Invariants, audits, bug bounty
-└── integrate/                  # Guides for issuers/devs/institutions
-
-mkdocs.yml                      # Navigation + theme config
+├── challenges.md
+├── security/
+└── integrate/
 ```
+
+## Content authoring
+
+Content is plain Markdown in `content/`. Supported:
+
+- Standard GFM (tables, task lists, strikethrough) via `remark-gfm`.
+- MkDocs-style admonitions (`!!! note`, `!!! warning`, `!!! danger`, etc.) — auto-converted to `<Callout>` components.
+- Heading anchors via `{ #custom-id }` syntax (MkDocs-compatible).
+- Internal links with `.md` extension — auto-rewritten to clean URLs.
+- Fenced code blocks with `shiki` highlighting.
 
 ## License
 

@@ -96,29 +96,14 @@ export const navigation: NavSection[] = [
     title: 'Developers',
     icon: 'code',
     items: [
-      { title: 'For Issuers', href: '/docs/integrate/for-issuers' },
-      { title: 'For Developers', href: '/docs/integrate/for-developers' },
-      { title: 'For Institutions', href: '/docs/integrate/for-institutions' },
+      { title: 'API', href: '/docs/integrate/api' },
     ],
   },
   {
     title: 'Reference',
     icon: 'help',
     items: [
-      { title: 'Design Review', href: '/docs/challenges' },
-      {
-        title: 'Security',
-        items: [
-          { title: 'Overview', href: '/docs/security/overview' },
-          { title: 'Invariants', href: '/docs/security/invariants' },
-          { title: 'Threat Model', href: '/docs/security/threat-model' },
-          { title: 'Audits', href: '/docs/security/audits' },
-          { title: 'Bug Bounty', href: '/docs/security/bug-bounty' },
-          { title: 'Incident Response', href: '/docs/security/incident-response' },
-        ],
-      },
-      { title: 'RAAC Mapping', href: '/docs/core/appendix/raac-mapping' },
-      { title: 'Error Catalog', href: '/docs/core/appendix/errors' },
+      { title: 'FAQ', href: '/docs/reference/faq' },
     ],
   },
 ];

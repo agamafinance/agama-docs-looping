@@ -51,7 +51,7 @@ function SearchButton() {
   return (
     <button
       type="button"
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] text-[#9BA9B6] transition-colors hover:text-[#E9EDF2] cursor-text"
+      className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-[15px] text-[#9BA9B6] transition-colors hover:text-[#E9EDF2] cursor-text"
       style={{
         background: 'rgba(233,237,242,0.03)',
         border: '1px solid rgba(233,237,242,0.06)',

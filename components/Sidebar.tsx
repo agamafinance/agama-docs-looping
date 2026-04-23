@@ -61,7 +61,7 @@ function SearchButton() {
       <SearchIcon />
       <span style={{ opacity: 0.5 }}>Search...</span>
       <kbd
-        className="ml-auto text-xs leading-none px-1 py-[5px] rounded"
+        className="ml-auto text-xs leading-none px-[5px] py-1 rounded"
         style={{
           background: 'rgba(233,237,242,0.06)',
           color: '#9BA9B6',

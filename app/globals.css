@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-host-grotesk: 'Host Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+html, body {
+  background-color: #0a0a0a;
+  color: #E9EDF2;
+}
+
+body {
+  font-family: var(--font-host-grotesk), system-ui, sans-serif;
+  font-feature-settings: "ss01", "ss02", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* Selection */
+::selection {
+  background: rgba(38, 233, 148, 0.25);
+  color: #FFFFFF;
+}
+
+/* Heading anchor */
+.prose .anchor {
+  position: absolute;
+  margin-left: -1.25rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+  color: #6B7682;
+}
+
+.prose h1:hover .anchor,
+.prose h2:hover .anchor,
+.prose h3:hover .anchor,
+.prose h4:hover .anchor {
+  opacity: 1;
+}
+
+/* Code block file label */
+pre[data-filename]::before {
+  content: attr(data-filename);
+  display: block;
+  color: #9BA9B6;
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Shiki code blocks */
+pre code {
+  display: block;
+}
+
+pre code .line {
+  min-height: 1.5em;
+}
+
+/* Callout base */
+.callout {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid;
+  border-radius: 8px;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.callout-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.callout-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.callout-body > :first-child {
+  margin-top: 0;
+}
+
+.callout-body > :last-child {
+  margin-bottom: 0;
+}
+
+/* Breadcrumb chevrons */
+.breadcrumb-chevron {
+  width: 1rem;
+  height: 1rem;
+  color: #6B7682;
+  flex-shrink: 0;
+}
+
+/* Sidebar link active state */
+.sidebar-link[data-active="true"] {
+  color: #26E994;
+}

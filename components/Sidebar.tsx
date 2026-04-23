@@ -61,11 +61,13 @@ function SearchButton() {
       <SearchIcon />
       <span style={{ opacity: 0.5 }}>Search...</span>
       <kbd
-        className="ml-auto text-xs font-mono leading-none px-1.5 py-1 rounded"
+        className="ml-auto text-xs leading-none px-1.5 py-1 rounded"
         style={{
           background: 'rgba(233,237,242,0.06)',
           color: '#9BA9B6',
           border: '1px solid rgba(233,237,242,0.08)',
+          fontFamily:
+            'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
         }}
       >
         ⌘K

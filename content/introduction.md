@@ -7,7 +7,7 @@ Core V1 is the foundational release of the Agama Protocol. It establishes the on
 | Item                          | Agama V1                                           |
 |-------------------------------|----------------------------------------------------|
 | Reserve stablecoin            | USDXP (fiat-backed, institutional)                 |
-| Collateral                    | AmFi/Nimofast ERC-20 RWA tokens                    |
+| Collateral                    | AmFi senior tranche ERC-20 RWA tokens              |
 | On-chain swap for liquidation | **None** (no DEX on Rayls for RWA yet)             |
 | Liquidation settlement        | Off-chain issuer redemption (D+15)                 |
 | RWA Index Token               | **Not in V1** (no tokenized basket)                |

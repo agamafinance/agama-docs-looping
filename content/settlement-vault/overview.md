@@ -2,11 +2,11 @@
 
 !!! note
 
-    The `AgamaSettlementVault` is the Agama-specific primitive that bridges seized RWA collateral back into USDXP. It exists because Rayls has no DEX for AmFi / Nimofast tokens, so we cannot liquidate through an on-chain swap.
+    The `AgamaSettlementVault` is the Agama-specific primitive that bridges seized RWA collateral back into USDXP. It exists because Rayls has no DEX for AmFi tokens, so we cannot liquidate through an on-chain swap.
 
 ## Problem
 
-After `SP.liquidateBorrower()`, the Stability Pool holds RWA tokens (AmFi senior or Nimofast). Without an on-chain market:
+After `SP.liquidateBorrower()`, the Stability Pool holds AmFi senior tranche tokens. Without an on-chain market:
 
 - SP depositors cannot simply be repaid in USDXP.
 - The only legitimate path from RWA → USDXP is **issuer redemption**, which is off-chain and takes D+15 (AmFi) or longer depending on the issuer.
@@ -76,7 +76,7 @@ Default V1 values:
 | `treasuryBps`  |  200 (2%)  | Small operational allocation.                                |
 | `burnBps`      |  300 (3%)  | ReserveFund buffer growth.                                   |
 | `redeemBps`    | 9500 (95%) | Maximize USDXP recovery to restore SP peg.                   |
-| `inKindBps`    |    0 (0%)  | V1 retail SP depositors are not QIs, cannot use RWA tokens.  |
+| `inKindBps`    |    0 (0%)  | Retail SP depositors cannot redeem RWA tokens with the issuer; reserved for V2. |
 
 These should be re-calibrated after the first 10 mainnet liquidations based on realized redemption fees and timing.
 

@@ -12,7 +12,7 @@ Agama has two actors: **Alice** borrows, **Bob** lends. Bob can optionally stake
 | Goal              | Leverage her RWA position without selling              |
 | Entry point       | `openVaultPosition()` → `depositAsset()` → `borrow()`  |
 
-Alice holds tokenized private credit — for example AmFi senior tranche or Nimofast receivables — and uses Agama to unlock leverage on that position without selling it.
+Alice holds tokenized private credit — specifically AmFi senior tranche in V1 — and uses Agama to unlock leverage on that position without selling it.
 
 ### Typical loop
 

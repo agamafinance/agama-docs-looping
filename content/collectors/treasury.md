@@ -19,7 +19,7 @@
 |-----------|----------------------------------------------|
 | USDXP     | Primary operational reserve.                  |
 | agTOKEN   | Accrual of supply yield on treasury reserves. |
-| AMFI / NIMO RWA tokens | Intermediate — held briefly before redemption via Manager. |
+| AMFI RWA tokens | Intermediate — held briefly before redemption via Manager. |
 
 ## Functions
 

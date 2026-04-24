@@ -20,11 +20,11 @@ export const metadata: Metadata = {
     default: 'Agama Documentation',
   },
   description:
-    'Agama is a decentralized lending and borrowing protocol for Brazilian Real World Assets on Rayls. Architecturally inherited from RAAC.',
+    'Agama is a decentralized lending and borrowing protocol for Brazilian Real World Assets on Rayls.',
   openGraph: {
     title: 'Agama Documentation',
     description:
-      'Decentralized lending against tokenized Brazilian RWA on Rayls. RAAC-adapted.',
+      'Decentralized lending against tokenized Brazilian RWA on Rayls.',
     type: 'website',
   },
 };

@@ -6,7 +6,7 @@
 
 - Hold the main USDXP liquidity and mint `agTOKEN` receipts (ERC-4626).
 - Abstract collateral through adapters so pool logic is asset-agnostic.
-- Accrue interest using an index-based model (two-slope kink, Aave/Compound/RAAC style).
+- Accrue interest using an index-based model (two-slope kink, Aave/Compound style).
 - Enforce risk parameters (borrow cap, supply cap, LTV, liquidation threshold).
 - Coordinate the three-stage liquidation lifecycle with the Stability Pool.
 
@@ -17,18 +17,13 @@ Two categories, both governance-controlled through the 48-hour timelock:
 - **Risk parameters**: `supplyCap`, `borrowCap`, `MIN_BORROW_AMOUNT`, `liquidationGracePeriod`, `withdrawalsPaused`.
 - **Fee parameters**: `depositFee`, `vaultOpeningFee`, `originationFee`, `reserveFactor`.
 
-Per-adapter risk parameters (`MAX_LTV`, `LIQUIDATION_THRESHOLD`, `LIQUIDATION_BONUS`, `ORACLE_STALENESS_MAX`) live on the adapter itself. See [Parameters](/docs/parameters).
+Per-adapter risk parameters (`MAX_LTV`, `LIQUIDATION_THRESHOLD`, `LIQUIDATION_BONUS`, `ORACLE_STALENESS_MAX`) live on the adapter itself.
 
 ## Collateral adapters
 
-Adapters are pluggable contracts that expose a uniform interface ([`IAssetAdapter`](/docs/adapters/interface)) to the Lending Pool. A new adapter is whitelisted by governance via `registerAdapter(address)`. The Lending Pool never holds RWA tokens directly; the adapter is the custodian.
+Adapters are pluggable contracts that expose a uniform interface ([`IAssetAdapter`](/docs/lending-pool/adapter-interface)) to the Lending Pool. A new adapter is whitelisted by governance via `registerAdapter(address)`. The Lending Pool never holds RWA tokens directly; the adapter is the custodian.
 
-V1 supported adapters:
-
-- [`AmFiAdapter`](/docs/adapters/amfi) — AmFi senior tranche ERC-20 tokens.
-- [`NimofastAdapter`](/docs/adapters/nimofast) — Nimofast receivables tokens.
-
-Additional adapters can be added without redeploying the Lending Pool.
+V1 supported adapters: `AmFiAdapter` (AmFi senior tranche ERC-20 tokens) and `NimofastAdapter` (Nimofast receivables tokens). Additional adapters can be added without redeploying the Lending Pool.
 
 ## Core mechanics
 
@@ -52,7 +47,7 @@ Borrowers must call `openVaultPosition()` once (paying `vaultOpeningFee`, 0 in V
 
 !!! note
 
-    V1 does **not** support `repayOnBehalf` (third-party repayment). This is a RAAC feature deferred to V2 for simpler access control in the initial audit.
+    V1 does **not** support `repayOnBehalf` (third-party repayment). Deferred to V2 for simpler access control in the initial audit.
 
 ### 5. Liquidation lifecycle
 
@@ -62,7 +57,7 @@ Three stages: `initiateLiquidation()` (flags the position, starts 72-hour grace)
 
 !!! warning
 
-    Unlike RAAC, Agama V1 does **not** integrate with an external yield vault (RAAC uses Curve's scrvUSD for idle yield on the pool's USDXP). V1 keeps USDXP idle in the `agTOKEN` contract when not borrowed. The utilization-based rate model still ensures yield for lenders; a Curve-equivalent idle-yield layer may arrive in V2.
+    Agama V1 does **not** integrate with an external yield vault for idle USDXP. V1 keeps USDXP idle in the `agTOKEN` contract when not borrowed. The utilization-based rate model still ensures yield for lenders; an idle-yield layer may arrive in V2.
 
 ## Interactions
 

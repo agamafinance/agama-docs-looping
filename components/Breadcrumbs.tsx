@@ -22,7 +22,7 @@ export function Breadcrumbs() {
           className="w-4 h-4 mx-1 sm:mx-2 flex-shrink-0"
           // @ts-ignore -- pass color via style
         />
-        <span className="font-mono text-[#14B87B] break-words">{slug}</span>
+        <span className="font-mono text-[#5FB590] break-words">{slug}</span>
       </div>
     </div>
   );

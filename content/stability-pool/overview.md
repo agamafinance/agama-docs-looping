@@ -4,7 +4,7 @@ The `AgamaStabilityPool` is the protocol's liquidation backstop and the secondar
 
 ## Why `agTOKEN`, not USDXP
 
-Mirrors RAAC's design exactly. If the Stability Pool accepted USDXP directly:
+If the Stability Pool accepted USDXP directly:
 
 - Depositors would lose the supply APY they would otherwise earn by holding `agTOKEN`.
 - The protocol would have two competing pools of USDXP (main liquidity + SP), complicating accounting and rate dynamics.
@@ -14,7 +14,7 @@ By accepting `agTOKEN`, depositors continue to earn supply yield through `agTOKE
 
 !!! danger
 
-    This is the **single most frequently misunderstood** aspect of RAAC-style designs. If you find yourself thinking "Charlie should deposit USDXP", re-read this section.
+    This is the **single most frequently misunderstood** aspect of the design. If you find yourself thinking "Charlie should deposit USDXP", re-read this section.
 
 ## 1:1 peg
 
@@ -22,7 +22,7 @@ By accepting `agTOKEN`, depositors continue to earn supply yield through `agTOKE
 
 ## Role of managers
 
-Liquidations are not incentivized to third parties. Only a designated `MANAGER_ROLE` (a 2-of-3 operational multisig) can trigger `liquidateBorrower()`. The manager runs an off-chain keeper that monitors health factors; RAAC uses the same pattern, trading keeper decentralization for simpler economics.
+Liquidations are not incentivized to third parties. Only a designated `MANAGER_ROLE` (a 2-of-3 operational multisig) can trigger `liquidateBorrower()`. The manager runs an off-chain keeper that monitors health factors, trading keeper decentralization for simpler economics in V1.
 
 !!! warning
 

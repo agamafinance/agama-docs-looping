@@ -1,4 +1,4 @@
-# The three actors
+# How It Works
 
 Every flow in Agama is driven by one of three actor types. Understanding their incentives, KYC paths, and interaction surface is prerequisite for reading the rest of the docs.
 
@@ -58,7 +58,7 @@ Charlie must be a lender first: he deposits USDXP into the Lending Pool to recei
 
 !!! warning
 
-    The Stability Pool accepts **`agTOKEN`**, not USDXP. This is deliberate — it preserves Charlie's supply yield (via `agTOKEN` appreciation) while also positioning him to absorb liquidations. This is the single most frequently misunderstood aspect of RAAC-style designs.
+    The Stability Pool accepts **`agTOKEN`**, not USDXP. This is deliberate — it preserves Charlie's supply yield (via `agTOKEN` appreciation) while also positioning him to absorb liquidations. This is the single most frequently misunderstood aspect of the design.
 
 ### Charlie's expected yield
 

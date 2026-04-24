@@ -1,6 +1,6 @@
 # Agama Protocol — Documentation
 
-Documentation for the [Agama Protocol](https://agama.fi), a decentralized lending and borrowing protocol for Brazilian Real World Assets (RWA) on Rayls. Architecturally mirrored from [RAAC Protocol](https://docs.raac.io/).
+Documentation for the [Agama Protocol](https://agama.fi), a decentralized lending and borrowing protocol for Brazilian Real World Assets (RWA) on Rayls.
 
 ## Stack
 

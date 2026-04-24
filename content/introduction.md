@@ -2,24 +2,19 @@
 
 Core V1 is the foundational release of the Agama Protocol. It establishes the on-chain infrastructure for collateralized lending against Brazilian RWA tokens.
 
-## Key differences vs RAAC
+## V1 scope
 
-| Item                          | RAAC                                | Agama V1                                           |
-|-------------------------------|-------------------------------------|----------------------------------------------------|
-| Reserve stablecoin            | crvUSD                              | USDXP (fiat-backed, institutional)                  |
-| Collateral                    | Real estate NFTs + iREET            | AmFi/Nimofast ERC-20 RWA tokens                     |
-| On-chain swap for liquidation | Curve (crvUSD pairs)                | **None** (no DEX on Rayls for RWA yet)              |
-| Liquidation settlement        | Instant via `LiquidationSwap`       | Off-chain issuer redemption (D+15)                  |
-| iREET / RWA Index Token       | Yes                                 | **No** (V1 does not tokenize the basket)            |
-| `borrowWithInsurance()`       | Yes                                 | **No** in V1 (deferred to V2)                       |
-| `repayOnBehalf()`             | Yes                                 | **No** in V1                                         |
-| VRF / NFT redemption          | Yes                                 | Not applicable                                      |
-| Oracle for reserve asset      | crvUSD oracle with circuit breaker  | Trusted 1:1 (no USDXP oracle on Rayls yet)          |
-| Insurance pathway             | Premium-paid by borrower            | Removed from V1                                      |
-
-!!! note
-
-    Agama's core primitives — Lending Pool, Stability Pool, Asset Adapter interface, scaled-index accounting, siloed positions — are ported **verbatim** from RAAC. The differences above are all either simplifications or adaptations for Brazilian RWA specifics.
+| Item                          | Agama V1                                           |
+|-------------------------------|----------------------------------------------------|
+| Reserve stablecoin            | USDXP (fiat-backed, institutional)                 |
+| Collateral                    | AmFi/Nimofast ERC-20 RWA tokens                    |
+| On-chain swap for liquidation | **None** (no DEX on Rayls for RWA yet)             |
+| Liquidation settlement        | Off-chain issuer redemption (D+15)                 |
+| RWA Index Token               | **Not in V1** (no tokenized basket)                |
+| `borrowWithInsurance()`       | **Not in V1** (deferred to V2)                     |
+| `repayOnBehalf()`             | **Not in V1**                                      |
+| Oracle for reserve asset      | Trusted 1:1 (no USDXP oracle on Rayls yet)         |
+| Insurance pathway             | Out of V1                                          |
 
 ## Components
 
@@ -55,5 +50,5 @@ Core V1 is the foundational release of the Agama Protocol. It establishes the on
 
 ## Getting started
 
-- **Developers**: read the [Architecture](/docs/architecture) page, then each component overview, then the corresponding Functions reference.
-- **Integrators** building a new adapter: see the [Asset Adapter Interface](/docs/adapters/interface).
+- **Developers**: read each component overview, then the corresponding Functions reference.
+- **Integrators** building a new adapter: see the [Asset Adapter Interface](/docs/lending-pool/adapter-interface).

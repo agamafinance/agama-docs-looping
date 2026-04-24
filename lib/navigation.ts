@@ -22,9 +22,7 @@ export const navigation: NavSection[] = [
     icon: 'home',
     items: [
       { title: 'Overview', href: '/docs/overview' },
-      { title: 'Why Agama', href: '/docs/why-agama' },
-      { title: 'The three actors', href: '/docs/actors' },
-      { title: 'Glossary', href: '/docs/glossary' },
+      { title: 'How It Works', href: '/docs/actors' },
     ],
   },
   {
@@ -32,16 +30,15 @@ export const navigation: NavSection[] = [
     icon: 'cube',
     items: [
       { title: 'Introduction', href: '/docs/introduction' },
-      { title: 'Architecture', href: '/docs/architecture' },
       {
         title: 'Lending Pool',
         items: [
           { title: 'Overview', href: '/docs/lending-pool/overview' },
           { title: 'Functions', href: '/docs/lending-pool/functions' },
           { title: 'Interest Rate Model', href: '/docs/lending-pool/interest-rate-model' },
+          { title: 'Asset Adapter Interface', href: '/docs/lending-pool/adapter-interface' },
         ],
       },
-      { title: 'Asset Adapter Interface', href: '/docs/adapters/interface' },
       {
         title: 'Stability Pool',
         items: [
@@ -58,29 +55,6 @@ export const navigation: NavSection[] = [
         ],
       },
       {
-        title: 'Adapters',
-        items: [
-          { title: 'AmFi', href: '/docs/adapters/amfi' },
-          { title: 'Nimofast', href: '/docs/adapters/nimofast' },
-        ],
-      },
-      {
-        title: 'Tokens',
-        items: [
-          { title: 'agTOKEN', href: '/docs/tokens/agtoken' },
-          { title: 'DebtToken', href: '/docs/tokens/debt-token' },
-          { title: 'agaSP', href: '/docs/tokens/agasp' },
-          { title: 'USDXP', href: '/docs/tokens/usdxp' },
-        ],
-      },
-      {
-        title: 'Compliance',
-        items: [
-          { title: 'KYC Registry', href: '/docs/compliance/kyc-registry' },
-          { title: 'Qualified Investors', href: '/docs/compliance/qualified-investors' },
-        ],
-      },
-      {
         title: 'Collectors',
         items: [
           { title: 'Fee Collector', href: '/docs/collectors/fee-collector' },
@@ -88,8 +62,6 @@ export const navigation: NavSection[] = [
           { title: 'Reserve Fund', href: '/docs/collectors/reserve-fund' },
         ],
       },
-      { title: 'Governance', href: '/docs/governance' },
-      { title: 'Parameters', href: '/docs/parameters' },
     ],
   },
   {

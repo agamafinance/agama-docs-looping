@@ -2,7 +2,7 @@
 
 !!! note
 
-    The `AgamaSettlementVault` is the **single largest deviation from RAAC**. It exists because Rayls has no DEX for AmFi / Nimofast tokens. RAAC solves this by swapping seized collateral through Curve into crvUSD. We cannot.
+    The `AgamaSettlementVault` is the Agama-specific primitive that bridges seized RWA collateral back into USDXP. It exists because Rayls has no DEX for AmFi / Nimofast tokens, so we cannot liquidate through an on-chain swap.
 
 ## Problem
 

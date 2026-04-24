@@ -1,6 +1,6 @@
 # Interest Rate Model
 
-Standard two-slope kink (Aave / Compound / RAAC). Implemented in `AgamaInterestRateModel.sol` (or inlined in `ReserveLibrary`).
+Standard two-slope kink (Aave / Compound family). Implemented in `AgamaInterestRateModel.sol` (or inlined in `ReserveLibrary`).
 
 ## Formula
 

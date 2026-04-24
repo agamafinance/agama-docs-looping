@@ -78,7 +78,7 @@ function NavLinkItem({ title, href, active }: { title: string; href: string; act
       href={href}
       className={clsx(
         'block px-2 py-[6px] text-base transition-colors duration-200',
-        active ? 'text-[#14B87B]' : 'text-[#9CA3AF] hover:text-[#E6FEF4]',
+        active ? 'text-[#5FB590]' : 'text-[#9CA3AF] hover:text-[#E6FEF4]',
       )}
     >
       {title}

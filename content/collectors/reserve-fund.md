@@ -1,10 +1,6 @@
 # Reserve Fund
 
-`AgamaReserveFund` is Agama's bad-debt buffer — **a primitive not present in RAAC V1**. It accumulates the `burnBps` slice of every liquidation plus a configurable portion of the `reserveFactor` accrual.
-
-!!! note
-
-    Adding an explicit bad-debt fund is one of Agama's intentional departures from RAAC. RAAC's V1 relies on redistribution as the only backstop; we add a dedicated pre-redistribution buffer.
+`AgamaReserveFund` is the protocol's dedicated bad-debt buffer. It accumulates the `burnBps` slice of every liquidation plus a configurable portion of the `reserveFactor` accrual, and is drawn down before any debt redistribution.
 
 ## Functions
 

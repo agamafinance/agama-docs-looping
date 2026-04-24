@@ -1,6 +1,6 @@
 # Stability Pool — Liquidations
 
-The liquidation lifecycle is three-stage and manager-gated. Agama mirrors RAAC's structure; the key Agama-specific step is the routing through the [Settlement Vault](/docs/settlement-vault/overview) after seizure.
+The liquidation lifecycle is three-stage and manager-gated. The Agama-specific step is routing seized collateral through the [Settlement Vault](/docs/settlement-vault/overview) after seizure.
 
 ## Lifecycle
 
@@ -113,7 +113,7 @@ Outcome:
 
 ## No-insurance design choice (V1)
 
-RAAC supports `borrowWithInsurance()` — borrowers can prepay a premium to delay or survive liquidation. V1 Agama explicitly drops this path:
+V1 Agama does not offer an insurance pathway (e.g. prepaid premium to delay or survive liquidation):
 
 - Smaller audit surface.
 - Simpler liquidation logic.

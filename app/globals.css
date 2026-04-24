@@ -14,7 +14,7 @@ html {
 
 html, body {
   background: var(--bg);
-  color: #FDF8ED;
+  color: #E6FEF4;
 }
 
 body {
@@ -35,16 +35,16 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(253, 248, 237, 0.08);
+  background: rgba(230, 254, 244, 0.08);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(253, 248, 237, 0.15);
+  background: rgba(230, 254, 244, 0.15);
 }
 
 ::selection {
-  background: rgba(253, 248, 237, 0.25);
+  background: rgba(230, 254, 244, 0.25);
   color: #FFFFFF;
 }
 

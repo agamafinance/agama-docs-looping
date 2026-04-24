@@ -3,7 +3,7 @@ import { Sidebar } from '@/components/Sidebar';
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="flex min-h-screen text-[#FDF8ED]"
+      className="flex min-h-screen text-[#E6FEF4]"
       style={{ background: '#0D2B28' }}
     >
       <Sidebar />

@@ -13,7 +13,7 @@ export function Breadcrumbs() {
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base mb-6">
       <Link
         href="/docs"
-        className="font-mono text-[#A89E8A] hover:text-[#FDF8ED] transition-colors py-1 px-1 -mx-1 inline-block break-words"
+        className="font-mono text-[#9CA3AF] hover:text-[#E6FEF4] transition-colors py-1 px-1 -mx-1 inline-block break-words"
       >
         Documentation
       </Link>

@@ -21,74 +21,74 @@ export const navigation: NavSection[] = [
     title: 'Getting Started',
     icon: 'home',
     items: [
-      { title: 'Introduction', href: '/docs/overview/introduction' },
-      { title: 'Why Agama', href: '/docs/overview/why-agama' },
-      { title: 'The three actors', href: '/docs/overview/actors' },
-      { title: 'Glossary', href: '/docs/overview/glossary' },
+      { title: 'Overview', href: '/docs/overview' },
+      { title: 'Why Agama', href: '/docs/why-agama' },
+      { title: 'The three actors', href: '/docs/actors' },
+      { title: 'Glossary', href: '/docs/glossary' },
     ],
   },
   {
     title: 'Protocol',
     icon: 'cube',
     items: [
-      { title: 'Introduction', href: '/docs/core/introduction' },
-      { title: 'Architecture', href: '/docs/core/architecture' },
+      { title: 'Introduction', href: '/docs/introduction' },
+      { title: 'Architecture', href: '/docs/architecture' },
       {
         title: 'Lending Pool',
         items: [
-          { title: 'Overview', href: '/docs/core/lending-pool/overview' },
-          { title: 'Functions', href: '/docs/core/lending-pool/functions' },
-          { title: 'Interest Rate Model', href: '/docs/core/lending-pool/interest-rate-model' },
+          { title: 'Overview', href: '/docs/lending-pool/overview' },
+          { title: 'Functions', href: '/docs/lending-pool/functions' },
+          { title: 'Interest Rate Model', href: '/docs/lending-pool/interest-rate-model' },
         ],
       },
-      { title: 'Asset Adapter Interface', href: '/docs/core/adapters/interface' },
+      { title: 'Asset Adapter Interface', href: '/docs/adapters/interface' },
       {
         title: 'Stability Pool',
         items: [
-          { title: 'Overview', href: '/docs/core/stability-pool/overview' },
-          { title: 'Functions', href: '/docs/core/stability-pool/functions' },
-          { title: 'Liquidations', href: '/docs/core/stability-pool/liquidations' },
+          { title: 'Overview', href: '/docs/stability-pool/overview' },
+          { title: 'Functions', href: '/docs/stability-pool/functions' },
+          { title: 'Liquidations', href: '/docs/stability-pool/liquidations' },
         ],
       },
       {
         title: 'Settlement Vault',
         items: [
-          { title: 'Overview', href: '/docs/core/settlement-vault/overview' },
-          { title: 'Functions', href: '/docs/core/settlement-vault/functions' },
+          { title: 'Overview', href: '/docs/settlement-vault/overview' },
+          { title: 'Functions', href: '/docs/settlement-vault/functions' },
         ],
       },
       {
         title: 'Adapters',
         items: [
-          { title: 'AmFi', href: '/docs/core/adapters/amfi' },
-          { title: 'Nimofast', href: '/docs/core/adapters/nimofast' },
+          { title: 'AmFi', href: '/docs/adapters/amfi' },
+          { title: 'Nimofast', href: '/docs/adapters/nimofast' },
         ],
       },
       {
         title: 'Tokens',
         items: [
-          { title: 'agTOKEN', href: '/docs/core/tokens/agtoken' },
-          { title: 'DebtToken', href: '/docs/core/tokens/debt-token' },
-          { title: 'agaSP', href: '/docs/core/tokens/agasp' },
-          { title: 'USDXP', href: '/docs/core/tokens/usdxp' },
+          { title: 'agTOKEN', href: '/docs/tokens/agtoken' },
+          { title: 'DebtToken', href: '/docs/tokens/debt-token' },
+          { title: 'agaSP', href: '/docs/tokens/agasp' },
+          { title: 'USDXP', href: '/docs/tokens/usdxp' },
         ],
       },
       {
         title: 'Compliance',
         items: [
-          { title: 'KYC Registry', href: '/docs/core/compliance/kyc-registry' },
-          { title: 'Qualified Investors', href: '/docs/core/compliance/qualified-investors' },
+          { title: 'KYC Registry', href: '/docs/compliance/kyc-registry' },
+          { title: 'Qualified Investors', href: '/docs/compliance/qualified-investors' },
         ],
       },
       {
         title: 'Collectors',
         items: [
-          { title: 'Fee Collector', href: '/docs/core/collectors/fee-collector' },
-          { title: 'Treasury', href: '/docs/core/collectors/treasury' },
-          { title: 'Reserve Fund', href: '/docs/core/collectors/reserve-fund' },
+          { title: 'Fee Collector', href: '/docs/collectors/fee-collector' },
+          { title: 'Treasury', href: '/docs/collectors/treasury' },
+          { title: 'Reserve Fund', href: '/docs/collectors/reserve-fund' },
         ],
       },
-      { title: 'Governance', href: '/docs/core/governance' },
+      { title: 'Governance', href: '/docs/governance' },
       { title: 'Parameters', href: '/docs/parameters' },
     ],
   },
@@ -96,14 +96,14 @@ export const navigation: NavSection[] = [
     title: 'Developers',
     icon: 'code',
     items: [
-      { title: 'API', href: '/docs/integrate/api' },
+      { title: 'API', href: '/docs/api' },
     ],
   },
   {
     title: 'Reference',
     icon: 'help',
     items: [
-      { title: 'FAQ', href: '/docs/reference/faq' },
+      { title: 'FAQ', href: '/docs/faq' },
     ],
   },
 ];

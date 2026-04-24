@@ -59,5 +59,5 @@ At 70% LTV (max), terminal leverage = 3.33×, net APY ≈ 26.7% at 10% borrow AP
 
 !!! warning
 
-    **[Design Review #1](../../challenges.md#irm-calibration)**: supply APY of 6.8% at optimal utilization is a thin spread vs just holding USDXP with XP/Clear. Consider lowering `BASE_RATE` to 150 bps and `SLOPE_1` to 700 bps to give 5.78% supply APY at kink — still competitive for lenders while preserving looping viability.
+    **Design Review**: supply APY of 6.8% at optimal utilization is a thin spread vs just holding USDXP with XP/Clear. Consider lowering `BASE_RATE` to 150 bps and `SLOPE_1` to 700 bps to give 5.78% supply APY at kink — still competitive for lenders while preserving looping viability.
 

@@ -12,6 +12,8 @@ Agama closes both gaps:
 - **Exposes RWA yield** to retail via `agTOKEN` (no QI gate, KYC Light only).
 - **Creates a stability backstop** where deposits earn supply yield *and* liquidation gains.
 
+In theory, this transforms a `x%` real-world yield into a `x + (z−1)·(x−y)%` leveraged yield strategy.
+
 ## Competitive positioning
 
 !!! note
@@ -50,7 +52,7 @@ Three reasons:
 
 Two gaps prevent a pure copy:
 
-1. **No on-chain DEX for AmFi / Nimofast tokens on Rayls**. RAAC liquidates through Curve (crvUSD pairs). We have no such market. Our [Settlement Vault](../core/settlement-vault/overview.md) routes seized collateral through off-chain issuer redemption (D+15) and auto-reconstitutes the Stability Pool on return.
+1. **No on-chain DEX for AmFi / Nimofast tokens on Rayls**. RAAC liquidates through Curve (crvUSD pairs). We have no such market. Our [Settlement Vault](/docs/settlement-vault/overview) routes seized collateral through off-chain issuer redemption (D+15) and auto-reconstitutes the Stability Pool on return.
 
 2. **No iREET-equivalent index token in V1**. RAAC fractionalizes real estate into an index token (iREET) for composability. V1 Agama treats AmFi and Nimofast tokens as plain ERC-20 collateral with their own adapters. V2 may add an Agama RWA Index.
 

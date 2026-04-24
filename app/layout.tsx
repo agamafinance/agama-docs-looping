@@ -16,13 +16,13 @@ const mono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s — Agama Docs',
-    default: 'Agama Protocol — Documentation',
+    template: 'Agama Documentation',
+    default: 'Agama Documentation',
   },
   description:
     'Agama is a decentralized lending and borrowing protocol for Brazilian Real World Assets on Rayls. Architecturally inherited from RAAC.',
   openGraph: {
-    title: 'Agama Protocol — Documentation',
+    title: 'Agama Documentation',
     description:
       'Decentralized lending against tokenized Brazilian RWA on Rayls. RAAC-adapted.',
     type: 'website',

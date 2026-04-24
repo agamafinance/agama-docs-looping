@@ -17,16 +17,16 @@ Two categories, both governance-controlled through the 48-hour timelock:
 - **Risk parameters**: `supplyCap`, `borrowCap`, `MIN_BORROW_AMOUNT`, `liquidationGracePeriod`, `withdrawalsPaused`.
 - **Fee parameters**: `depositFee`, `vaultOpeningFee`, `originationFee`, `reserveFactor`.
 
-Per-adapter risk parameters (`MAX_LTV`, `LIQUIDATION_THRESHOLD`, `LIQUIDATION_BONUS`, `ORACLE_STALENESS_MAX`) live on the adapter itself. See [Parameters](../../parameters.md).
+Per-adapter risk parameters (`MAX_LTV`, `LIQUIDATION_THRESHOLD`, `LIQUIDATION_BONUS`, `ORACLE_STALENESS_MAX`) live on the adapter itself. See [Parameters](/docs/parameters).
 
 ## Collateral adapters
 
-Adapters are pluggable contracts that expose a uniform interface ([`IAssetAdapter`](../../core/adapters/interface.md)) to the Lending Pool. A new adapter is whitelisted by governance via `registerAdapter(address)`. The Lending Pool never holds RWA tokens directly; the adapter is the custodian.
+Adapters are pluggable contracts that expose a uniform interface ([`IAssetAdapter`](/docs/adapters/interface)) to the Lending Pool. A new adapter is whitelisted by governance via `registerAdapter(address)`. The Lending Pool never holds RWA tokens directly; the adapter is the custodian.
 
 V1 supported adapters:
 
-- [`AmFiAdapter`](../../core/adapters/amfi.md) — AmFi senior tranche ERC-20 tokens.
-- [`NimofastAdapter`](../../core/adapters/nimofast.md) — Nimofast receivables tokens.
+- [`AmFiAdapter`](/docs/adapters/amfi) — AmFi senior tranche ERC-20 tokens.
+- [`NimofastAdapter`](/docs/adapters/nimofast) — Nimofast receivables tokens.
 
 Additional adapters can be added without redeploying the Lending Pool.
 

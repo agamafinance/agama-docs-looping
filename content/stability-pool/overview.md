@@ -26,7 +26,7 @@ Liquidations are not incentivized to third parties. Only a designated `MANAGER_R
 
 !!! warning
 
-    **[Design Review #5](../../challenges.md#sp-keeper-centralization)**: Manager-gated liquidations avoid MEV griefing but centralize keeper infrastructure. We plan a permissionless keeper network in V2 (Gelato/Chainlink Automation).
+    **Design Review**: Manager-gated liquidations avoid MEV griefing but centralize keeper infrastructure. We plan a permissionless keeper network in V2 (Gelato/Chainlink Automation).
 
 ## Timelock on withdrawals
 

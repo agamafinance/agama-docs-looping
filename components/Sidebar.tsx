@@ -47,10 +47,10 @@ function SearchButton() {
   return (
     <button
       type="button"
-      className="w-full flex items-center gap-3 h-[46px] px-3 rounded-lg text-base leading-none text-[#9BA9B6] transition-colors hover:text-[#E9EDF2] cursor-text"
+      className="w-full flex items-center gap-3 h-[46px] px-3 rounded-lg text-base leading-none text-[#A89E8A] transition-colors hover:text-[#FDF8ED] cursor-text"
       style={{
-        background: 'rgba(233,237,242,0.03)',
-        border: '1px solid rgba(233,237,242,0.06)',
+        background: 'rgba(253, 248, 237, 0.03)',
+        border: '1px solid rgba(253, 248, 237, 0.06)',
       }}
       aria-label="Search documentation"
     >
@@ -59,9 +59,9 @@ function SearchButton() {
       <kbd
         className="ml-auto text-xs leading-none px-[5px] py-1 rounded"
         style={{
-          background: 'rgba(233,237,242,0.06)',
-          color: '#9BA9B6',
-          border: '1px solid rgba(233,237,242,0.08)',
+          background: 'rgba(253, 248, 237, 0.06)',
+          color: '#A89E8A',
+          border: '1px solid rgba(253, 248, 237, 0.08)',
           fontFamily:
             '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
         }}
@@ -78,7 +78,7 @@ function NavLinkItem({ title, href, active }: { title: string; href: string; act
       href={href}
       className={clsx(
         'block px-2 py-[6px] text-base transition-colors duration-200',
-        active ? 'text-[#26E994]' : 'text-[#9BA9B6] hover:text-[#E9EDF2]',
+        active ? 'text-[#14B87B]' : 'text-[#A89E8A] hover:text-[#FDF8ED]',
       )}
     >
       {title}
@@ -97,7 +97,7 @@ function SubGroup({ group, pathname }: { group: NavChildGroup; pathname: string 
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-1.5 px-2 py-[6px] text-base text-[#9BA9B6] hover:text-[#E9EDF2] transition-colors duration-200 text-left"
+        className="w-full flex items-center gap-1.5 px-2 py-[6px] text-base text-[#A89E8A] hover:text-[#FDF8ED] transition-colors duration-200 text-left"
         aria-expanded={open}
       >
         <ChevronIcon className="w-3 h-3 flex-shrink-0 opacity-70" />
@@ -131,10 +131,10 @@ function Section({ section, pathname }: { section: NavSection; pathname: string 
   return (
     <div className="mb-6 last:mb-2">
       <div className="flex items-center gap-2.5 px-2 mb-2">
-        <span className="text-[#9BA9B6]">
+        <span className="text-[#A89E8A]">
           <Icon />
         </span>
-        <h4 className="text-base font-medium select-none text-[#E9EDF2]">{section.title}</h4>
+        <h4 className="text-base font-medium select-none text-[#FDF8ED]">{section.title}</h4>
       </div>
       <div className="pl-[34px]">
         {section.items.map((it, i) => (
@@ -147,13 +147,13 @@ function Section({ section, pathname }: { section: NavSection; pathname: string 
 
 function SidebarFooter() {
   return (
-    <div className="px-6 py-4" style={{ borderTop: '1px solid rgba(233,237,242,0.06)' }}>
+    <div className="px-6 py-4" style={{ borderTop: '1px solid rgba(253, 248, 237, 0.06)' }}>
       <div className="flex items-center gap-3">
         <a
           href="https://x.com/agamafi"
           target="_blank"
           rel="noreferrer"
-          className="text-[#9BA9B6] hover:text-[#26E994] transition-colors"
+          className="text-[#A89E8A] hover:text-[#FDF8ED] transition-colors"
           aria-label="X (Twitter)"
         >
           <XIcon />
@@ -162,18 +162,18 @@ function SidebarFooter() {
           href="https://github.com/agamafinance"
           target="_blank"
           rel="noreferrer"
-          className="text-[#9BA9B6] hover:text-[#26E994] transition-colors"
+          className="text-[#A89E8A] hover:text-[#FDF8ED] transition-colors"
           aria-label="GitHub"
         >
           <GithubIcon />
         </a>
         <a
-          href="https://agama.fi"
+          href="https://agama.finance"
           target="_blank"
           rel="noreferrer"
-          className="ml-auto inline-flex items-center gap-1 text-base text-[#9BA9B6] hover:text-[#26E994] transition-colors"
+          className="ml-auto inline-flex items-center gap-1 text-base text-[#A89E8A] hover:text-[#FDF8ED] transition-colors"
         >
-          Agama Labs
+          Agama
           <ExternalLinkIcon className="w-3 h-3" />
         </a>
       </div>
@@ -191,10 +191,10 @@ export function Sidebar() {
       <button
         type="button"
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-5 left-5 z-50 flex items-center gap-2 h-10 px-4 backdrop-blur-md text-[#9BA9B6] hover:text-[#E9EDF2] transition-all rounded-full"
+        className="lg:hidden fixed top-5 left-5 z-50 flex items-center gap-2 h-10 px-4 backdrop-blur-md text-[#A89E8A] hover:text-[#FDF8ED] transition-all rounded-full"
         style={{
-          background: 'rgba(10, 17, 20, 0.85)',
-          border: '1px solid rgba(233,237,242,0.06)',
+          background: 'rgba(37, 72, 57, 0.85)',
+          border: '1px solid rgba(253, 248, 237, 0.06)',
         }}
       >
         <MenuIcon />
@@ -220,13 +220,13 @@ export function Sidebar() {
           'lg:translate-x-0',
         )}
         style={{
-          background: 'lab(13.0536% -10.7839 -5.5266)',
-          borderRight: '1px solid rgba(233,237,242,0.06)',
+          background: '#0E1813',
+          borderRight: '1px solid rgba(253, 248, 237, 0.08)',
         }}
       >
         <div
           className="px-6 pt-[18px] pb-4"
-          style={{ borderBottom: '1px solid rgba(233,237,242,0.06)' }}
+          style={{ borderBottom: '1px solid rgba(253, 248, 237, 0.06)' }}
         >
           <div className="mb-1.5 -ml-[4px]">
             <LogoBlock />

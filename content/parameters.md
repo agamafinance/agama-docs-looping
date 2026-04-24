@@ -21,7 +21,7 @@ Every configurable knob in Agama V1. Values marked **✅** under Governance are 
 
 !!! warning
 
-    **[Design Review #8](challenges.md#min-borrow-too-low)**: `MIN_BORROW_AMOUNT = 100 USDXP` is likely too low for RWA. Off-chain redemption fixed costs make small-dollar liquidation uneconomical. Recommend raising to 1000 USDXP or per-adapter calibration.
+    **Design Review #8**: `MIN_BORROW_AMOUNT = 100 USDXP` is likely too low for RWA. Off-chain redemption fixed costs make small-dollar liquidation uneconomical. Recommend raising to 1000 USDXP or per-adapter calibration.
 
 ## Per-adapter risk
 

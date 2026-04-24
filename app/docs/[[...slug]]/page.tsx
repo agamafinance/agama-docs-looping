@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
-import { loadDoc, listAllSlugs, titleFromFrontmatter } from '@/lib/content';
+import { loadDoc, listAllSlugs } from '@/lib/content';
 import { mdxComponents } from '@/components/mdx/mdx-components';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PrevNext } from '@/components/PrevNext';
@@ -23,9 +23,7 @@ export async function generateMetadata({
   const { slug = [] } = await params;
   const doc = await loadDoc(slug);
   if (!doc) return {};
-  const h1 = doc.source.match(/^#\s+(.+)$/m)?.[1];
-  const title = titleFromFrontmatter(doc.frontmatter, h1);
-  return { title };
+  return { title: { absolute: 'Agama Documentation' } };
 }
 
 export default async function DocPage({
@@ -46,7 +44,7 @@ export default async function DocPage({
   return (
     <article>
       <Breadcrumbs />
-      <div className="prose prose-invert max-w-none">
+      <div className="prose max-w-none">
         <MDXRemote
           source={doc.source}
           components={mdxComponents}

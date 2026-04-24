@@ -6,7 +6,7 @@
 
 !!! note
 
-    **[Design Review #11](../../challenges.md#treasury-policy)** — We commit to an explicit written treasury policy:
+    **Design Review #11** — We commit to an explicit written treasury policy:
     1. Fund ongoing operations (team, audits, infra).
     2. Top up the ReserveFund if its coverage ratio drops below 2%.
     3. Seed mainnet bootstrap liquidity incentives (one-time).

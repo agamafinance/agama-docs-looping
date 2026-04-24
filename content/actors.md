@@ -67,7 +67,7 @@ Two components:
 1. **Supply APY** via `agTOKEN` appreciation — same as Bob.
 2. **Liquidation gains** — when Alice gets liquidated, Charlie shares pro-rata in the seized collateral's recovery value beyond the debt absorbed.
 
-Expected liquidation gain modelling (from [Design Review](../challenges.md#sp-economics)):
+Expected liquidation gain modelling:
 
 ```
 Assume: 3% of outstanding loans liquidated per year,
@@ -81,7 +81,7 @@ Expected SP yield boost = 3% × 5% × 80% = 0.12% per year
 
 !!! warning
 
-    This is thin. Our [Design Review #2](../challenges.md#sp-economics) recommends boosting SP attractiveness by reallocating a portion of `reserveFactor` directly to SP depositors.
+    This is thin. Boosting SP attractiveness by reallocating a portion of `reserveFactor` directly to SP depositors is under consideration.
 
 ## Who is out of scope
 

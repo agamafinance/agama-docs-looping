@@ -44,7 +44,7 @@ reserveCoverageRatio = ReserveFund.totalAssetValueUSDXP() / LendingPool.totalBor
 
 !!! warning
 
-    **[Design Review #12](../../challenges.md#reserve-fund-seeding)**: the ReserveFund opens at zero balance at mainnet. For the first N months, the coverage ratio will be thin. We recommend founders seed 100k USDXP at launch to maintain ≥ 1% ratio from day 1.
+    **Design Review #12**: the ReserveFund opens at zero balance at mainnet. For the first N months, the coverage ratio will be thin. We recommend founders seed 100k USDXP at launch to maintain ≥ 1% ratio from day 1.
 
 ## Sourcing
 

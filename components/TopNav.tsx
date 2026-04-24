@@ -12,7 +12,7 @@ export function TopNav() {
             aria-hidden
             className="inline-block w-5 h-5 rounded-full"
             style={{
-              background: 'linear-gradient(135deg, #26E994 0%, #1bb477 100%)',
+              background: 'linear-gradient(135deg, #254839 0%, #EEEBE2 100%)',
             }}
           />
           <span className="text-fg">Agama</span>

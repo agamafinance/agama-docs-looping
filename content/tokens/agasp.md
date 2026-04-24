@@ -21,7 +21,7 @@ When Charlie deposits 100 `agTOKEN` into the SP, he receives exactly 100 `agaSP`
 
 ## Why `ERC20Votes` checkpoints
 
-Checkpoints are needed **only for the escape hatch** in the [Settlement Vault](../../core/settlement-vault/overview.md). In the happy path, settlement deposits USDXP directly back into the Lending Pool and every `agaSP` holder benefits through the restored peg — no balance snapshot needed.
+Checkpoints are needed **only for the escape hatch** in the [Settlement Vault](/docs/settlement-vault/overview). In the happy path, settlement deposits USDXP directly back into the Lending Pool and every `agaSP` holder benefits through the restored peg — no balance snapshot needed.
 
 If the manager becomes inactive (60+ days), `emergencyDistributeInKind(batchId)` distributes the seized RWA tokens pro-rata to depositors at the batch's `snapshotBlock`. This requires historical balance lookup, which OZ `ERC20Votes` provides via `getPastVotes(account, blockNumber)`.
 

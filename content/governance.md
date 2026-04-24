@@ -37,7 +37,7 @@ Users and integrators see all pending upgrades during the delay window and can e
 
 ## USDXP depeg playbook
 
-Since there is no USDXP/USD oracle on Rayls in V1, depeg monitoring is off-chain. See [Tokens → USDXP](../core/tokens/usdxp.md) for thresholds and actions.
+Since there is no USDXP/USD oracle on Rayls in V1, depeg monitoring is off-chain. See [Tokens → USDXP](/docs/tokens/usdxp) for thresholds and actions.
 
 ## Incident response
 

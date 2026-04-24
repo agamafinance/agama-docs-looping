@@ -67,4 +67,4 @@ A storage slot `IUSDXPPriceOracle public usdxpOracle` is reserved in `AgamaLendi
 
 ## Open question resolved
 
-This spec was initially ambiguous about USDXP handling. See [Design Review — USDXP model](../../challenges.md#usdxp-model) for the full reasoning behind the current approach and alternatives considered.
+This spec was initially ambiguous about USDXP handling. The current approach treats USDXP as the canonical unit of account across lending, borrowing, and settlement.

@@ -159,7 +159,7 @@ t=15d    Manager completes off-chain AmFi redemption
 
 ## Critical invariants
 
-The full list is on [Security → Invariants](../security/invariants.md). The most important:
+The most important invariants are:
 
 - **SP peg (steady state)**: `agTOKEN.balanceOf(SP) == agaSP.totalSupply()`. Violated only during active liquidation settlement window.
 - **Monotonic indices**: `liquidityIndex` and `usageIndex` never decrease (except on explicit bad-debt write-down).
@@ -172,5 +172,5 @@ All core contracts are OpenZeppelin UUPS proxies. All upgrades and parameter cha
 
 !!! warning
 
-    There is no DAO token and no on-chain voting in V1. Governance is multisig + timelock. We document signers, policies, and emergency procedures in [Governance](../core/governance.md).
+    There is no DAO token and no on-chain voting in V1. Governance is multisig + timelock. We document signers, policies, and emergency procedures in [Governance](/docs/governance).
 

@@ -69,7 +69,7 @@ Manager → SettlementVault.settleRedemption(batchId, usdxpReceived)
 
 ## LiquidationSplit calibration
 
-Default V1 values (from [Design Review — LiquidationSplit](../../challenges.md#liquidation-split)):
+Default V1 values:
 
 | Bucket         | V1 Default | Reasoning                                                    |
 |----------------|-----------:|--------------------------------------------------------------|

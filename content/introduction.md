@@ -55,6 +55,5 @@ Core V1 is the foundational release of the Agama Protocol. It establishes the on
 
 ## Getting started
 
-- **Developers**: read the [Architecture](../core/architecture.md) page, then each component overview, then the corresponding Functions reference.
-- **Auditors**: start with [Security Overview](../security/overview.md), then [Invariants](../security/invariants.md), cross-reference [Appendix A](../core/appendix/raac-mapping.md).
-- **Integrators** building a new adapter: [Asset Adapter Interface](../core/adapters/interface.md) + [For Issuers](../integrate/for-issuers.md).
+- **Developers**: read the [Architecture](/docs/architecture) page, then each component overview, then the corresponding Functions reference.
+- **Integrators** building a new adapter: see the [Asset Adapter Interface](/docs/adapters/interface).

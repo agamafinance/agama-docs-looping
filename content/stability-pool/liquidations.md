@@ -1,6 +1,6 @@
 # Stability Pool — Liquidations
 
-The liquidation lifecycle is three-stage and manager-gated. Agama mirrors RAAC's structure; the key Agama-specific step is the routing through the [Settlement Vault](../../core/settlement-vault/overview.md) after seizure.
+The liquidation lifecycle is three-stage and manager-gated. Agama mirrors RAAC's structure; the key Agama-specific step is the routing through the [Settlement Vault](/docs/settlement-vault/overview) after seizure.
 
 ## Lifecycle
 

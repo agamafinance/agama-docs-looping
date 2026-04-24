@@ -20,7 +20,7 @@ mapping(address => uint256) public verifiedAt;
 
 !!! warning
 
-    **[Design Review #5](../../challenges.md#kyc-operator-centralization)**: the KYC operator is a single EOA controlled by Agama's backend. Compromise means mass-verifying attacker addresses. Mitigations proposed:
+    **Design Review**: the KYC operator is a single EOA controlled by Agama's backend. Compromise means mass-verifying attacker addresses. Mitigations proposed:
     - Rate-limit verifications on-chain (max N per day).
     - Move to a 2-of-3 KYC multisig for mainnet.
     - Add a governance-callable "invalidate all since timestamp T" emergency reset.

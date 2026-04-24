@@ -1,4 +1,4 @@
-# Introduction
+# Overview
 
 Agama is a decentralized lending and borrowing protocol for Brazilian Real World Assets (RWA) on Rayls. It enables qualified investors holding tokenized private credit (AmFi senior tranche, Nimofast receivables) to leverage their positions, while giving retail crypto users access to RWA-backed yield with light-touch KYC.
 
@@ -49,8 +49,5 @@ It does **not** cover tokenomics, incentives, or governance tokens. **V1 ships w
 
 ## Using this documentation
 
-- **Developers**: start here → [Core V1 Introduction](../core/introduction.md) → contracts.
-- **Auditors**: jump to [Security](../security/overview.md) and [Appendix A — RAAC mapping](../core/appendix/raac-mapping.md).
-- **Integrators (new adapters)**: [For Issuers](../integrate/for-issuers.md).
-- **Institutional partners**: [For Institutions](../integrate/for-institutions.md).
-- **Everyone**: read [Design Review](../challenges.md) — this is our self-critical review of the V1 spec.
+- **Developers**: start here → [Introduction](/docs/introduction) → contracts.
+- **Integrators (new adapters)**: see the [Asset Adapter Interface](/docs/adapters/interface).

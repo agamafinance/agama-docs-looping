@@ -64,7 +64,7 @@ Each adapter exposes its own immutable risk parameters:
 
 !!! warning
 
-    **[Design Review #4](../../challenges.md#oracle-single-point-of-failure)**: each adapter has a single oracle today. This is a concentrated trust assumption. We recommend requiring a secondary oracle (or NAV attestation from a second issuer signing key) before mainnet.
+    **Design Review #4**: each adapter has a single oracle today. This is a concentrated trust assumption. We recommend requiring a secondary oracle (or NAV attestation from a second issuer signing key) before mainnet.
 
 At minimum, every adapter MUST:
 
@@ -77,4 +77,4 @@ At minimum, every adapter MUST:
 - [AmFi Adapter](amfi.md) — AmFi senior tranche ERC-20.
 - [Nimofast Adapter](nimofast.md) — Nimofast receivables.
 
-Adding a new adapter: see [For Issuers](../../integrate/for-issuers.md).
+Adding a new adapter: contact the Agama team.

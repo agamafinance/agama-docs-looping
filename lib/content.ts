@@ -61,7 +61,7 @@ export function extractToc(md: string): TocEntry[] {
   return toc;
 }
 
-/** Convert MkDocs admonitions `!!! type "title"` blocks to <Callout type="..."> MDX. */
+/** Strip MkDocs admonitions `!!! type` and inline their body as plain content. */
 function convertAdmonitions(md: string): string {
   const lines = md.split('\n');
   const out: string[] = [];
@@ -74,10 +74,7 @@ function convertAdmonitions(md: string): string {
       i++;
       continue;
     }
-    const type = m[1];
-    const title = m[2] || '';
     i++;
-    // Consume indented body (4-space or tab)
     const body: string[] = [];
     while (i < lines.length) {
       const l = lines[i];
@@ -88,15 +85,10 @@ function convertAdmonitions(md: string): string {
         break;
       }
     }
-    // Trim leading/trailing empties
     while (body.length && body[0].trim() === '') body.shift();
     while (body.length && body[body.length - 1].trim() === '') body.pop();
     out.push('');
-    out.push(`<Callout type="${type}"${title ? ` title="${title.replace(/"/g, '&quot;')}"` : ''}>`);
-    out.push('');
     out.push(...body);
-    out.push('');
-    out.push(`</Callout>`);
     out.push('');
   }
   return out.join('\n');

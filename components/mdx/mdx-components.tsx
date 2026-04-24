@@ -1,8 +1,6 @@
-import { Callout } from './Callout';
 import React from 'react';
 
 export const mdxComponents: Record<string, React.ComponentType<any>> = {
-  Callout,
   h2: ({ children, id, ...props }) => (
     <h2 id={id} className="group relative scroll-mt-20" {...props}>
       {id && (

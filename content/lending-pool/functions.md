@@ -6,8 +6,7 @@ Complete function reference. Every signature, access control, state change, vali
 
 ### `deposit(uint256 amount)`
 
-- **Access**: any non-blocklisted, KYC-verified user.
-- **Modifiers**: `nonReentrant`, `whenNotPaused`, `notBlacklisted`, `onlyKYCVerified`.
+- **Modifiers**: `nonReentrant`, `whenNotPaused`.
 - **State changes**:
   - `reserve.updateState()` — accrues interest.
   - `netAmount = amount − depositFee`.
@@ -16,12 +15,12 @@ Complete function reference. Every signature, access control, state change, vali
   - `depositBlock[msg.sender] = block.number`.
 - **Validation**: `_validateDepositSupplyCap(netAmount)`; `amount > 0`.
 - **Events**: `Deposit(user, amount, agTokenMinted)`.
-- **Errors**: `SupplyCapExceeded()`, `AmountZero()`, `NotKYCVerified()`, `UserBlacklisted()`.
+- **Errors**: `SupplyCapExceeded()`, `AmountZero()`.
 
 ### `withdraw(uint256 amount)`
 
-- **Access**: any `agTOKEN` holder (blocklist-gated).
-- **Modifiers**: `nonReentrant`, `whenNotPaused`, `notBlacklisted`.
+- **Access**: any `agTOKEN` holder.
+- **Modifiers**: `nonReentrant`, `whenNotPaused`.
 - **State changes**:
   - `reserve.updateState()`.
   - `actualAmount = amount == type(uint256).max ? agTOKEN.balanceOf(msg.sender) : amount`.
@@ -40,28 +39,23 @@ Complete function reference. Every signature, access control, state change, vali
 
 ### `openVaultPosition()`
 
-- **Access**: any non-blocklisted user.
 - **State**: `vaultOpened[msg.sender] = true`; collects `vaultOpeningFee` if > 0 (0 in V1).
 - **Validation**: `!vaultOpened[msg.sender]`.
 - **Events**: `VaultOpened(user, feePaid)`.
 - **Errors**: `VaultPositionAlreadyOpened()`.
 
-!!! note
-
-    No KYC is required on borrowers: the adapter validates them against the issuer's QI whitelist at every collateral operation.
-
 ## Collateral management
 
 ### `depositAsset(address adapter, bytes calldata data)`
 
-- **Access**: users with open vault, non-blocklisted.
-- **Modifiers**: `nonReentrant`, `whenNotPaused`, `notBlacklisted`, `onlySupportedAdapter(adapter)`.
+- **Access**: users with open vault.
+- **Modifiers**: `nonReentrant`, `whenNotPaused`, `onlySupportedAdapter(adapter)`.
 - **State changes**:
   - `reserve.updateState()`.
-  - `IAssetAdapter(adapter).deposit(msg.sender, data)` — adapter handles: QI whitelist, oracle freshness, token transfer, internal accounting.
+  - `IAssetAdapter(adapter).deposit(msg.sender, data)` — adapter handles oracle freshness, token transfer, internal accounting.
 - **Validation**: vault opened; position not under liquidation; adapter registered.
 - **Events**: typically `AssetDeposited(user, adapter, data, amount)` from adapter.
-- **Errors**: `VaultPositionNotOpened()`, `CannotDepositWhenUnderLiquidation()`, `UnsupportedAdapter()`, adapter-level (`NotQualifiedInvestor()`, `OracleStale()`).
+- **Errors**: `VaultPositionNotOpened()`, `CannotDepositWhenUnderLiquidation()`, `UnsupportedAdapter()`, adapter-level (`OracleStale()`).
 
 ### `withdrawAsset(address adapter, bytes calldata data)`
 
@@ -82,7 +76,7 @@ Complete function reference. Every signature, access control, state change, vali
 
 ### `borrow(address adapter, bytes calldata data, uint256 amount)`
 
-- **Access**: vault owners, non-blocklisted.
+- **Access**: vault owners.
 - **State changes**:
   - `reserve.updateState()`.
   - `_validateBorrow(adapter, data, amount)` — checks collateral sufficiency, borrow cap, `MIN_BORROW_AMOUNT`.

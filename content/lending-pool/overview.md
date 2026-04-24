@@ -67,7 +67,6 @@ Three stages: `initiateLiquidation()` (flags the position, starts 72-hour grace)
 | `DebtToken`           | Mint/burn scaled debt                                         |
 | `IAssetAdapter`       | Delegate collateral logic                                     |
 | `AgamaStabilityPool`  | Finalize liquidations                                         |
-| `AgamaKYCRegistry`    | Gate lender/SP operations                                     |
 | `AgamaFeeCollector`   | Push fees on deposit/borrow/vault opening                     |
 | `ReserveLibrary`      | Update indices, accrue interest                               |
 

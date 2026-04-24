@@ -10,7 +10,7 @@ After `SP.liquidateBorrower()`, the Stability Pool holds RWA tokens (AmFi senior
 
 - SP depositors cannot simply be repaid in USDXP.
 - The only legitimate path from RWA → USDXP is **issuer redemption**, which is off-chain and takes D+15 (AmFi) or longer depending on the issuer.
-- Distributing RWA tokens in-kind to retail SP depositors is unattractive: most are not on the issuer's QI whitelist and cannot hold or redeem them.
+- Distributing RWA tokens in-kind to retail SP depositors is unattractive: most cannot hold or redeem them with the issuer directly.
 
 ## Solution: auto-reconstituting Stability Pool
 

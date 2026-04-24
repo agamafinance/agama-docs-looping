@@ -3,7 +3,6 @@
 `IAssetAdapter` is the uniform interface between the Lending Pool and each collateral asset. Every adapter is responsible for:
 
 - Valuation via an asset-specific oracle.
-- KYC / QI validation with the issuer's whitelist.
 - Custody of the underlying RWA tokens.
 - Position identification (opaque `bytes` encoding, decoded only by the adapter).
 
@@ -72,9 +71,6 @@ At minimum, every adapter MUST:
 2. Reject `price == 0` explicitly.
 3. Optionally reject out-of-bound price moves (e.g., > 30% in < 1h) as a circuit breaker.
 
-## Implementations
+## Adding a new adapter
 
-- [AmFi Adapter](amfi.md) — AmFi senior tranche ERC-20.
-- [Nimofast Adapter](nimofast.md) — Nimofast receivables.
-
-Adding a new adapter: contact the Agama team.
+Contact the Agama team.

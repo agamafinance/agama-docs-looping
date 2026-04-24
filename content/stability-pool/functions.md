@@ -4,8 +4,7 @@
 
 ### `deposit(uint256 scaledAmount)`
 
-- **Access**: any non-blocklisted, KYC-verified user.
-- **Modifiers**: `nonReentrant`, `whenNotPaused`, `validAmount`, `notBlacklisted`, `onlyKYCVerified`.
+- **Modifiers**: `nonReentrant`, `whenNotPaused`, `validAmount`.
 - **State changes**:
   1. `lendingPool.updateState()`.
   2. `agToken.safeTransferFrom(msg.sender, address(this), scaledAmount)` — balance-delta.
@@ -13,7 +12,7 @@
   4. `depositBlock[msg.sender] = block.number`.
   5. `delete withdrawTimelock[msg.sender]` — cancels any pending request.
 - **Events**: `Deposit(user, amount, agaSPMinted)`.
-- **Errors**: `AmountZero()`, `NotKYCVerified()`, `UserBlacklisted()`.
+- **Errors**: `AmountZero()`.
 
 ### `requestWithdraw(uint256 amount)`
 

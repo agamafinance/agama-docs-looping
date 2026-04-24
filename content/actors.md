@@ -1,23 +1,22 @@
 # How It Works
 
-Every flow in Agama is driven by one of three actor types. Understanding their incentives, KYC paths, and interaction surface is prerequisite for reading the rest of the docs.
+Agama has two actors: **Alice** borrows, **Bob** lends. Bob can optionally stake his lender receipt in the Stability Pool to earn extra yield in exchange for absorbing liquidations.
 
-## Alice — Borrower (qualified investor)
+## Alice — Borrower
 
-| Attribute         | Value                                              |
-|-------------------|----------------------------------------------------|
-| KYC'd by          | **Issuer** (AmFi or Nimofast), not Agama            |
-| Holds             | RWA tokens (e.g., AmFi senior tranche)              |
-| Goal              | Leverage her position without selling               |
-| Entry point       | `openVaultPosition()` → `depositAsset()` → `borrow()` |
+| Attribute         | Value                                                 |
+|-------------------|-------------------------------------------------------|
+| Holds             | RWA tokens (e.g., AmFi senior tranche)                 |
+| Deposits          | RWA tokens as collateral                               |
+| Borrows           | USDXP                                                  |
+| Goal              | Leverage her RWA position without selling              |
+| Entry point       | `openVaultPosition()` → `depositAsset()` → `borrow()`  |
 
-Alice is a **qualified investor** in the Brazilian sense: gross income ≥ R$ 200k/year or institutional holdings ≥ R$ 1M. She is KYC'd by the issuer already — Agama does not re-verify her. Instead, the adapter queries the issuer's QI whitelist on every interaction.
+Alice holds tokenized private credit — for example AmFi senior tranche or Nimofast receivables — and uses Agama to unlock leverage on that position without selling it.
 
 ### Typical loop
 
-!!! note
-
-    Alice's leverage cap is not a protocol-enforced number; it's the mathematical limit implied by the LTV. With AmFi's 70% LTV, infinite loops converge to ~3.33× leverage.
+Alice's leverage cap is not a protocol-enforced number; it's the mathematical limit implied by the LTV. With AmFi's 70% LTV, infinite loops converge to ~3.33× leverage.
 
 ```
 Initial position: 1,000,000 AMFI_SENIOR (yield ~16% APY)
@@ -32,42 +31,54 @@ Net APY ≈ (16% × 2.1) − (10% × 1.05) ÷ 1.0 initial = 22.5%
 
 ## Bob — Lender
 
-| Attribute         | Value                                              |
-|-------------------|----------------------------------------------------|
-| KYC'd by          | **Agama KYC Light** (Sumsub flow, 2-min)            |
-| Deposits          | USDXP                                               |
-| Receives          | `agTOKEN` (yield-bearing ERC-4626)                  |
-| Goal              | Earn supply APY on USDXP, backed by RWA             |
-| Geofence          | No US, no Brazil                                    |
+Bob is a crypto user seeking RWA-backed yield. He deposits USDXP into the Lending Pool and earns supply APY as borrowers pay interest.
 
-Bob is a retail crypto user seeking RWA yield. He completes a light-touch KYC (liveness + ID + sanctions + geofence) and deposits USDXP into the Lending Pool. His `agTOKEN` appreciates as Alice (and other borrowers) pay interest.
+Bob's flow has **two steps**. Step 1 is the baseline lender position; Step 2 is optional and layers on top.
 
-Bob can exit at any time (subject to pool utilization). His `agTOKEN` is standard ERC-20 — composable elsewhere on Rayls DeFi.
+### Step 1 — Lend (required)
 
-## Charlie — Stability Provider
+| Attribute         | Value                                                 |
+|-------------------|-------------------------------------------------------|
+| Deposits          | USDXP (into the Lending Pool)                          |
+| Receives          | `agTOKEN` (yield-bearing ERC-4626)                     |
+| Yield             | Supply APY — `agTOKEN` appreciates as borrowers pay interest |
+| Exit              | Anytime, subject to pool utilization                   |
 
-| Attribute         | Value                                              |
-|-------------------|----------------------------------------------------|
-| KYC'd by          | **Agama KYC Light** (same as Bob)                   |
-| Deposits          | `agTOKEN` (obtained from Lending Pool first)        |
-| Receives          | `agaSP` (1:1, non-transferable)                     |
-| Goal              | Supply APY + share of seized collateral             |
-| Withdrawal        | 30-min timelock + 2-day execution window            |
+Bob deposits USDXP, receives `agTOKEN`, done. His `agTOKEN` is standard ERC-20 and composable across Rayls DeFi.
 
-Charlie must be a lender first: he deposits USDXP into the Lending Pool to receive `agTOKEN`, then deposits that `agTOKEN` into the Stability Pool to receive `agaSP`.
+### Step 2 — Stake in the Stability Pool (optional)
 
-!!! warning
+Bob can take the `agTOKEN` he just got in Step 1 and stake it in the Stability Pool to become a Stability Provider.
 
-    The Stability Pool accepts **`agTOKEN`**, not USDXP. This is deliberate — it preserves Charlie's supply yield (via `agTOKEN` appreciation) while also positioning him to absorb liquidations. This is the single most frequently misunderstood aspect of the design.
+| Attribute         | Value                                                 |
+|-------------------|-------------------------------------------------------|
+| Deposits          | `agTOKEN` (from Step 1 — **not** USDXP directly)       |
+| Receives          | `agaSP` (1:1, non-transferable)                        |
+| Yield             | Supply APY (kept via `agTOKEN` exposure) + liquidation bonus |
+| Risk              | Absorbs liquidations for ~15 days while Settlement Vault redeems off-chain |
+| Withdrawal        | 30-min timelock + 2-day execution window               |
 
-### Charlie's expected yield
+The SP takes **`agTOKEN`, not USDXP** — that's deliberate. Bob keeps earning supply yield during Step 2, while also being positioned to absorb liquidations for an additional bonus. If Step 2 accepted USDXP directly, Bob would lose the supply APY.
+
+## When Alice gets liquidated
+
+If Alice's health factor falls below 1 and she doesn't cure within the 72-hour grace period:
+
+1. **Collateral moves to the SP, debt is wiped.** Alice's RWA tokens transfer to the Stability Pool. Her USDXP debt is burned. She loses the collateral, but owes nothing.
+2. **Bob's `agTOKEN` stays whole.** The SP immediately repays the Lending Pool's USDXP by burning some of its own `agTOKEN`. Pure lenders (Step 1 only) are never impacted — their `agTOKEN` keeps appreciating.
+3. **Staked Bob absorbs, then recovers.** Bob's `agaSP` represents a claim on the SP's `agTOKEN` pool, which just shrank by the debt amount. For the next ~15 days the SP holds RWA tokens instead of `agTOKEN` while the Settlement Vault redeems them off-chain with the issuer.
+4. **Settlement restores the peg.** When USDXP returns from the redemption (~D+15 for AmFi), it's deposited back into the Lending Pool on the SP's behalf, which re-mints `agTOKEN` for the SP. The recovered value typically exceeds the debt — the surplus is the **liquidation bonus**, which flows pro-rata to `agaSP` holders (minus a slice to the Reserve Fund).
+
+Net effect: pure lenders are protected in real time; staked lenders take a temporary balance-sheet exposure and earn the bonus as compensation.
+
+### Expected SP yield
 
 Two components:
 
-1. **Supply APY** via `agTOKEN` appreciation — same as Bob.
-2. **Liquidation gains** — when Alice gets liquidated, Charlie shares pro-rata in the seized collateral's recovery value beyond the debt absorbed.
+1. **Supply APY** via `agTOKEN` appreciation — same as a pure lender.
+2. **Liquidation gains** — when borrowers get liquidated, stakers share pro-rata in the seized collateral's recovery value beyond the debt absorbed.
 
-Expected liquidation gain modelling:
+Modelling:
 
 ```
 Assume: 3% of outstanding loans liquidated per year,
@@ -79,13 +90,4 @@ Expected SP yield boost = 3% × 5% × 80% = 0.12% per year
                         = ~6.92% SP APY
 ```
 
-!!! warning
-
-    This is thin. Boosting SP attractiveness by reallocating a portion of `reserveFactor` directly to SP depositors is under consideration.
-
-## Who is out of scope
-
-- **US persons**: geofenced.
-- **Brazilian retail**: geofenced (regulatory — CVM would apply).
-- **Non-whitelisted QIs**: cannot borrow (adapter reverts).
-- **Protocol contracts** (yield aggregators, etc.): V1 requires EOA KYC. Protocol integrations deferred to V2.
+The yield boost is thin in V1. Boosting SP attractiveness by reallocating a portion of `reserveFactor` directly to SP depositors is under consideration.

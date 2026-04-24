@@ -20,14 +20,10 @@ Core V1 is the foundational release of the Agama Protocol. It establishes the on
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, marginTop: 16 }}>
   {[
-    { title: 'Lending Pool', href: '/core/lending-pool/overview', desc: 'The main market: USDXP deposits, agTOKEN receipts, borrows against RWA collateral.' },
-    { title: 'Stability Pool', href: '/core/stability-pool/overview', desc: 'Liquidation backstop. Accepts agTOKEN, issues agaSP 1:1. Manager-gated.' },
-    { title: 'Settlement Vault', href: '/core/settlement-vault/overview', desc: "Agama's unique adaptation: holds seized RWA, queues off-chain redemption, auto-reconstitutes SP." },
-    { title: 'Adapters', href: '/core/adapters/interface', desc: 'Per-asset logic: custody, oracle, QI whitelist. AmFi, Nimofast, future issuers.' },
-    { title: 'Tokens', href: '/core/tokens/agtoken', desc: 'agTOKEN, DebtToken, agaSP, USDXP.' },
-    { title: 'Compliance', href: '/core/compliance/kyc-registry', desc: 'Two-tier KYC: Sumsub for retail, issuer QI whitelist for borrowers.' },
-    { title: 'Collectors', href: '/core/collectors/fee-collector', desc: 'Fee Collector · Treasury · Reserve Fund.' },
-    { title: 'Governance', href: '/core/governance', desc: 'Multisig + 48h timelock. No DAO token in V1.' },
+    { title: 'Lending Pool', href: '/docs/lending-pool/overview', desc: 'The main market: USDXP deposits, agTOKEN receipts, borrows against RWA collateral.' },
+    { title: 'Stability Pool', href: '/docs/stability-pool/overview', desc: 'Liquidation backstop. Accepts agTOKEN, issues agaSP 1:1. Manager-gated.' },
+    { title: 'Settlement Vault', href: '/docs/settlement-vault/overview', desc: 'Holds seized RWA, queues off-chain redemption, auto-reconstitutes the SP.' },
+    { title: 'Collectors', href: '/docs/collectors/fee-collector', desc: 'Fee Collector · Treasury · Reserve Fund.' },
   ].map((c) => (
     <a
       key={c.href}

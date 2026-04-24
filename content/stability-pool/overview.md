@@ -41,10 +41,6 @@ This prevents race conditions around liquidations and blocks MEV-style sandwich 
 
 `depositBlock[user]` is recorded on every deposit. `withdraw()` reverts if called in the same block. Blocks flash-loan-assisted ephemeral deposits.
 
-## Compliance integration
-
-The SP consults `AgamaKYCRegistry` on every user-facing call. Blocklisted addresses cannot deposit, request withdrawal, or execute withdrawal.
-
 ## Continue
 
 - [Functions](functions.md) — complete function reference.

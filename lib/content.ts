@@ -203,3 +203,58 @@ export async function listAllSlugs(): Promise<string[][]> {
 export function titleFromFrontmatter(fm: Record<string, any>, fallback?: string): string {
   return fm.title || fallback || 'Untitled';
 }
+
+export interface SearchEntry {
+  slug: string[];
+  href: string;
+  title: string;
+  body: string;
+  headings: TocEntry[];
+}
+
+function extractH1(md: string): string | null {
+  const m = md.match(/^#\s+(.+)$/m);
+  return m ? m[1].trim() : null;
+}
+
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1')
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/^\s*\|.*\|\s*$/gm, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export async function buildSearchIndex(): Promise<SearchEntry[]> {
+  const slugs = await listAllSlugs();
+  const entries: SearchEntry[] = [];
+  for (const slug of slugs) {
+    const filePath = slugToFile(slug);
+    let raw: string;
+    try {
+      raw = await fs.readFile(filePath, 'utf8');
+    } catch {
+      continue;
+    }
+    const parsed = matter(raw);
+    const title =
+      parsed.data.title ||
+      extractH1(parsed.content) ||
+      slug[slug.length - 1] ||
+      'Untitled';
+    entries.push({
+      slug,
+      href: '/docs/' + slug.join('/'),
+      title,
+      body: stripMarkdown(parsed.content),
+      headings: extractToc(parsed.content),
+    });
+  }
+  return entries;
+}

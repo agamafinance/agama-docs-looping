@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { navigation, NavSection, NavChild, NavChildGroup } from '@/lib/navigation';
+import type { SearchEntry } from '@/lib/content';
+import { SearchDialog } from './SearchDialog';
 import {
   HomeIcon,
   CubeIcon,
@@ -43,10 +45,11 @@ function LogoBlock() {
   );
 }
 
-function SearchButton() {
+function SearchButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="w-full flex items-center gap-3 h-[46px] px-3 rounded-lg text-base leading-none text-[#9CA3AF] transition-colors hover:text-[#E6FEF4] cursor-text"
       style={{
         background: 'rgba(230, 254, 244, 0.03)',
@@ -181,9 +184,21 @@ function SidebarFooter() {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ searchIndex }: { searchIndex: SearchEntry[] }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <>
@@ -231,7 +246,7 @@ export function Sidebar() {
           <div className="mb-1.5 -ml-[4px]">
             <LogoBlock />
           </div>
-          <SearchButton />
+          <SearchButton onClick={() => setSearchOpen(true)} />
         </div>
         <nav className="flex-1 px-4 py-4 overflow-y-auto custom-scrollbar">
           {navigation.map((section, i) => (
@@ -240,6 +255,12 @@ export function Sidebar() {
         </nav>
         <SidebarFooter />
       </aside>
+
+      <SearchDialog
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        index={searchIndex}
+      />
     </>
   );
 }

@@ -153,7 +153,7 @@ function SidebarFooter() {
     <div className="px-6 py-4" style={{ borderTop: '1px solid rgba(230, 254, 244, 0.06)' }}>
       <div className="flex items-center gap-3">
         <a
-          href="https://x.com/agamafi"
+          href="https://x.com/agamafinance"
           target="_blank"
           rel="noreferrer"
           className="text-[#9CA3AF] hover:text-[#E6FEF4] transition-colors"

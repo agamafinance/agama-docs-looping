@@ -2,6 +2,14 @@
 
 The `AgamaStabilityPool` is the protocol's liquidation backstop and the secondary yield venue for lenders. It accepts `agTOKEN` (not USDXP) and issues `agaSP` 1:1.
 
+## What is `agaSP`?
+
+`agaSP` is the **receipt** you get when you stake `agTOKEN` in the Stability Pool. Strict 1:1 with the `agTOKEN` you deposit. **Soulbound — non-transferable** — it represents your personal claim on the SP and isn't tradable.
+
+Because `agaSP` is backed by `agTOKEN`, you keep earning the supply APY while you're staked. On top, you receive a pro-rata share of liquidation bonuses when borrowers get liquidated.
+
+There is no internal exchange-rate math: the SP doesn't rebase or scale balances. Your `agaSP` value moves only because the underlying `agTOKEN` appreciates (and momentarily dips during a liquidation event before settlement restores the peg).
+
 ## Why `agTOKEN`, not USDXP
 
 If the Stability Pool accepted USDXP directly:
@@ -14,11 +22,7 @@ By accepting `agTOKEN`, depositors continue to earn supply yield through `agTOKE
 
 !!! danger
 
-    This is the **single most frequently misunderstood** aspect of the design. If you find yourself thinking "Charlie should deposit USDXP", re-read this section.
-
-## 1:1 peg
-
-`agaSP` is always minted and burned 1:1 against `agTOKEN` at transaction time. Value appreciates because the underlying `agTOKEN` appreciates — there is no internal exchange rate math in the SP. This simplifies accounting and auditing versus Liquity-style rebasing pools.
+    This is the **single most frequently misunderstood** aspect of the design. If you find yourself thinking "I should deposit USDXP into the Stability Pool", re-read this section.
 
 ## Role of managers
 

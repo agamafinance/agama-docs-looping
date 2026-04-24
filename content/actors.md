@@ -40,11 +40,11 @@ Bob's flow has **two steps**. Step 1 is the baseline lender position; Step 2 is 
 | Attribute         | Value                                                 |
 |-------------------|-------------------------------------------------------|
 | Deposits          | USDXP (into the Lending Pool)                          |
-| Receives          | `agTOKEN` (yield-bearing ERC-4626)                     |
+| Receives          | `agTOKEN` (yield-bearing receipt, ERC-4626 / ERC-20)   |
 | Yield             | Supply APY — `agTOKEN` appreciates as borrowers pay interest |
 | Exit              | Anytime, subject to pool utilization                   |
 
-Bob deposits USDXP, receives `agTOKEN`, done. His `agTOKEN` is standard ERC-20 and composable across Rayls DeFi.
+Bob deposits USDXP, receives `agTOKEN`, done. `agTOKEN` is transferable and composable across Rayls DeFi. See [Lending Pool → What is agTOKEN](/docs/lending-pool/overview#what-is-agtoken) for the full mechanics.
 
 ### Step 2 — Stake in the Stability Pool (optional)
 

@@ -10,6 +10,14 @@
 - Enforce risk parameters (borrow cap, supply cap, LTV, liquidation threshold).
 - Coordinate the three-stage liquidation lifecycle with the Stability Pool.
 
+## What is `agTOKEN`?
+
+`agTOKEN` is the **receipt** you get when you deposit USDXP into the Lending Pool. It's a standard ERC-4626 yield-bearing token: your balance stays fixed, but its redeem value in USDXP grows over time as borrowers pay interest.
+
+**Example:** you deposit 1,000 USDXP → you receive 1,000 `agTOKEN`. One year later, at 7.2% lender APY, your 1,000 `agTOKEN` are worth 1,072 USDXP when you withdraw.
+
+`agTOKEN` is a regular ERC-20 under the hood — transferable and composable across Rayls DeFi. Yield is delivered through a rising redeem rate (`liquidityIndex`), not through rebasing balances.
+
 ## Parameters
 
 Two categories, both governance-controlled through the 48-hour timelock:

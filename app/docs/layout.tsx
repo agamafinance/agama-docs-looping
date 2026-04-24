@@ -4,7 +4,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   return (
     <div
       className="flex min-h-screen text-[#FDF8ED]"
-      style={{ background: '#0E1813' }}
+      style={{ background: '#0D2B28' }}
     >
       <Sidebar />
       <main className="flex-1 overflow-y-auto w-full transition-all duration-300 min-w-0">

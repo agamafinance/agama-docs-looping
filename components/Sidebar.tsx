@@ -220,7 +220,7 @@ export function Sidebar() {
           'lg:translate-x-0',
         )}
         style={{
-          background: '#0E1813',
+          background: '#0D2B28',
           borderRight: '1px solid rgba(253, 248, 237, 0.08)',
         }}
       >

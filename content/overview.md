@@ -4,6 +4,16 @@
 
 Agama is a lending protocol purpose-built for tokenized RWAs. Holders collateralize their RWA tokens and borrow stablecoins against them. Lenders provide that liquidity and earn interest backed by the performance of real-world credit, receivables, and fund shares.
 
+## The Problem
+
+Tokenized RWAs produce real yield. Holders cannot lever it.
+
+There is no secondary market to sell into. Redemption queues run for weeks. Lending venues built for crypto collateral will not finance an asset they cannot liquidate at block speed — they reject RWA collateral outright, or list it at LTVs so conservative the loop is not economic.
+
+Stablecoin lenders are starved for durable yield. Crypto-backed borrow demand is cyclical and has compressed. The capital is on-chain. The collateral is on-chain. The rails between them are not.
+
+## Components
+
 The protocol has two core components:
 
 1. **Lending Pool** — Lenders deposit stablecoins and receive `agTOKEN`, a yield-bearing receipt that accrues interest automatically from borrower repayments. Borrowers post RWA tokens as collateral and borrow at dynamic rates driven by pool utilization. The protocol supports multiple RWA types as collateral — private credit, receivables, fund shares, tokenized bonds — with new asset classes added over time.

@@ -86,8 +86,8 @@ Assume: 3% of outstanding loans liquidated per year,
          80% of bonus net of fees reaches SP depositors.
 
 Expected SP yield boost = 3% × 5% × 80% = 0.12% per year
-                        + supply APY (e.g. 6.8% at optimal utilization)
-                        = ~6.92% SP APY
+                        + lender APY (e.g. 7.2% at optimal utilization)
+                        = ~7.32% SP APY
 ```
 
 The yield boost is thin in V1. Boosting SP attractiveness by reallocating a portion of `reserveFactor` directly to SP depositors is under consideration.

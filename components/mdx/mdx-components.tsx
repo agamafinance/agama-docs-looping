@@ -2,22 +2,12 @@ import React from 'react';
 
 export const mdxComponents: Record<string, React.ComponentType<any>> = {
   h2: ({ children, id, ...props }) => (
-    <h2 id={id} className="group relative scroll-mt-20" {...props}>
-      {id && (
-        <a href={`#${id}`} className="anchor" aria-label={`Link to ${String(children)}`}>
-          #
-        </a>
-      )}
+    <h2 id={id} className="scroll-mt-20" {...props}>
       {children}
     </h2>
   ),
   h3: ({ children, id, ...props }) => (
-    <h3 id={id} className="group relative scroll-mt-20" {...props}>
-      {id && (
-        <a href={`#${id}`} className="anchor" aria-label={`Link to ${String(children)}`}>
-          #
-        </a>
-      )}
+    <h3 id={id} className="scroll-mt-20" {...props}>
       {children}
     </h3>
   ),

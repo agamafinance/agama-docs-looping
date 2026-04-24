@@ -10,10 +10,10 @@
   1. `nextBatchId++`; allocate `Batch storage b`.
   2. Compute split:
      ```
-     T = seizedAmount × treasuryBps / 10000
-     B = seizedAmount × burnBps     / 10000
-     R = seizedAmount × redeemBps   / 10000
-     K = seizedAmount × inKindBps   / 10000
+     T = seizedAmount × treasuryBps    / 10000
+     B = seizedAmount × reserveFundBps / 10000
+     R = seizedAmount × redeemBps      / 10000
+     K = seizedAmount × inKindBps      / 10000
      ```
   3. Transfer `T` to `Treasury`; `B` to `ReserveFund`.
   4. Keep `R` and `K` in vault pending redemption.
@@ -79,7 +79,7 @@ struct Batch {
 
 struct LiquidationSplit {
     uint16 treasuryBps;
-    uint16 burnBps;
+    uint16 reserveFundBps;
     uint16 redeemBps;
     uint16 inKindBps;
     // sum must equal 10000

@@ -97,7 +97,13 @@ t=72h+1: Manager → SP.liquidateBorrower(amfiAdapter, vaultAdapter, alice, data
             creates Batch #42, snapshotBlock = current
 
 t=72h..~15d: Manager off-chain initiates AmFi redemption for 950k amfiToken.
-        USDXP arrives (~950 × 0.80 × 0.995 ≈ 757k USDXP after price × redeem fee).
+        USDXP arrives:  950k × 0.80 × 0.995 ≈ 757k USDXP
+                        ─────────  ────────  ─────
+                        amount     NAV per   1 − redeem fee (0.5%)
+                                   token at
+                                   redemption
+                                   (= 0.80,  the price after the
+                                    initial drop from 1.00 → 0.80)
 
 t=15d+: Manager calls settleRedemption(batchId=42, 757k USDXP)
         → toSP = min(757k, 700k pegGap) = 700k → LendingPool.deposit(700k) on SP's behalf

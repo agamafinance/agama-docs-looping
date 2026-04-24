@@ -38,10 +38,10 @@ SP.liquidateBorrower()
   └─ SP transfers seized RWA → SettlementVault.handleSeizure(adapter, data, seized, pegGap)
        │
        ├─ applies LiquidationSplit:
-       │     T = seized × treasuryBps / 10000    → Treasury.deposit(asset, T)
-       │     B = seized × burnBps     / 10000    → ReserveFund.deposit(asset, B)
-       │     R = seized × redeemBps   / 10000    → queued in Batch{id, R}
-       │     K = seized × inKindBps   / 10000    → (V1 = 0) reserved for V2
+       │     T = seized × treasuryBps    / 10000   → Treasury.deposit(asset, T)
+       │     B = seized × reserveFundBps / 10000   → ReserveFund.deposit(asset, B)
+       │     R = seized × redeemBps      / 10000   → queued in Batch{id, R}
+       │     K = seized × inKindBps      / 10000   → (V1 = 0) reserved for V2
        │
        ├─ emits BatchQueued(id, asset, R, block.timestamp, pegGap)
        │
@@ -71,12 +71,12 @@ Manager → SettlementVault.settleRedemption(batchId, usdxpReceived)
 
 Default V1 values:
 
-| Bucket         | V1 Default | Reasoning                                                    |
-|----------------|-----------:|--------------------------------------------------------------|
-| `treasuryBps`  |  200 (2%)  | Small operational allocation.                                |
-| `burnBps`      |  300 (3%)  | ReserveFund buffer growth.                                   |
-| `redeemBps`    | 9500 (95%) | Maximize USDXP recovery to restore SP peg.                   |
-| `inKindBps`    |    0 (0%)  | Retail SP depositors cannot redeem RWA tokens with the issuer; reserved for V2. |
+| Bucket             | V1 Default | Reasoning                                                                       |
+|--------------------|-----------:|---------------------------------------------------------------------------------|
+| `treasuryBps`      |  200 (2%)  | Small operational allocation.                                                   |
+| `reserveFundBps`   |  300 (3%)  | ReserveFund buffer growth (was named `burnBps` historically — nothing is burnt).|
+| `redeemBps`        | 9500 (95%) | Maximize USDXP recovery to restore SP peg.                                      |
+| `inKindBps`        |    0 (0%)  | Retail SP depositors cannot redeem RWA tokens with the issuer; reserved for V2. |
 
 These should be re-calibrated after the first 10 mainnet liquidations based on realized redemption fees and timing.
 

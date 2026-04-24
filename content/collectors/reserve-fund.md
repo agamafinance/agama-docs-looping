@@ -1,6 +1,6 @@
 # Reserve Fund
 
-`AgamaReserveFund` is the protocol's dedicated bad-debt buffer. It accumulates the `burnBps` slice of every liquidation plus a configurable portion of the `reserveFactor` accrual, and is drawn down before any debt redistribution.
+`AgamaReserveFund` is the protocol's dedicated bad-debt buffer. It accumulates the `reserveFundBps` slice of every liquidation plus a configurable portion of the `reserveFactor` accrual, and is drawn down before any debt redistribution.
 
 ## Functions
 
@@ -46,7 +46,7 @@ reserveCoverageRatio = ReserveFund.totalAssetValueUSDXP() / LendingPool.totalBor
 
 The ReserveFund accumulates from:
 
-- `burnBps` of every `LiquidationSplit` (RWA tokens, held until redemption).
+- `reserveFundBps` of every `LiquidationSplit` (RWA tokens, held until redemption).
 - `30%` of `PROTOCOL_REVENUE_TYPE` fees (configurable).
 - Direct deposits (team, external parties).
 - Excess from `SettlementVault.settleRedemption` routing (V1 policy: 100% excess → ReserveFund).

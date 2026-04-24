@@ -16,18 +16,22 @@ Alice holds tokenized private credit — specifically AmFi senior tranche in V1 
 
 ### Typical loop
 
-Alice's leverage cap is not a protocol-enforced number; it's the mathematical limit implied by the LTV. With AmFi's 70% LTV, infinite loops converge to ~3.33× leverage.
+Alice's leverage cap is not a protocol-enforced number; it's the mathematical limit implied by the LTV. AmFi V1's `MAX_LTV` is 70% — infinite loops at that ceiling converge to ~3.33× leverage. Practically Alice runs at 50% LTV for a healthier health-factor margin, which converges to 2× leverage.
 
 ```
 Initial position: 1,000,000 AMFI_SENIOR (yield ~16% APY)
 
-Loop 1: deposit 1M → borrow 500k USDXP (50% LTV) → re-stake at AmFi → gain 500k AMFI
-Loop 2: deposit 500k → borrow 250k USDXP → re-stake → gain 250k AMFI
-Loop 3: deposit 250k → borrow 125k USDXP → re-stake → gain 125k AMFI
+Loop 1: deposit 1M    → borrow 500k USDXP (50% LTV) → re-stake at AmFi → gain 500k AMFI
+Loop 2: deposit 500k  → borrow 250k USDXP            → re-stake         → gain 250k AMFI
+Loop 3: deposit 250k  → borrow 125k USDXP            → re-stake         → gain 125k AMFI
 
-Terminal: ~2.1M AMFI collateral, ~1.05M USDXP debt
-Net APY ≈ (16% × 2.1) − (10% × 1.05) ÷ 1.0 initial = 22.5%
+After 3 loops:  1.875M AMFI collateral,  0.875M USDXP debt
+Net APY      =  16% × 1.875  −  10% × 0.875
+             =  30%          −  8.75%
+             =  21.25%
 ```
+
+Infinite loops at 50% LTV converge to 2× / 1× (collateral / debt), capping net APY at 22%. See [Interest Rate Model → Looping viability](/docs/lending-pool/interest-rate-model#looping-viability) for the full table at 50% and 70% LTV.
 
 ## Bob — Lender
 
@@ -82,10 +86,27 @@ Modelling:
 
 ```
 Assume: 3% of outstanding loans liquidated per year,
-         5% average liquidation bonus captured,
-         80% of bonus net of fees reaches SP depositors.
+        5% average liquidation bonus captured,
+        80% of that bonus net of fees reaches SP depositors.
 
-Expected SP yield boost = 3% × 5% × 80% = 0.12% per year
-                        + lender APY (e.g. 7.2% at optimal utilization)
-                        = ~7.32% SP APY
+Annual bonus to SP, expressed as a fraction of the loan book:
+  = 3% × 5% × 80%
+  = 0.12% of total borrows per year
+
+That bonus is shared among SP stakers, so per-staker yield boost depends on
+SP capitalization relative to active borrows (k = SP_size / loans):
+
+  Boost per SP staker = 0.12% / k
+
+Example: SP holds 30% of active borrows  (k = 0.30) → boost ≈ 0.40% per year
+         SP holds 10% of active borrows  (k = 0.10) → boost ≈ 1.20% per year
+
+  SP APY ≈ lender APY  +  boost
+         = 7.2% (at optimal utilization)  +  0.40% (k = 0.30)
+         ≈ 7.6%
 ```
+
+Two consequences worth noting:
+
+- The boost grows as the SP shrinks relative to the loan book, but so does the per-staker exposure when a liquidation lands. Stakers should size their position with that trade-off in mind.
+- The base scenario (3% liquidation rate, 5% bonus) is conservative. RWA stress events compress that further on the upside; long calm periods compress it on the downside. The headline is: SP yield ≈ lender APY + a small bonus stream proportional to liquidation flow.

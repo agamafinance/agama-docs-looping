@@ -145,3 +145,11 @@ export function MenuIcon({ className = 'w-4 h-4' }: { className?: string }) {
     </svg>
   );
 }
+
+export function CloseIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 6l12 12M6 18L18 6" />
+    </svg>
+  );
+}

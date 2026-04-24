@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { SearchIcon, XIcon } from './icons/SectionIcons';
+import { SearchIcon, CloseIcon } from './icons/SectionIcons';
+import { navigation } from '@/lib/navigation';
 import type { SearchEntry } from '@/lib/content';
 
 interface Match {
@@ -46,6 +47,46 @@ function scoreEntry(e: SearchEntry, qLower: string): Match | null {
   };
 }
 
+function findBreadcrumb(href: string): string[] {
+  for (const section of navigation) {
+    for (const item of section.items) {
+      if ('href' in item && item.href === href) {
+        return [section.title];
+      }
+      if ('items' in item) {
+        for (const sub of item.items) {
+          if (sub.href === href) {
+            return [section.title, item.title];
+          }
+        }
+      }
+    }
+  }
+  return [];
+}
+
+function Highlight({ text, query }: { text: string; query: string }) {
+  if (!query) return <>{text}</>;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark
+        style={{
+          background: 'rgba(95, 181, 144, 0.22)',
+          color: '#82CDA6',
+          padding: '0 2px',
+          borderRadius: 2,
+        }}
+      >
+        {text.slice(idx, idx + query.length)}
+      </mark>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
+
 export function SearchDialog({
   open,
   onClose,
@@ -84,6 +125,16 @@ export function SearchDialog({
     setCursor(0);
   }, [q]);
 
+  // Body scroll lock while dialog is open
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
@@ -114,14 +165,16 @@ export function SearchDialog({
 
   if (!open) return null;
 
+  const query = q.trim();
+
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center pt-[12vh] px-4"
-      style={{ background: 'rgba(0,0,0,0.6)' }}
+      className="fixed inset-0 z-[60] flex items-start justify-center pt-[12vh] px-4 animate-[searchFadeIn_120ms_ease-out]"
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[640px] rounded-xl overflow-hidden flex flex-col"
+        className="w-full max-w-[640px] rounded-xl overflow-hidden flex flex-col animate-[searchPopIn_140ms_cubic-bezier(0.2,0.9,0.3,1.2)]"
         style={{
           background: '#0D2B28',
           border: '1px solid rgba(230, 254, 244, 0.12)',
@@ -151,12 +204,12 @@ export function SearchDialog({
             className="text-[#9CA3AF] hover:text-[#E6FEF4] transition-colors p-1 -mr-1"
             aria-label="Close"
           >
-            <XIcon />
+            <CloseIcon />
           </button>
         </div>
 
         <div className="overflow-y-auto custom-scrollbar">
-          {q.trim() === '' ? (
+          {query === '' ? (
             <div className="px-4 py-10 text-center text-sm text-[#9CA3AF]">
               Start typing to search
             </div>
@@ -170,6 +223,7 @@ export function SearchDialog({
                 const href = m.matchedHeading
                   ? `${m.entry.href}#${m.matchedHeading.id}`
                   : m.entry.href;
+                const breadcrumb = findBreadcrumb(m.entry.href);
                 const active = i === cursor;
                 return (
                   <li key={`${m.entry.href}-${m.matchedHeading?.id ?? ''}`}>
@@ -180,19 +234,31 @@ export function SearchDialog({
                       className="block px-4 py-3 transition-colors"
                       style={{
                         background: active ? 'rgba(95, 181, 144, 0.08)' : 'transparent',
+                        borderLeft: active
+                          ? '2px solid #5FB590'
+                          : '2px solid transparent',
                       }}
                     >
+                      {breadcrumb.length > 0 && (
+                        <div className="text-[11px] uppercase tracking-[0.06em] text-[#9CA3AF] mb-0.5">
+                          {breadcrumb.join(' › ')}
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-[#E6FEF4] font-medium">{m.entry.title}</span>
+                        <span className="text-[#E6FEF4] font-medium">
+                          <Highlight text={m.entry.title} query={query} />
+                        </span>
                         {m.matchedHeading && (
                           <>
                             <span className="text-[#9CA3AF]">›</span>
-                            <span className="text-[#5FB590]">{m.matchedHeading.text}</span>
+                            <span className="text-[#5FB590]">
+                              <Highlight text={m.matchedHeading.text} query={query} />
+                            </span>
                           </>
                         )}
                       </div>
                       <div className="text-xs text-[#9CA3AF] mt-1 line-clamp-2">
-                        {m.snippet}
+                        <Highlight text={m.snippet} query={query} />
                       </div>
                     </Link>
                   </li>
@@ -211,7 +277,11 @@ export function SearchDialog({
             <span>↵ open</span>
             <span>esc close</span>
           </div>
-          {results.length > 0 && <span>{results.length} result{results.length === 1 ? '' : 's'}</span>}
+          {results.length > 0 && (
+            <span>
+              {results.length} result{results.length === 1 ? '' : 's'}
+            </span>
+          )}
         </div>
       </div>
     </div>

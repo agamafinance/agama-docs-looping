@@ -27,7 +27,7 @@ The liquidation lifecycle is three-stage and manager-gated. The Agama-specific s
 │ STAGE 3 — finalizeLiquidation (SP-called, post-grace)         │
 │   SP.liquidateBorrower calls LendingPool.finalizeLiquidation. │
 │   Effect: collateral → SP, debt → burned (user whole on debt).│
-│   SP repays rToken in USDXP (its agTOKEN balance shrinks).    │
+│   SP repays agTOKEN in USDXP (its agTOKEN balance shrinks).    │
 │   SP transfers seized collateral → SettlementVault.           │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -55,7 +55,7 @@ function liquidateBorrower(
     lendingPool.finalizeLiquidation(poolAdapter, user, data);
     uint256 scaledDebt = debt;
 
-    // 4. SP makes rToken whole in USDXP
+    // 4. SP makes agTOKEN whole in USDXP
     //    SP burns its own agTOKEN via lendingPool.withdraw to pull USDXP
     lendingPool.withdraw(scaledDebt);
 
@@ -106,7 +106,7 @@ t=15d+: Manager calls settleRedemption(batchId=42, 757k USDXP)
 
 Outcome:
   - Alice: debt wiped, collateral gone.
-  - Lenders: unaffected (rToken kept whole throughout).
+  - Lenders: unaffected (agTOKEN kept whole throughout).
   - SP: back to full peg, 100k total value added to ReserveFund.
   - Protocol: 20k Treasury + 80k ReserveFund. Solvent.
 ```

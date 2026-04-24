@@ -33,7 +33,7 @@ This simplification drops an entire `ClaimSettlement` contract from V1 scope.
 ```
 SP.liquidateBorrower()
   │
-  ├─ LendingPool.finalizeLiquidation (collateral → SP, debt burned, rToken whole)
+  ├─ LendingPool.finalizeLiquidation (collateral → SP, debt burned, agTOKEN whole)
   │
   └─ SP transfers seized RWA → SettlementVault.handleSeizure(adapter, data, seized, pegGap)
        │

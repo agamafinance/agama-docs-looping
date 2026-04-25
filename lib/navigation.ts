@@ -122,7 +122,7 @@ export function prevNext(pathname: string): { prev: NavLink | null; next: NavLin
   };
 }
 
-/** Derive breadcrumb slug from pathname, RAVA-style (shows last segment). */
+/** Derive breadcrumb slug from pathname (shows last segment). */
 export function breadcrumbSlug(pathname: string): string {
   const parts = pathname.split('/').filter(Boolean);
   return parts[parts.length - 1] || 'home';

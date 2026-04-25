@@ -1,4 +1,4 @@
-// Heroicons v2 outline style — matches RAVA exactly.
+// Heroicons v2 outline style.
 
 export function HomeIcon({ className = 'w-[18px] h-[18px]' }: { className?: string }) {
   return (

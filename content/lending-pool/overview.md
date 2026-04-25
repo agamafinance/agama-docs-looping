@@ -29,7 +29,7 @@ Per-adapter risk parameters (`MAX_LTV`, `LIQUIDATION_THRESHOLD`, `LIQUIDATION_BO
 
 ## Collateral adapters
 
-Adapters are pluggable contracts that expose a uniform interface ([`IAssetAdapter`](/docs/lending-pool/adapter-interface)) to the Lending Pool. A new adapter is whitelisted by governance via `registerAdapter(address)`. The Lending Pool never holds RWA tokens directly; the adapter is the custodian.
+Adapters are pluggable contracts that expose a uniform interface ([`IAssetAdapter`](/lending-pool/adapter-interface)) to the Lending Pool. A new adapter is whitelisted by governance via `registerAdapter(address)`. The Lending Pool never holds RWA tokens directly; the adapter is the custodian.
 
 V1 ships with one adapter: `AmFiAdapter` (AmFi senior tranche ERC-20 tokens). Additional adapters can be added without redeploying the Lending Pool.
 

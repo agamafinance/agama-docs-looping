@@ -20,10 +20,10 @@ Core V1 is the foundational release of the Agama Protocol. It establishes the on
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, marginTop: 16 }}>
   {[
-    { title: 'Lending Pool', href: '/docs/lending-pool/overview', desc: 'The main market: USDr deposits, agTOKEN receipts, borrows against RWA collateral.' },
-    { title: 'Stability Pool', href: '/docs/stability-pool/overview', desc: 'Liquidation backstop. Accepts agTOKEN, issues agaSP 1:1. Manager-gated.' },
-    { title: 'Settlement Vault', href: '/docs/settlement-vault/overview', desc: 'Holds seized RWA, queues off-chain redemption, auto-reconstitutes the Stability Pool.' },
-    { title: 'Collectors', href: '/docs/collectors/fee-collector', desc: 'Fee Collector · Treasury · Reserve Fund.' },
+    { title: 'Lending Pool', href: '/lending-pool/overview', desc: 'The main market: USDr deposits, agTOKEN receipts, borrows against RWA collateral.' },
+    { title: 'Stability Pool', href: '/stability-pool/overview', desc: 'Liquidation backstop. Accepts agTOKEN, issues agaSP 1:1. Manager-gated.' },
+    { title: 'Settlement Vault', href: '/settlement-vault/overview', desc: 'Holds seized RWA, queues off-chain redemption, auto-reconstitutes the Stability Pool.' },
+    { title: 'Collectors', href: '/collectors/fee-collector', desc: 'Fee Collector · Treasury · Reserve Fund.' },
   ].map((c) => (
     <a
       key={c.href}
@@ -47,4 +47,4 @@ Core V1 is the foundational release of the Agama Protocol. It establishes the on
 ## Getting started
 
 - **Developers**: read each component overview, then the corresponding Functions reference.
-- **Integrators** building a new adapter: see the [Asset Adapter Interface](/docs/lending-pool/adapter-interface).
+- **Integrators** building a new adapter: see the [Asset Adapter Interface](/lending-pool/adapter-interface).

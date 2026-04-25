@@ -1,6 +1,52 @@
 import React from 'react';
 
+function Diagram({
+  src,
+  alt = '',
+  width = 540,
+  caption,
+}: {
+  src: string;
+  alt?: string;
+  width?: number;
+  caption?: string;
+}) {
+  return (
+    <figure
+      style={{
+        margin: '1.75rem auto',
+        textAlign: 'center',
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        style={{
+          display: 'block',
+          margin: '0 auto',
+          width: '100%',
+          maxWidth: `${width}px`,
+          height: 'auto',
+        }}
+      />
+      {caption ? (
+        <figcaption
+          style={{
+            marginTop: '0.6rem',
+            fontSize: '0.85rem',
+            color: '#9CA3AF',
+          }}
+        >
+          {caption}
+        </figcaption>
+      ) : null}
+    </figure>
+  );
+}
+
 export const mdxComponents: Record<string, React.ComponentType<any>> = {
+  Diagram,
   h2: ({ children, id, ...props }) => (
     <h2 id={id} className="scroll-mt-20" {...props}>
       {children}

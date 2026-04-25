@@ -3,24 +3,27 @@ const nextConfig = {
   reactStrictMode: true,
   async redirects() {
     return [
+      // Root → Overview
       {
         source: '/',
-        destination: '/docs/overview',
+        destination: '/overview',
         permanent: false,
       },
+      // Legacy /docs/* → new flat URLs (covers all old bookmarks/external links)
       {
         source: '/docs',
-        destination: '/docs/overview',
-        permanent: false,
+        destination: '/overview',
+        permanent: true,
       },
       {
-        source: '/docs/overview/introduction',
-        destination: '/docs/overview',
-        permanent: false,
+        source: '/docs/:path*',
+        destination: '/:path*',
+        permanent: true,
       },
+      // Old /actors slug (already-redirected) → How It Works
       {
-        source: '/docs/actors',
-        destination: '/docs/how-it-works',
+        source: '/actors',
+        destination: '/how-it-works',
         permanent: true,
       },
     ];

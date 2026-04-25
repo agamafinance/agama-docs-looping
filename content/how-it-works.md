@@ -37,7 +37,7 @@ Net APY      =  16% × 1.875  −  10% × 0.875
 >
 > **Alice's actual flow.** She borrows USDr on Agama, redeems it for USDC at parity, sends USDC to AmFi, receives `AMFI_SENIOR` tokens, redeposits them as collateral. The cross-currency exposure is real: her collateral is BRL-denominated and her debt is USD-denominated, so USD/BRL FX is a structural input to her health factor.
 
-Infinite loops at 50% LTV converge to 2× / 1× (collateral / debt), capping net APY at 22%. See [Interest Rate Model → Looping viability](/docs/lending-pool/interest-rate-model#looping-viability) for the full table at 50% and 70% LTV.
+Infinite loops at 50% LTV converge to 2× / 1× (collateral / debt), capping net APY at 22%. See [Interest Rate Model → Looping viability](/lending-pool/interest-rate-model#looping-viability) for the full table at 50% and 70% LTV.
 
 ## Bob, the lender
 
@@ -54,7 +54,7 @@ Bob's flow has **two steps**. Step 1 is the baseline lender position; Step 2 is 
 | Yield      | Supply APY. `agTOKEN` appreciates as borrowers pay interest |
 | Exit       | Anytime, subject to pool utilization                   |
 
-Bob deposits USDr, receives `agTOKEN`, done. `agTOKEN` is transferable and composable across Rayls DeFi. See [Lending Pool → What is agTOKEN](/docs/lending-pool/overview#what-is-agtoken) for the full mechanics.
+Bob deposits USDr, receives `agTOKEN`, done. `agTOKEN` is transferable and composable across Rayls DeFi. See [Lending Pool → What is agTOKEN](/lending-pool/overview#what-is-agtoken) for the full mechanics.
 
 ### Step 2. Stake in the Stability Pool (optional)
 

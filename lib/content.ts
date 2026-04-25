@@ -94,9 +94,9 @@ function convertAdmonitions(md: string): string {
   return out.join('\n');
 }
 
-/** Fix internal markdown links: strip `.md`, normalize `../` to `/docs/...`. */
+/** Fix internal markdown links: strip `.md`, normalize `../` to `/...`. */
 function fixLinks(md: string, slug: string[]): string {
-  // Replace [text](foo.md)  →  [text](/docs/<resolved-path>)
+  // Replace [text](foo.md)  →  [text](/<resolved-path>)
   // Relative paths like "functions.md" resolve against current slug's directory.
   const slugDir = slug.slice(0, Math.max(slug.length - 1, 0)); // current page's directory
   const pageDir = slug.length === 0 ? [] : slugDir;
@@ -119,7 +119,7 @@ function fixLinks(md: string, slug: string[]): string {
         // strip trailing .md
         const last = parts[parts.length - 1] || '';
         parts[parts.length - 1] = last.replace(/\.md$/, '');
-        resolved = '/docs/' + parts.join('/');
+        resolved = '/' + parts.join('/');
       }
       return `](${resolved}${a})`;
     },
@@ -250,7 +250,7 @@ export async function buildSearchIndex(): Promise<SearchEntry[]> {
       'Untitled';
     entries.push({
       slug,
-      href: '/docs/' + slug.join('/'),
+      href: '/' + slug.join('/'),
       title,
       body: stripMarkdown(parsed.content),
       headings: extractToc(parsed.content),

@@ -49,6 +49,6 @@ Net yield = 16 + (3 − 1) · (16 − 10)
           = 28%
 ```
 
-This is the *theoretical* leveraged yield, the closed-form upper bound at exactly `z` leverage. Reaching `3×` requires roughly a **67%** LTV. Real loops converge geometrically: at the recommended **50%** LTV the terminal leverage is `2×` (~22% net APY); at AmFi V1's `MAX_LTV` of **70%** it's `3.33×` (~30% net). See [Interest Rate Model → Looping viability](/docs/lending-pool/interest-rate-model#looping-viability) for the loop-by-loop table.
+This is the *theoretical* leveraged yield, the closed-form upper bound at exactly `z` leverage. Reaching `3×` requires roughly a **67%** LTV. Real loops converge geometrically: at the recommended **50%** LTV the terminal leverage is `2×` (~22% net APY); at AmFi V1's `MAX_LTV` of **70%** it's `3.33×` (~30% net). See [Interest Rate Model → Looping viability](/lending-pool/interest-rate-model#looping-viability) for the loop-by-loop table.
 
 The math is the same one used across Aave, Morpho and most leverage strategies. What Agama brings is a venue tuned specifically for RWA collateral, with a Stability Pool sized to absorb liquidations of assets that don't have an on-chain spot market.

@@ -21,45 +21,45 @@ export const navigation: NavSection[] = [
     title: 'Getting Started',
     icon: 'home',
     items: [
-      { title: 'Overview', href: '/docs/overview' },
-      { title: 'How It Works', href: '/docs/how-it-works' },
+      { title: 'Overview', href: '/overview' },
+      { title: 'How It Works', href: '/how-it-works' },
     ],
   },
   {
     title: 'Protocol',
     icon: 'cube',
     items: [
-      { title: 'Introduction', href: '/docs/introduction' },
+      { title: 'Introduction', href: '/introduction' },
       {
         title: 'Lending Pool',
         items: [
-          { title: 'Overview', href: '/docs/lending-pool/overview' },
-          { title: 'Functions', href: '/docs/lending-pool/functions' },
-          { title: 'Interest Rate Model', href: '/docs/lending-pool/interest-rate-model' },
-          { title: 'Asset Adapter Interface', href: '/docs/lending-pool/adapter-interface' },
+          { title: 'Overview', href: '/lending-pool/overview' },
+          { title: 'Functions', href: '/lending-pool/functions' },
+          { title: 'Interest Rate Model', href: '/lending-pool/interest-rate-model' },
+          { title: 'Asset Adapter Interface', href: '/lending-pool/adapter-interface' },
         ],
       },
       {
         title: 'Stability Pool',
         items: [
-          { title: 'Overview', href: '/docs/stability-pool/overview' },
-          { title: 'Functions', href: '/docs/stability-pool/functions' },
-          { title: 'Liquidations', href: '/docs/stability-pool/liquidations' },
+          { title: 'Overview', href: '/stability-pool/overview' },
+          { title: 'Functions', href: '/stability-pool/functions' },
+          { title: 'Liquidations', href: '/stability-pool/liquidations' },
         ],
       },
       {
         title: 'Settlement Vault',
         items: [
-          { title: 'Overview', href: '/docs/settlement-vault/overview' },
-          { title: 'Functions', href: '/docs/settlement-vault/functions' },
+          { title: 'Overview', href: '/settlement-vault/overview' },
+          { title: 'Functions', href: '/settlement-vault/functions' },
         ],
       },
       {
         title: 'Collectors',
         items: [
-          { title: 'Fee Collector', href: '/docs/collectors/fee-collector' },
-          { title: 'Treasury', href: '/docs/collectors/treasury' },
-          { title: 'Reserve Fund', href: '/docs/collectors/reserve-fund' },
+          { title: 'Fee Collector', href: '/collectors/fee-collector' },
+          { title: 'Treasury', href: '/collectors/treasury' },
+          { title: 'Reserve Fund', href: '/collectors/reserve-fund' },
         ],
       },
     ],
@@ -68,14 +68,14 @@ export const navigation: NavSection[] = [
     title: 'Developers',
     icon: 'code',
     items: [
-      { title: 'API', href: '/docs/api' },
+      { title: 'API', href: '/api' },
     ],
   },
   {
     title: 'Reference',
     icon: 'help',
     items: [
-      { title: 'FAQ', href: '/docs/faq' },
+      { title: 'FAQ', href: '/faq' },
     ],
   },
 ];

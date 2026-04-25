@@ -10,7 +10,7 @@ Complete function reference. Every signature, access control, state change, vali
 - **State changes**:
   - `reserve.updateState()`: accrues interest.
   - `netAmount = amount − depositFee`.
-  - Pull USDC via **balance-delta accounting** (defends against unknown transfer semantics).
+  - Pull USDr via **balance-delta accounting** (defends against unknown transfer semantics).
   - `agTOKEN.mint(msg.sender, netAmount)`.
   - `depositBlock[msg.sender] = block.number`.
 - **Validation**: `_validateDepositSupplyCap(netAmount)`; `amount > 0`.
@@ -26,7 +26,7 @@ Complete function reference. Every signature, access control, state change, vali
   - `actualAmount = amount == type(uint256).max ? agTOKEN.balanceOf(msg.sender) : amount`.
   - `_ensureLiquidity(actualAmount)`.
   - `agTOKEN.burn(msg.sender, actualAmount)`.
-  - Transfer USDC to user.
+  - Transfer USDr to user.
 - **Validation**: `!withdrawalsPaused || msg.sender == stabilityPool`; `agTOKEN.balanceOf(msg.sender) >= actualAmount`.
 - **Events**: `Withdraw(user, amount)`.
 - **Errors**: `WithdrawalsArePaused()`, `InsufficientBalance()`, `LiquidityShortfall()`.
@@ -97,7 +97,7 @@ Complete function reference. Every signature, access control, state change, vali
   - `actualRepay = amount == type(uint256).max ? scaledDebt : amount`.
   - `DebtToken.burn(msg.sender, actualRepay, usageIndex, encoded)`.
   - `position.positionIndex = reserve.usageIndex`; `position.rawDebtBalance -= actualRepay`.
-  - USDC pulled via balance-delta; transferred to `agTOKEN` contract.
+  - USDr pulled via balance-delta; transferred to `agTOKEN` contract.
   - `reserve.updateInterestRates(actualRepay, 0)`.
 - **Validation**: `!isUnderLiquidation`; if partial, residual must be zero or ≥ `MIN_BORROW_AMOUNT`.
 - **Events**: `Repay(payer, onBehalfOf, actualRepay)`.

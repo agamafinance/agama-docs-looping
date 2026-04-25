@@ -6,21 +6,21 @@ Core V1 is the foundational release of the Agama Protocol. It establishes the on
 
 | Item                          | Agama V1                                           |
 |-------------------------------|----------------------------------------------------|
-| Reserve stablecoin            | USDC (fiat-backed, institutional)                 |
+| Reserve stablecoin            | USDr (Rayls native, 1:1 backed by USDC)            |
 | Collateral                    | AmFi senior tranche ERC-20 RWA tokens              |
 | On-chain swap for liquidation | **None** (no DEX on Rayls for RWA yet)             |
 | Liquidation settlement        | Off-chain issuer redemption (D+15)                 |
 | RWA Index Token               | **Not in V1** (no tokenized basket)                |
 | `borrowWithInsurance()`       | **Not in V1** (deferred to V2)                     |
 | `repayOnBehalf()`             | **Not in V1**                                      |
-| Oracle for reserve asset      | Trusted 1:1 (no USDC oracle on Rayls yet)         |
+| Oracle for reserve asset      | Trusted 1:1 (no USDr oracle on Rayls yet)         |
 | Insurance pathway             | Out of V1                                          |
 
 ## Components
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, marginTop: 16 }}>
   {[
-    { title: 'Lending Pool', href: '/docs/lending-pool/overview', desc: 'The main market: USDC deposits, agTOKEN receipts, borrows against RWA collateral.' },
+    { title: 'Lending Pool', href: '/docs/lending-pool/overview', desc: 'The main market: USDr deposits, agTOKEN receipts, borrows against RWA collateral.' },
     { title: 'Stability Pool', href: '/docs/stability-pool/overview', desc: 'Liquidation backstop. Accepts agTOKEN, issues agaSP 1:1. Manager-gated.' },
     { title: 'Settlement Vault', href: '/docs/settlement-vault/overview', desc: 'Holds seized RWA, queues off-chain redemption, auto-reconstitutes the Stability Pool.' },
     { title: 'Collectors', href: '/docs/collectors/fee-collector', desc: 'Fee Collector · Treasury · Reserve Fund.' },

@@ -8,7 +8,7 @@ Agama has two actors: **Alice** borrows, **Bob** lends. Bob can optionally stake
 |-------------------|-------------------------------------------------------|
 | Holds             | A yield-bearing RWA token (e.g. AmFi senior tranche)  |
 | Deposits          | The RWA token as collateral                           |
-| Borrows           | USDC                                                 |
+| Borrows           | USDr                                                 |
 | Goal              | Leverage her RWA position without selling             |
 | Entry point       | `openVaultPosition()` → `depositAsset()` → `borrow()` |
 
@@ -21,23 +21,27 @@ Alice's leverage cap is not a protocol-enforced number; it's the mathematical li
 ```
 Initial position: 1,000,000 AMFI_SENIOR (yield-bearing, ~16% APY)
 
-Loop 1: deposit 1M    → borrow 500k USDC (50% LTV) → buy 500k AMFI_SENIOR via AmFi
-Loop 2: deposit 500k  → borrow 250k USDC            → buy 250k AMFI_SENIOR
-Loop 3: deposit 250k  → borrow 125k USDC            → buy 125k AMFI_SENIOR
+Loop 1: deposit 1M    → borrow 500k USDr (50% LTV) → buy 500k AMFI_SENIOR via AmFi
+Loop 2: deposit 500k  → borrow 250k USDr            → buy 250k AMFI_SENIOR
+Loop 3: deposit 250k  → borrow 125k USDr            → buy 125k AMFI_SENIOR
 
-After 3 loops:  1.875M AMFI collateral,  0.875M USDC debt
+After 3 loops:  1.875M AMFI collateral,  0.875M USDr debt
 Net APY      =  16% × 1.875  −  10% × 0.875
              =  30%          −  8.75%
              =  21.25%
 ```
 
-> **On the AmFi side.** AmFi senior tranche tokens are denominated in `ABRL` (BRL-pegged stablecoin issued by AmFi, 1:1 backed by Brazilian Real bank reserves). AmFi accepts USDC directly from institutional subscribers and handles the USDC→ABRL conversion on their platform, so Alice doesn't need to run a separate swap step. She borrows USDC on Agama, sends USDC to AmFi, receives `AMFI_SENIOR` tokens back, redeposits them as collateral. The cross-currency exposure is real (her collateral is BRL-denominated, her debt is USD-denominated), so USD/BRL FX is a structural input to her health factor.
+> **On the stablecoin side.** Rayls has no native USDC issuance, so Agama's reserve asset is **`USDr`**, the Rayls native dollar stablecoin, **1:1 backed by USDC held in reserve**. USDr is economically equivalent to USDC; the wrapping is a network artifact.
+>
+> **On the AmFi side.** AmFi senior tranche tokens are denominated in `ABRL` (BRL-pegged stablecoin issued by AmFi, 1:1 backed by Brazilian Real bank reserves). AmFi accepts USDC from institutional subscribers and handles the USDC→ABRL conversion on its own platform.
+>
+> **Alice's actual flow.** She borrows USDr on Agama, redeems it for USDC at parity, sends USDC to AmFi, receives `AMFI_SENIOR` tokens, redeposits them as collateral. The cross-currency exposure is real: her collateral is BRL-denominated and her debt is USD-denominated, so USD/BRL FX is a structural input to her health factor.
 
 Infinite loops at 50% LTV converge to 2× / 1× (collateral / debt), capping net APY at 22%. See [Interest Rate Model → Looping viability](/docs/lending-pool/interest-rate-model#looping-viability) for the full table at 50% and 70% LTV.
 
 ## Bob, the lender
 
-Bob is a crypto user seeking RWA-backed yield. He deposits USDC into the Lending Pool and earns supply APY as borrowers pay interest.
+Bob is a crypto user seeking RWA-backed yield. He deposits USDr into the Lending Pool and earns supply APY as borrowers pay interest.
 
 Bob's flow has **two steps**. Step 1 is the baseline lender position; Step 2 is optional and layers on top.
 
@@ -45,12 +49,12 @@ Bob's flow has **two steps**. Step 1 is the baseline lender position; Step 2 is 
 
 | Attribute  | Value                                                  |
 |------------|--------------------------------------------------------|
-| Deposits   | USDC (into the Lending Pool)                          |
+| Deposits   | USDr (into the Lending Pool)                          |
 | Receives   | `agTOKEN` (yield-bearing receipt, ERC-4626 / ERC-20)   |
 | Yield      | Supply APY. `agTOKEN` appreciates as borrowers pay interest |
 | Exit       | Anytime, subject to pool utilization                   |
 
-Bob deposits USDC, receives `agTOKEN`, done. `agTOKEN` is transferable and composable across Rayls DeFi. See [Lending Pool → What is agTOKEN](/docs/lending-pool/overview#what-is-agtoken) for the full mechanics.
+Bob deposits USDr, receives `agTOKEN`, done. `agTOKEN` is transferable and composable across Rayls DeFi. See [Lending Pool → What is agTOKEN](/docs/lending-pool/overview#what-is-agtoken) for the full mechanics.
 
 ### Step 2. Stake in the Stability Pool (optional)
 
@@ -58,22 +62,22 @@ Bob can take the `agTOKEN` he just got in Step 1 and stake it in the Stability P
 
 | Attribute     | Value                                                                          |
 |---------------|--------------------------------------------------------------------------------|
-| Deposits      | `agTOKEN` (from Step 1, not USDC directly)                                    |
+| Deposits      | `agTOKEN` (from Step 1, not USDr directly)                                    |
 | Receives      | `agaSP` (1:1, non-transferable)                                                |
 | Yield         | Supply APY (kept via `agTOKEN` exposure) + liquidation bonus                   |
 | Risk          | Absorbs liquidations for ~15 days while Settlement Vault redeems off-chain     |
 | Withdrawal    | 30-min timelock + 2-day execution window                                       |
 
-The Stability Pool takes **`agTOKEN`, not USDC**. That's deliberate: Bob keeps earning supply yield while staked, *and* is positioned to absorb liquidations for an additional bonus. If the Stability Pool accepted USDC directly, Bob would lose the supply APY.
+The Stability Pool takes **`agTOKEN`, not USDr**. That's deliberate: Bob keeps earning supply yield while staked, *and* is positioned to absorb liquidations for an additional bonus. If the Stability Pool accepted USDr directly, Bob would lose the supply APY.
 
 ## When Alice gets liquidated
 
 If Alice's health factor falls below 1 and she doesn't cure within the 72-hour grace period:
 
-1. **Collateral leaves Alice's vault.** Her RWA is held by the asset adapter (e.g. `AmFiAdapter`), not by the Lending Pool itself. The adapter transfers the RWA tokens directly to the Stability Pool. Her USDC debt is burned. She loses the collateral, but owes nothing.
-2. **Bob's `agTOKEN` stays whole.** The Stability Pool immediately repays the Lending Pool's USDC by burning some of its own `agTOKEN`. Pure lenders (Step 1 only) are never impacted; their `agTOKEN` keeps appreciating as if nothing happened.
+1. **Collateral leaves Alice's vault.** Her RWA is held by the asset adapter (e.g. `AmFiAdapter`), not by the Lending Pool itself. The adapter transfers the RWA tokens directly to the Stability Pool. Her USDr debt is burned. She loses the collateral, but owes nothing.
+2. **Bob's `agTOKEN` stays whole.** The Stability Pool immediately repays the Lending Pool's USDr by burning some of its own `agTOKEN`. Pure lenders (Step 1 only) are never impacted; their `agTOKEN` keeps appreciating as if nothing happened.
 3. **Staked Bob absorbs, then recovers.** Bob's `agaSP` represents a claim on the Stability Pool's `agTOKEN` pool, which just shrank by the debt amount. For ~15 days the Stability Pool holds RWA tokens instead of `agTOKEN` while the Settlement Vault redeems them off-chain with the issuer.
-4. **Settlement restores the peg.** When USDC returns from the redemption (~D+15 for AmFi), it's deposited back into the Lending Pool on the Stability Pool's behalf, which re-mints `agTOKEN` for the Stability Pool. The recovered value typically exceeds the debt; the surplus is the **liquidation bonus**, which flows pro-rata to `agaSP` holders (minus a slice routed to the Reserve Fund).
+4. **Settlement restores the peg.** When USDr returns from the redemption (~D+15 for AmFi), it's deposited back into the Lending Pool on the Stability Pool's behalf, which re-mints `agTOKEN` for the Stability Pool. The recovered value typically exceeds the debt; the surplus is the **liquidation bonus**, which flows pro-rata to `agaSP` holders (minus a slice routed to the Reserve Fund).
 
 Net effect: pure lenders are protected in real time; staked lenders take a temporary balance-sheet exposure and earn the bonus as compensation.
 

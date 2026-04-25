@@ -17,7 +17,7 @@
 
 | Token     | Use                                          |
 |-----------|----------------------------------------------|
-| USDC     | Primary operational reserve.                  |
+| USDr     | Primary operational reserve.                  |
 | agTOKEN   | Accrual of supply yield on treasury reserves. |
 | AMFI RWA tokens | Intermediate: held briefly before redemption via Manager. |
 

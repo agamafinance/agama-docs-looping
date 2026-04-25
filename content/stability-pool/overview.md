@@ -1,6 +1,6 @@
 # Stability Pool: Overview
 
-The `AgamaStabilityPool` is the protocol's liquidation backstop and the secondary yield venue for lenders. It accepts `agTOKEN` (not USDC) and issues `agaSP` 1:1.
+The `AgamaStabilityPool` is the protocol's liquidation backstop and the secondary yield venue for lenders. It accepts `agTOKEN` (not USDr) and issues `agaSP` 1:1.
 
 ## What is `agaSP`?
 
@@ -10,19 +10,19 @@ Because `agaSP` is backed by `agTOKEN`, you keep earning the supply APY while yo
 
 There is no internal exchange-rate math: the Stability Pool doesn't rebase or scale balances. Your `agaSP` value moves only because the underlying `agTOKEN` appreciates (and momentarily dips during a liquidation event before settlement restores the peg).
 
-## Why `agTOKEN`, not USDC
+## Why `agTOKEN`, not USDr
 
-If the Stability Pool accepted USDC directly:
+If the Stability Pool accepted USDr directly:
 
 - Depositors would lose the supply APY they would otherwise earn by holding `agTOKEN`.
-- The protocol would have two competing pools of USDC (main liquidity + the Stability Pool), complicating accounting and rate dynamics.
+- The protocol would have two competing pools of USDr (main liquidity + the Stability Pool), complicating accounting and rate dynamics.
 - Liquidity in the Lending Pool would shrink, hurting borrowers.
 
 By accepting `agTOKEN`, depositors continue to earn supply yield through `agTOKEN` appreciation, while also standing ready to absorb liquidations for an additional bonus.
 
 !!! danger
 
-    This is the **single most frequently misunderstood** aspect of the design. If you find yourself thinking "I should deposit USDC into the Stability Pool", re-read this section.
+    This is the **single most frequently misunderstood** aspect of the design. If you find yourself thinking "I should deposit USDr into the Stability Pool", re-read this section.
 
 ## Role of managers
 

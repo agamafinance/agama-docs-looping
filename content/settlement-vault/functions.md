@@ -20,18 +20,18 @@
   5. Populate: `{id, rwaToken, R, K, pegGap, status: Queued, queuedAt, snapshotBlock}`.
 - **Events**: `BatchQueued(id, rwaToken, R, K, pegGap, queuedAt)`.
 
-### `settleRedemption(uint256 batchId, uint256 usdcReceived)`
+### `settleRedemption(uint256 batchId, uint256 usdrReceived)`
 
 - **Access**: `onlyManager`.
 - **Precondition**: `b.status == Queued`.
 - **State**:
-  1. Pull USDC via balance-delta from manager custody wallet.
-  2. `toSP = min(usdcReceived, b.pegGap)`.
-  3. `USDC.approve(lendingPool, toSP)` then `lendingPool.depositOnBehalf(stabilityPool, toSP)`.
-  4. `excess = usdcReceived − toSP` → per `ExcessPolicy` (V1: 100% ReserveFund).
-  5. If `usdcReceived < b.pegGap`: trigger `ReserveFund.coverShortfall(pegGap − usdcReceived)`; if still short, `lendingPool.redistributeBadDebt(remaining)`.
+  1. Pull USDr via balance-delta from manager custody wallet.
+  2. `toSP = min(usdrReceived, b.pegGap)`.
+  3. `USDr.approve(lendingPool, toSP)` then `lendingPool.depositOnBehalf(stabilityPool, toSP)`.
+  4. `excess = usdrReceived − toSP` → per `ExcessPolicy` (V1: 100% ReserveFund).
+  5. If `usdrReceived < b.pegGap`: trigger `ReserveFund.coverShortfall(pegGap − usdrReceived)`; if still short, `lendingPool.redistributeBadDebt(remaining)`.
   6. `b.status = Settled`, `b.settledAt = block.timestamp`.
-- **Events**: `BatchSettled(id, usdcReceived, toSP, excess, shortfall)`.
+- **Events**: `BatchSettled(id, usdrReceived, toSP, excess, shortfall)`.
 
 ### `emergencyDistributeInKind(uint256 batchId)`
 
@@ -58,7 +58,7 @@
 |--------------------------------------------|-------------------------------------|
 | `getBatch(uint256 id)`                     | Full `Batch` struct.                |
 | `getPendingRedemptionValue()`              | Sum of queued batches at oracle price.|
-| `getTotalSettled()`                        | Lifetime settled USDC.             |
+| `getTotalSettled()`                        | Lifetime settled USDr.             |
 
 ## Data structures
 
@@ -70,7 +70,7 @@ struct Batch {
     address rwaToken;
     uint256 rwaAmount;        // R: the redeem bucket
     uint256 inKindAmount;     // K: the in-kind bucket (V1 = 0)
-    uint256 pegGap;           // USDC debt SP owes itself until settlement
+    uint256 pegGap;           // USDr debt SP owes itself until settlement
     Status  status;
     uint256 queuedAt;
     uint256 settledAt;

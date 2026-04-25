@@ -27,7 +27,7 @@ The liquidation lifecycle is three-stage and manager-gated. The Agama-specific s
 │ STAGE 3: finalizeLiquidation (SP-called, post-grace)         │
 │   SP.liquidateBorrower calls LendingPool.finalizeLiquidation. │
 │   Effect: collateral → SP, debt → burned (user whole on debt).│
-│   SP repays agTOKEN in USDC (its agTOKEN balance shrinks).    │
+│   SP repays agTOKEN in USDr (its agTOKEN balance shrinks).    │
 │   SP transfers seized collateral → SettlementVault.           │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -55,8 +55,8 @@ function liquidateBorrower(
     lendingPool.finalizeLiquidation(poolAdapter, user, data);
     uint256 scaledDebt = debt;
 
-    // 4. SP makes agTOKEN whole in USDC
-    //    SP burns its own agTOKEN via lendingPool.withdraw to pull USDC
+    // 4. SP makes agTOKEN whole in USDr
+    //    SP burns its own agTOKEN via lendingPool.withdraw to pull USDr
     lendingPool.withdraw(scaledDebt);
 
     // 5. Route seized collateral to SettlementVault
@@ -72,21 +72,21 @@ function liquidateBorrower(
 ## Worked example
 
 ```
-State: Alice has 1M AMFI_SENIOR collateral (valued at 800k USDC after price drop)
-       and 700k USDC debt. LTV threshold 80% → HF = 800×80% / 700 = 0.914 < 1.
+State: Alice has 1M AMFI_SENIOR collateral (valued at 800k USDr after price drop)
+       and 700k USDr debt. LTV threshold 80% → HF = 800×80% / 700 = 0.914 < 1.
 
 t=0   : Manager keeper detects HF < 1.
         LiquidationProxy.initiateLiquidation(amfiAdapter, alice, data)
         → position.isUnderLiquidation = true, startTime = 0
 
 t=0..72h : Grace period.
-        Alice may repay 700k USDC + interest and call closeLiquidation.
+        Alice may repay 700k USDr + interest and call closeLiquidation.
         Suppose she does not.
 
 t=72h+1: Manager → SP.liquidateBorrower(amfiAdapter, vaultAdapter, alice, data, minSharesOut)
         → SP.liquidateBorrower:
             → LendingPool.finalizeLiquidation → 1M amfiToken moved to SP, 700k debt burned
-            → SP withdraws 700k via LendingPool.withdraw (agTOKEN burned → USDC pulled)
+            → SP withdraws 700k via LendingPool.withdraw (agTOKEN burned → USDr pulled)
             → SP transfers 1M amfiToken to SettlementVault
         → SettlementVault.handleSeizure:
             applies LiquidationSplit 200/300/9500/0:
@@ -97,7 +97,7 @@ t=72h+1: Manager → SP.liquidateBorrower(amfiAdapter, vaultAdapter, alice, data
             creates Batch #42, snapshotBlock = current
 
 t=72h..~15d: Manager off-chain initiates AmFi redemption for 950k amfiToken.
-        USDC arrives:  950k × 0.80 × 0.995 ≈ 757k USDC
+        USDr arrives:  950k × 0.80 × 0.995 ≈ 757k USDr
                         ─────────  ────────  ─────
                         amount     NAV per   1 − redeem fee (0.5%)
                                    token at
@@ -105,7 +105,7 @@ t=72h..~15d: Manager off-chain initiates AmFi redemption for 950k amfiToken.
                                    (= 0.80,  the price after the
                                     initial drop from 1.00 → 0.80)
 
-t=15d+: Manager calls settleRedemption(batchId=42, 757k USDC)
+t=15d+: Manager calls settleRedemption(batchId=42, 757k USDr)
         → toSP = min(757k, 700k pegGap) = 700k → LendingPool.deposit(700k) on SP's behalf
         → agTOKEN minted to SP → peg restored
         → excess = 57k → 100% to ReserveFund per ExcessPolicy

@@ -167,51 +167,83 @@ function liquidateBorrower(
 
 ## Worked example
 
+The numbers below trace a single nominal liquidation end to end. The point is to feel the flow on real balance sheets, not to reproduce the code byte for byte.
+
+**Setup.** Alice deposits **1M `AMFI_SENIOR`** as collateral when each token is worth `$1.00`. She borrows **700k USDr** at AmFi's `MAX_LTV` of 70%. AmFi's `LIQUIDATION_THRESHOLD` is 80%.
+
+A few weeks later the senior tranche is marked down 20%, to `$0.80` per token. Alice's health factor:
+
 ```
-State: Alice has 1M AMFI_SENIOR collateral (valued at 800k USDr after price drop)
-       and 700k USDr debt. LTV threshold 80% → HF = 800×80% / 700 = 0.914 < 1.
-
-t=0   : Manager keeper detects HF < 1.
-        LiquidationProxy.initiateLiquidation(amfiAdapter, alice, data)
-        → position.isUnderLiquidation = true, startTime = 0
-
-t=0..72h : Grace period.
-        Alice may repay 700k USDr + interest and call closeLiquidation.
-        Suppose she does not.
-
-t=72h+1: Manager → SP.liquidateBorrower(amfiAdapter, vaultAdapter, alice, data, minSharesOut)
-        → SP.liquidateBorrower:
-            → LendingPool.finalizeLiquidation → 1M amfiToken moved to SP, 700k debt burned
-            → SP withdraws 700k via LendingPool.withdraw (agTOKEN burned → USDr pulled)
-            → SP transfers 1M amfiToken to SettlementVault
-        → SettlementVault.handleSeizure:
-            applies LiquidationSplit 200/300/9500/0:
-              20k  → Treasury (amfiToken held)
-              30k  → ReserveFund
-              950k → redemption queue (for off-chain AmFi redeem)
-              0k   → in-kind
-            creates Batch #42, snapshotBlock = current
-
-t=72h..~15d: Manager off-chain initiates AmFi redemption for 950k amfiToken.
-        USDr arrives:  950k × 0.80 × 0.995 ≈ 757k USDr
-                        ─────────  ────────  ─────
-                        amount     NAV per   1 − redeem fee (0.5%)
-                                   token at
-                                   redemption
-                                   (= 0.80,  the price after the
-                                    initial drop from 1.00 → 0.80)
-
-t=15d+: Manager calls settleRedemption(batchId=42, 757k USDr)
-        → toSP = min(757k, 700k pegGap) = 700k → LendingPool.deposit(700k) on SP's behalf
-        → agTOKEN minted to SP → peg restored
-        → excess = 57k → 100% to ReserveFund per ExcessPolicy
-
-Outcome:
-  - Alice: debt wiped, collateral gone.
-  - Lenders: unaffected (agTOKEN kept whole throughout).
-  - SP: back to full peg, 100k total value added to ReserveFund.
-  - Protocol: 20k Treasury + 80k ReserveFund. Solvent.
+HF  =  (collateral_value × LIQUIDATION_THRESHOLD) / debt
+    =  (1M × $0.80 × 80%) / 700k
+    =  640k / 700k
+    =  0.914
 ```
+
+Below 1, so the position is liquidatable.
+
+### `t = 0`. Trigger
+
+The manager keeper picks up the unhealthy position and calls `LiquidationProxy.initiateLiquidation(amfiAdapter, alice, ...)`. Alice's position is flagged. The 72-hour grace timer starts. She can still cure by repaying her 700k debt plus interest in full — assume she doesn't.
+
+### `t = 72h + 1`. Finalize
+
+Grace expires. The manager calls `StabilityPool.liquidateBorrower(...)`. Three things happen atomically:
+
+1. The **Lending Pool** finalizes: Alice's 700k debt is burned.
+2. The **Stability Pool** burns 700k of its own `agTOKEN` to pull 700k USDr out of the Lending Pool. Its `agTOKEN` balance shrinks; lenders are made whole the moment the liquidation lands.
+3. The **`AmFiAdapter`** transfers Alice's 1M `AMFI_SENIOR` straight to the Settlement Vault. The Lending Pool itself never holds the RWA — that custody lives on the adapter.
+
+The Settlement Vault then applies the `LiquidationSplit` (default `200 / 300 / 9500 / 0` bps) to the 1M tokens it just received:
+
+| Bucket             |  Bps |  Amount  | Destination                                    |
+|--------------------|-----:|---------:|------------------------------------------------|
+| `treasuryBps`      |  200 |     20k  | Treasury (held until later redemption)         |
+| `reserveFundBps`   |  300 |     30k  | Reserve Fund                                   |
+| `redeemBps`        | 9500 |    950k  | Redemption queue, `Batch #42` (`pegGap = 700k`)|
+| `inKindBps`        |    0 |      0   | reserved for V2                                |
+
+State right after this transaction:
+
+| Actor          | Position                                                              |
+|----------------|-----------------------------------------------------------------------|
+| Alice          | debt = 0, collateral = 0. She walks away.                             |
+| Pure lender    | `agTOKEN` keeps appreciating. Untouched.                              |
+| Staked Bob     | `agaSP` value dips: the Stability Pool now holds RWA, not `agTOKEN`. |
+| Lending Pool   | USDr liquidity preserved.                                             |
+
+### `t = 72h → ~D + 15`. Off-chain redemption
+
+The manager submits the 950k `AMFI_SENIOR` from `Batch #42` to AmFi's primary redemption queue. AmFi clears it on its own timeline (~15 days for the senior tranche). At redemption, USDr arrives in the Settlement Vault:
+
+```
+USDr received  =  950k × $0.80 × (1 − 0.5%)
+               =  950k × 0.80 × 0.995
+               ≈  757k USDr
+```
+
+(`$0.80` is the NAV at redemption time. `0.5%` is AmFi's standard primary-redemption fee.)
+
+### `t ≈ D + 15`. Settle
+
+The manager calls `SettlementVault.settleRedemption(batchId = 42, 757k)`. The batch carries `pegGap = 700k`, so:
+
+- **`toSP = min(757k, 700k) = 700k`** is deposited into the Lending Pool on the Stability Pool's behalf. Fresh `agTOKEN` is minted back to the Stability Pool. The peg is restored.
+- **`excess = 57k`** flows to the Reserve Fund per the V1 `ExcessPolicy` (100% to Reserve Fund).
+- No shortfall this time, so the Reserve Fund's `coverShortfall` path doesn't fire.
+
+### Scoreboard
+
+| Actor         | Before liquidation        | After settlement                                |
+|---------------|---------------------------|-------------------------------------------------|
+| Alice         | 1M collateral, 700k debt  | 0 / 0. Position closed.                         |
+| Pure lender   | `agTOKEN` accruing        | `agTOKEN` accruing. No change.                  |
+| Staked Bob    | `agaSP` 1:1 with `agTOKEN`| `agaSP` 1:1 again + pro-rata share of the bonus |
+| Treasury      | —                         | + 20k `AMFI_SENIOR`                             |
+| Reserve Fund  | —                         | + 30k `AMFI_SENIOR` + 57k USDr ≈ 80k of value   |
+| Protocol P&L  | —                         | Solvent. Reserve Fund grew, no bad debt.        |
+
+This is the nominal "good" outcome: redemption returned more USDr than the debt absorbed, so staked Bob is repaid in full and earns the surplus as the liquidation bonus. The pathological case (redemption returns less than `pegGap`) is handled in the [shortfall section below](#shortfall-handling-if-the-stability-pool-is-depleted).
 
 ## No-insurance design choice (V1)
 

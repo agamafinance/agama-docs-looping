@@ -2,34 +2,91 @@
 
 The liquidation lifecycle is three-stage and manager-gated. The Agama-specific step is routing seized collateral through the [Settlement Vault](/docs/settlement-vault/overview) after seizure.
 
-## Lifecycle
+## End-to-end flow
+
+The diagram below tracks every actor's state across the three phases. Read top to bottom (time advances down).
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│ STAGE 1: initiateLiquidation (keeper-driven)                │
-│   Pre: HF < HEALTH_FACTOR_LIQUIDATION_THRESHOLD               │
-│   Effect: position.isUnderLiquidation = true                  │
-│           liquidationStartTime = block.timestamp              │
-│   Grace period (72h) begins.                                  │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│ STAGE 2: Grace period (72h)                                 │
-│   Borrower may repay fully via LendingPool.repay().           │
-│   After zeroing debt, may call closeLiquidation() to clear    │
-│   flags (position remains, collateral retained).              │
-│   V1 has no insurance path: borrower MUST fully repay to cure.│
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│ STAGE 3: finalizeLiquidation (SP-called, post-grace)         │
-│   SP.liquidateBorrower calls LendingPool.finalizeLiquidation. │
-│   Effect: collateral → SP, debt → burned (user whole on debt).│
-│   SP repays agTOKEN in USDr (its agTOKEN balance shrinks).    │
-│   SP transfers seized collateral → SettlementVault.           │
-└──────────────────────────────────────────────────────────────┘
+                ┌──────────────────────────────────────────────────┐
+                │  PHASE 1   Trigger        t = 0                  │
+                ├──────────────────────────────────────────────────┤
+                │  Manager keeper sees Alice's HF < 1              │
+                │  → initiateLiquidation()                         │
+                │  → position flagged, 72h grace timer starts      │
+                │                                                  │
+                │  Alice can still repay in full to cure.          │
+                │  (V1 has no insurance path.)                     │
+                └──────────────────────────────────────────────────┘
+                                      │
+                                      │  72 hours pass, no cure
+                                      ▼
+                ┌──────────────────────────────────────────────────┐
+                │  PHASE 2   Finalize       t = 72h                │
+                ├──────────────────────────────────────────────────┤
+                │                                                  │
+                │           SP.liquidateBorrower()                 │
+                │                  │                               │
+                │   ┌──────────────┼──────────────────┐            │
+                │   ▼              ▼                  ▼            │
+                │  Lending       Stability         Settlement      │
+                │  Pool          Pool              Vault           │
+                │  ───────       ─────────         ──────────      │
+                │  burn          burn own       ←  receive RWA     │
+                │  Alice's       agTOKEN to        apply split:    │
+                │  debt          pull USDr         2%  Treasury    │
+                │                from LP,          3%  ReserveFund │
+                │                hold RWA          95% redeem queue│
+                │                in custody        0%  in-kind     │
+                │                                                  │
+                │  ── State after Phase 2 ────────────────────     │
+                │   Alice           debt = 0,  collateral = 0      │
+                │   Pure lender     unaffected, agTOKEN OK         │
+                │   Staked Bob      agaSP DIPS by debt / SP_size   │
+                │   Lending Pool    USDr liquidity preserved       │
+                └──────────────────────────────────────────────────┘
+                                      │
+                                      │  off-chain redemption (~15d)
+                                      │  Manager redeems queued RWA at AmFi
+                                      ▼
+                ┌──────────────────────────────────────────────────┐
+                │  PHASE 3   Settle         t ≈ D + 15             │
+                ├──────────────────────────────────────────────────┤
+                │  USDr arrives at the Settlement Vault            │
+                │                  │                               │
+                │     SettlementVault.settleRedemption()           │
+                │                  │                               │
+                │   ┌──────────────┼─────────────────┐             │
+                │   ▼              ▼                 ▼             │
+                │  to Stability  excess →      shortfall covered   │
+                │  Pool peg      ReserveFund   by ReserveFund,     │
+                │  restoration                 then bad-debt       │
+                │                              redistribution      │
+                │                              (last resort)       │
+                │                  │                               │
+                │                  ▼                               │
+                │   LendingPool.depositOnBehalf(SP, recovered)     │
+                │                  │                               │
+                │                  ▼                               │
+                │   fresh agTOKEN minted to the Stability Pool     │
+                │                  │                               │
+                │                  ▼                               │
+                │   agaSP peg RESTORED + liquidation bonus split   │
+                │                                                  │
+                │  ── State after Phase 3 ────────────────────     │
+                │   Alice           still 0, walked away           │
+                │   Pure lender     untouched throughout           │
+                │   Staked Bob      principal back + bonus share   │
+                │   ReserveFund     grew by burnBps + any excess   │
+                └──────────────────────────────────────────────────┘
+```
+
+The three on-chain function calls behind those phases:
+
+```
+Phase 1 :  LiquidationProxy.initiateLiquidation(adapter, user, data)
+Phase 2 :  Borrower repays via LendingPool.repay(...) + closeLiquidation()  (optional cure)
+Phase 3 :  StabilityPool.liquidateBorrower(...)        (after 72h)
+           SettlementVault.settleRedemption(batchId, usdrReceived)  (after issuer redemption)
 ```
 
 ## `liquidateBorrower` flow (detail)

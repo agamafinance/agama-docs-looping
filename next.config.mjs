@@ -18,6 +18,11 @@ const nextConfig = {
         destination: '/docs/overview',
         permanent: false,
       },
+      {
+        source: '/docs/actors',
+        destination: '/docs/how-it-works',
+        permanent: true,
+      },
     ];
   },
 };

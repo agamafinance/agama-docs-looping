@@ -22,7 +22,7 @@ export const navigation: NavSection[] = [
     icon: 'home',
     items: [
       { title: 'Overview', href: '/docs/overview' },
-      { title: 'How It Works', href: '/docs/actors' },
+      { title: 'How It Works', href: '/docs/how-it-works' },
     ],
   },
   {

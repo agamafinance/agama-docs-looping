@@ -202,19 +202,21 @@ export function Sidebar({ searchIndex }: { searchIndex: SearchEntry[] }) {
 
   return (
     <>
-      {/* Mobile toggle button */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-5 left-5 z-50 flex items-center gap-2 h-10 px-4 backdrop-blur-md text-[#9CA3AF] hover:text-[#E6FEF4] transition-all rounded-full"
-        style={{
-          background: 'rgba(37, 72, 57, 0.85)',
-          border: '1px solid rgba(230, 254, 244, 0.06)',
-        }}
-      >
-        <MenuIcon />
-        <span className="text-base">Docs</span>
-      </button>
+      {/* Mobile toggle button — hidden while the sidebar is open */}
+      {!mobileOpen && (
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="lg:hidden fixed top-5 left-5 z-50 flex items-center gap-2 h-10 px-4 backdrop-blur-md text-[#9CA3AF] hover:text-[#E6FEF4] transition-all rounded-full"
+          style={{
+            background: 'rgba(37, 72, 57, 0.85)',
+            border: '1px solid rgba(230, 254, 244, 0.06)',
+          }}
+        >
+          <MenuIcon />
+          <span className="text-base">Docs</span>
+        </button>
+      )}
 
       {/* Mobile overlay */}
       {mobileOpen && (

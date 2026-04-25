@@ -8,7 +8,7 @@ Agama is a lending protocol purpose-built for tokenized RWAs. Holders collateral
 
 Tokenized RWAs produce real yield. Holders cannot lever it.
 
-There is no secondary market to sell into. Redemption queues run for weeks. Lending venues built for crypto collateral will not finance an asset they cannot liquidate at block speed — they reject RWA collateral outright, or list it at LTVs so conservative the loop is not economic.
+There is no secondary market to sell into. Redemption queues run for weeks. Lending venues built for crypto collateral will not finance an asset they cannot liquidate at block speed; they reject RWA collateral outright, or list it at LTVs so conservative the loop is not economic.
 
 Stablecoin lenders are starved for durable yield. Crypto-backed borrow demand is cyclical and has compressed. The capital is on-chain. The collateral is on-chain. The rails between them are not.
 
@@ -16,9 +16,9 @@ Stablecoin lenders are starved for durable yield. Crypto-backed borrow demand is
 
 The protocol has two core components:
 
-1. **Lending Pool** — Lenders deposit stablecoins and receive `agTOKEN`, a yield-bearing receipt that accrues interest automatically from borrower repayments. Borrowers post RWA tokens as collateral and borrow at dynamic rates driven by pool utilization. The protocol supports multiple RWA types as collateral — private credit, receivables, fund shares, tokenized bonds — with new asset classes added over time.
+1. **Lending Pool.** Lenders deposit stablecoins and receive `agTOKEN`, a yield-bearing receipt that accrues interest automatically from borrower repayments. Borrowers post RWA tokens as collateral and borrow at dynamic rates driven by pool utilization. The protocol supports multiple RWA types as collateral (private credit, receivables, fund shares, tokenized bonds) with new asset classes added over time.
 
-2. **Stability Pool** — The protocol's safety net. Stakers deposit `agTOKEN` and absorb borrower liquidations in exchange for a pro-rata share of seized collateral. They keep earning the base lending yield while staked.
+2. **Stability Pool.** The protocol's safety net. Stakers deposit `agTOKEN` and absorb borrower liquidations in exchange for a pro-rata share of seized collateral. They keep earning the base lending yield while staked.
 
 ## RWA looping
 
@@ -49,6 +49,6 @@ Net yield = 16 + (3 − 1) · (16 − 10)
           = 28%
 ```
 
-This is the *theoretical* leveraged yield — the closed-form upper bound at exactly `z` leverage. Reaching `3×` requires roughly a **67%** LTV. Real loops converge geometrically: at the recommended **50%** LTV the terminal leverage is `2×` (~22% net APY); at AmFi V1's `MAX_LTV` of **70%** it's `3.33×` (~30% net). See [Interest Rate Model → Looping viability](/docs/lending-pool/interest-rate-model#looping-viability) for the loop-by-loop table.
+This is the *theoretical* leveraged yield, the closed-form upper bound at exactly `z` leverage. Reaching `3×` requires roughly a **67%** LTV. Real loops converge geometrically: at the recommended **50%** LTV the terminal leverage is `2×` (~22% net APY); at AmFi V1's `MAX_LTV` of **70%** it's `3.33×` (~30% net). See [Interest Rate Model → Looping viability](/docs/lending-pool/interest-rate-model#looping-viability) for the loop-by-loop table.
 
-The math is the same one used across Aave, Morpho and most leverage strategies — what Agama brings is a venue tuned specifically for RWA collateral, with a Stability Pool sized to absorb liquidations of assets that don't have an on-chain spot market.
+The math is the same one used across Aave, Morpho and most leverage strategies. What Agama brings is a venue tuned specifically for RWA collateral, with a Stability Pool sized to absorb liquidations of assets that don't have an on-chain spot market.

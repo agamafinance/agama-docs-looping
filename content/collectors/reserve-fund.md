@@ -8,7 +8,7 @@
 function deposit(address token, uint256 amount) external;
 
 // Only callable by SettlementVault / LendingPool when covering a shortfall
-function coverShortfall(uint256 usdxpAmount)
+function coverShortfall(uint256 usdcAmount)
     external onlyLendingPool returns (uint256 covered);
 
 // Governance-only, extra 14-day timelock on top of the standard 48h
@@ -28,7 +28,7 @@ This means even a compromised owner multisig cannot drain the buffer in less tha
 ## Public coverage ratio
 
 ```
-reserveCoverageRatio = ReserveFund.totalAssetValueUSDXP() / LendingPool.totalBorrowed()
+reserveCoverageRatio = ReserveFund.totalAssetValueUSDC() / LendingPool.totalBorrowed()
 ```
 
 | Ratio              | Status             | Action                                              |
@@ -40,7 +40,7 @@ reserveCoverageRatio = ReserveFund.totalAssetValueUSDXP() / LendingPool.totalBor
 
 !!! warning
 
-    **Design Review #12**: the ReserveFund opens at zero balance at mainnet. For the first N months, the coverage ratio will be thin. We recommend founders seed 100k USDXP at launch to maintain ≥ 1% ratio from day 1.
+    **Design Review #12**: the ReserveFund opens at zero balance at mainnet. For the first N months, the coverage ratio will be thin. We recommend founders seed 100k USDC at launch to maintain ≥ 1% ratio from day 1.
 
 ## Sourcing
 

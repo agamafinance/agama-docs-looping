@@ -1,4 +1,4 @@
-# Settlement Vault — Functions
+# Settlement Vault: Functions
 
 ## Core operations
 
@@ -20,18 +20,18 @@
   5. Populate: `{id, rwaToken, R, K, pegGap, status: Queued, queuedAt, snapshotBlock}`.
 - **Events**: `BatchQueued(id, rwaToken, R, K, pegGap, queuedAt)`.
 
-### `settleRedemption(uint256 batchId, uint256 usdxpReceived)`
+### `settleRedemption(uint256 batchId, uint256 usdcReceived)`
 
 - **Access**: `onlyManager`.
 - **Precondition**: `b.status == Queued`.
 - **State**:
-  1. Pull USDXP via balance-delta from manager custody wallet.
-  2. `toSP = min(usdxpReceived, b.pegGap)`.
-  3. `USDXP.approve(lendingPool, toSP)` then `lendingPool.depositOnBehalf(stabilityPool, toSP)`.
-  4. `excess = usdxpReceived − toSP` → per `ExcessPolicy` (V1: 100% ReserveFund).
-  5. If `usdxpReceived < b.pegGap`: trigger `ReserveFund.coverShortfall(pegGap − usdxpReceived)`; if still short, `lendingPool.redistributeBadDebt(remaining)`.
+  1. Pull USDC via balance-delta from manager custody wallet.
+  2. `toSP = min(usdcReceived, b.pegGap)`.
+  3. `USDC.approve(lendingPool, toSP)` then `lendingPool.depositOnBehalf(stabilityPool, toSP)`.
+  4. `excess = usdcReceived − toSP` → per `ExcessPolicy` (V1: 100% ReserveFund).
+  5. If `usdcReceived < b.pegGap`: trigger `ReserveFund.coverShortfall(pegGap − usdcReceived)`; if still short, `lendingPool.redistributeBadDebt(remaining)`.
   6. `b.status = Settled`, `b.settledAt = block.timestamp`.
-- **Events**: `BatchSettled(id, usdxpReceived, toSP, excess, shortfall)`.
+- **Events**: `BatchSettled(id, usdcReceived, toSP, excess, shortfall)`.
 
 ### `emergencyDistributeInKind(uint256 batchId)`
 
@@ -58,7 +58,7 @@
 |--------------------------------------------|-------------------------------------|
 | `getBatch(uint256 id)`                     | Full `Batch` struct.                |
 | `getPendingRedemptionValue()`              | Sum of queued batches at oracle price.|
-| `getTotalSettled()`                        | Lifetime settled USDXP.             |
+| `getTotalSettled()`                        | Lifetime settled USDC.             |
 
 ## Data structures
 
@@ -68,9 +68,9 @@ enum Status { Queued, Settled, EmergencyDistributed }
 struct Batch {
     uint256 id;
     address rwaToken;
-    uint256 rwaAmount;        // R — the redeem bucket
-    uint256 inKindAmount;     // K — the in-kind bucket (V1 = 0)
-    uint256 pegGap;           // USDXP debt SP owes itself until settlement
+    uint256 rwaAmount;        // R: the redeem bucket
+    uint256 inKindAmount;     // K: the in-kind bucket (V1 = 0)
+    uint256 pegGap;           // USDC debt SP owes itself until settlement
     Status  status;
     uint256 queuedAt;
     uint256 settledAt;

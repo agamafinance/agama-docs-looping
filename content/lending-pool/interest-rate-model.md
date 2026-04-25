@@ -47,7 +47,7 @@ else:
      0%    30%  50%   70%  80%   90%  95%   100%
 ```
 
-Below 80% utilization, the gentle slope keeps borrowing affordable. Above 80%, the steep slope prices repayment pressure — utilization is discouraged from climbing further because it becomes expensive.
+Below 80% utilization, the gentle slope keeps borrowing affordable. Above 80%, the steep slope prices repayment pressure: utilization is discouraged from climbing further because it becomes expensive.
 
 ## V1 parameters
 
@@ -55,7 +55,7 @@ Below 80% utilization, the gentle slope keeps borrowing affordable. Above 80%, t
 |------------------|---------------|-----------------------------------------------------|
 | `BASE_RATE`      | 200 bps (2%)  | Minimum borrow APY                                  |
 | `SLOPE_1`        | 800 bps (8%)  | 0 → `OPTIMAL_UTIL`                                  |
-| `SLOPE_2`        | 6000 bps (60%)| Above `OPTIMAL_UTIL` — steep to force repays        |
+| `SLOPE_2`        | 6000 bps (60%)| Above `OPTIMAL_UTIL`: steep to force repays        |
 | `OPTIMAL_UTIL`   | 80%           | Kink point                                          |
 | `reserveFactor`  | 1000 bps (10%)| Protocol cut on borrow interest (flows to Collectors) |
 

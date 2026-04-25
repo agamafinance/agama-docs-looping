@@ -1,4 +1,4 @@
-# Stability Pool — Functions
+# Stability Pool: Functions
 
 ## User functions
 
@@ -7,10 +7,10 @@
 - **Modifiers**: `nonReentrant`, `whenNotPaused`, `validAmount`.
 - **State changes**:
   1. `lendingPool.updateState()`.
-  2. `agToken.safeTransferFrom(msg.sender, address(this), scaledAmount)` — balance-delta.
-  3. `agaSP.mint(msg.sender, scaledAmount)` — strict 1:1.
+  2. `agToken.safeTransferFrom(msg.sender, address(this), scaledAmount)`: balance-delta.
+  3. `agaSP.mint(msg.sender, scaledAmount)`: strict 1:1.
   4. `depositBlock[msg.sender] = block.number`.
-  5. `delete withdrawTimelock[msg.sender]` — cancels any pending request.
+  5. `delete withdrawTimelock[msg.sender]`: cancels any pending request.
 - **Events**: `Deposit(user, amount, agaSPMinted)`.
 - **Errors**: `AmountZero()`.
 
@@ -53,7 +53,7 @@
 ### `collectDust(address token, address recipient, uint256 amount)`
 
 - **Access**: `onlyOwner` (multisig with 48h timelock).
-- **Safety**: for `agTOKEN`, only the excess (`agToken.balanceOf(this) − agaSP.totalSupply()`) is collectable — protects active deposits.
+- **Safety**: for `agTOKEN`, only the excess (`agToken.balanceOf(this) − agaSP.totalSupply()`) is collectable: protects active deposits.
 - **Events**: `DustCollected(token, recipient, amount)`.
 
 ### `setWithdrawTimelockDuration(uint256)`, `setWithdrawTimelockDelay(uint256)`, `setManager(address, bool)`, `setLiquidationSplit(LiquidationSplit)`, `setSettlementVault(address)`

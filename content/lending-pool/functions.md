@@ -1,4 +1,4 @@
-# Lending Pool — Functions
+# Lending Pool: Functions
 
 Complete function reference. Every signature, access control, state change, validation, event, and error.
 
@@ -8,9 +8,9 @@ Complete function reference. Every signature, access control, state change, vali
 
 - **Modifiers**: `nonReentrant`, `whenNotPaused`.
 - **State changes**:
-  - `reserve.updateState()` — accrues interest.
+  - `reserve.updateState()`: accrues interest.
   - `netAmount = amount − depositFee`.
-  - Pull USDXP via **balance-delta accounting** (defends against unknown transfer semantics).
+  - Pull USDC via **balance-delta accounting** (defends against unknown transfer semantics).
   - `agTOKEN.mint(msg.sender, netAmount)`.
   - `depositBlock[msg.sender] = block.number`.
 - **Validation**: `_validateDepositSupplyCap(netAmount)`; `amount > 0`.
@@ -26,7 +26,7 @@ Complete function reference. Every signature, access control, state change, vali
   - `actualAmount = amount == type(uint256).max ? agTOKEN.balanceOf(msg.sender) : amount`.
   - `_ensureLiquidity(actualAmount)`.
   - `agTOKEN.burn(msg.sender, actualAmount)`.
-  - Transfer USDXP to user.
+  - Transfer USDC to user.
 - **Validation**: `!withdrawalsPaused || msg.sender == stabilityPool`; `agTOKEN.balanceOf(msg.sender) >= actualAmount`.
 - **Events**: `Withdraw(user, amount)`.
 - **Errors**: `WithdrawalsArePaused()`, `InsufficientBalance()`, `LiquidityShortfall()`.
@@ -52,7 +52,7 @@ Complete function reference. Every signature, access control, state change, vali
 - **Modifiers**: `nonReentrant`, `whenNotPaused`, `onlySupportedAdapter(adapter)`.
 - **State changes**:
   - `reserve.updateState()`.
-  - `IAssetAdapter(adapter).deposit(msg.sender, data)` — adapter handles oracle freshness, token transfer, internal accounting.
+  - `IAssetAdapter(adapter).deposit(msg.sender, data)`: adapter handles oracle freshness, token transfer, internal accounting.
 - **Validation**: vault opened; position not under liquidation; adapter registered.
 - **Events**: typically `AssetDeposited(user, adapter, data, amount)` from adapter.
 - **Errors**: `VaultPositionNotOpened()`, `CannotDepositWhenUnderLiquidation()`, `UnsupportedAdapter()`, adapter-level (`OracleStale()`).
@@ -79,7 +79,7 @@ Complete function reference. Every signature, access control, state change, vali
 - **Access**: vault owners.
 - **State changes**:
   - `reserve.updateState()`.
-  - `_validateBorrow(adapter, data, amount)` — checks collateral sufficiency, borrow cap, `MIN_BORROW_AMOUNT`.
+  - `_validateBorrow(adapter, data, amount)`: checks collateral sufficiency, borrow cap, `MIN_BORROW_AMOUNT`.
   - `_ensureLiquidity(amount)`.
   - `DebtToken.mint(user, user, amount, usageIndex, encoded)` → returns `(newIndex, userBalance, userIncrease, totalIncrease)`.
   - `position.positionIndex = reserve.usageIndex`; `position.rawDebtBalance += amount + userIncrease`.
@@ -97,7 +97,7 @@ Complete function reference. Every signature, access control, state change, vali
   - `actualRepay = amount == type(uint256).max ? scaledDebt : amount`.
   - `DebtToken.burn(msg.sender, actualRepay, usageIndex, encoded)`.
   - `position.positionIndex = reserve.usageIndex`; `position.rawDebtBalance -= actualRepay`.
-  - USDXP pulled via balance-delta; transferred to `agTOKEN` contract.
+  - USDC pulled via balance-delta; transferred to `agTOKEN` contract.
   - `reserve.updateInterestRates(actualRepay, 0)`.
 - **Validation**: `!isUnderLiquidation`; if partial, residual must be zero or ≥ `MIN_BORROW_AMOUNT`.
 - **Events**: `Repay(payer, onBehalfOf, actualRepay)`.
@@ -105,7 +105,7 @@ Complete function reference. Every signature, access control, state change, vali
 
 ## Liquidation management
 
-All three functions carry `onlyProxy` — invokable only through `LiquidationProxy`.
+All three functions carry `onlyProxy`: invokable only through `LiquidationProxy`.
 
 ### `initiateLiquidation(address adapter, address user, bytes data)`
 

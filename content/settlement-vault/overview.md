@@ -1,16 +1,16 @@
-# Settlement Vault — Overview
+# Settlement Vault: Overview
 
 !!! note
 
-    The `AgamaSettlementVault` is the Agama-specific primitive that bridges seized RWA collateral back into USDXP. It exists because Rayls has no DEX for AmFi tokens, so we cannot liquidate through an on-chain swap.
+    The `AgamaSettlementVault` is the Agama-specific primitive that bridges seized RWA collateral back into USDC. It exists because Rayls has no DEX for AmFi tokens, so we cannot liquidate through an on-chain swap.
 
 ## Problem
 
 After `SP.liquidateBorrower()`, the Stability Pool holds AmFi senior tranche tokens. Without an on-chain market:
 
-- SP depositors cannot simply be repaid in USDXP.
-- The only legitimate path from RWA → USDXP is **issuer redemption**, which is off-chain and takes D+15 (AmFi) or longer depending on the issuer.
-- Distributing RWA tokens in-kind to retail SP depositors is unattractive: most cannot hold or redeem them with the issuer directly.
+- Stability Pool depositors cannot simply be repaid in USDC.
+- The only legitimate path from RWA to USDC is **issuer redemption**, which is off-chain and takes D+15 (AmFi) or longer depending on the issuer.
+- Distributing RWA tokens in-kind to retail Stability Pool depositors is unattractive: most cannot hold or redeem them with the issuer directly.
 
 ## Solution: auto-reconstituting Stability Pool
 
@@ -19,12 +19,12 @@ The Settlement Vault:
 1. Takes custody of seized RWA.
 2. Applies a configurable `LiquidationSplit` (treasury / reserve / redeem / in-kind).
 3. Queues the `redeemBps` bucket for manager-executed off-chain redemption.
-4. On redemption settlement, **automatically re-deposits the recovered USDXP into the Lending Pool on the SP's behalf** — restoring the SP's `agTOKEN` position and, therefore, the `agaSP` 1:1 peg.
+4. On redemption settlement, **automatically re-deposits the recovered USDC into the Lending Pool on the Stability Pool's behalf**, restoring the Stability Pool's `agTOKEN` position and, therefore, the `agaSP` 1:1 peg.
 5. Maintains an escape hatch (`emergencyDistributeInKind`) if the manager is inactive beyond `staleBatchPeriod` (60 days).
 
 ### Key simplification
 
-Rather than distributing USDXP per depositor via individual claims (which would require per-deposit balance snapshots), the Settlement Vault funnels recovered USDXP back into the Lending Pool, minting fresh `agTOKEN` to the SP. Every `agaSP` holder benefits proportionally **through the restored peg** — no individual claim mechanism needed.
+Rather than distributing USDC per depositor via individual claims (which would require per-deposit balance snapshots), the Settlement Vault funnels recovered USDC back into the Lending Pool, minting fresh `agTOKEN` to the Stability Pool. Every `agaSP` holder benefits proportionally **through the restored peg**: no individual claim mechanism needed.
 
 This simplification drops an entire `ClaimSettlement` contract from V1 scope.
 
@@ -49,18 +49,18 @@ SP.liquidateBorrower()
 
 (off-chain, days to weeks)
 
-Manager completes AmFi redemption → receives USDXP
-Manager → SettlementVault.settleRedemption(batchId, usdxpReceived)
+Manager completes AmFi redemption → receives USDC
+Manager → SettlementVault.settleRedemption(batchId, usdcReceived)
   │
-  ├─ toSP = min(usdxpReceived, batch.pegGap)
-  │     USDXP.approve(LendingPool, toSP)
+  ├─ toSP = min(usdcReceived, batch.pegGap)
+  │     USDC.approve(LendingPool, toSP)
   │     LendingPool.depositOnBehalf(SP, toSP)
   │     → agTOKEN minted to SP → peg restored by `toSP`
   │
-  ├─ excess = usdxpReceived − toSP
+  ├─ excess = usdcReceived − toSP
   │     if excess > 0: routed per ExcessPolicy (V1: 100% → ReserveFund)
   │
-  ├─ shortfall = max(0, pegGap − usdxpReceived)
+  ├─ shortfall = max(0, pegGap − usdcReceived)
   │     if shortfall > 0: ReserveFund.coverShortfall(shortfall)
   │     if still insufficient: LendingPool.redistributeBadDebt(remaining)
   │
@@ -74,9 +74,9 @@ Default V1 values:
 | Bucket             | V1 Default | Reasoning                                                                       |
 |--------------------|-----------:|---------------------------------------------------------------------------------|
 | `treasuryBps`      |  200 (2%)  | Small operational allocation.                                                   |
-| `reserveFundBps`   |  300 (3%)  | ReserveFund buffer growth (was named `burnBps` historically — nothing is burnt).|
-| `redeemBps`        | 9500 (95%) | Maximize USDXP recovery to restore SP peg.                                      |
-| `inKindBps`        |    0 (0%)  | Retail SP depositors cannot redeem RWA tokens with the issuer; reserved for V2. |
+| `reserveFundBps`   |  300 (3%)  | ReserveFund buffer growth (was named `burnBps` historically; nothing is burnt). |
+| `redeemBps`        | 9500 (95%) | Maximize USDC recovery to restore the Stability Pool peg.                       |
+| `inKindBps`        |    0 (0%)  | Retail Stability Pool depositors cannot redeem RWA tokens with the issuer; reserved for V2. |
 
 These should be re-calibrated after the first 10 mainnet liquidations based on realized redemption fees and timing.
 
@@ -99,6 +99,6 @@ function emergencyDistributeInKind(uint256 batchId) external {
 
 !!! warning
 
-    Governance is actively trying to avoid triggering this path — it leaves retail SP depositors holding RWA tokens they may not be able to redeem. It exists to prevent total manager capture.
+    Governance is actively trying to avoid triggering this path: it leaves retail Stability Pool depositors holding RWA tokens they may not be able to redeem. It exists to prevent total manager capture.
 
 Continue to [Functions](functions.md) for the complete interface.

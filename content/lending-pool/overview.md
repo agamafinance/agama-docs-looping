@@ -1,10 +1,10 @@
-# Lending Pool — Overview
+# Lending Pool: Overview
 
 `AgamaLendingPool` is the core contract of the system. It manages deposits, withdrawals, borrowing, repayment, and liquidation, while delegating collateral-specific logic to Adapters.
 
 ## Purpose
 
-- Hold the main USDXP liquidity and mint `agTOKEN` receipts (ERC-4626).
+- Hold the main USDC liquidity and mint `agTOKEN` receipts (ERC-4626).
 - Abstract collateral through adapters so pool logic is asset-agnostic.
 - Accrue interest using an index-based model (two-slope kink, Aave/Compound style).
 - Enforce risk parameters (borrow cap, supply cap, LTV, liquidation threshold).
@@ -12,11 +12,11 @@
 
 ## What is `agTOKEN`?
 
-`agTOKEN` is the **receipt** you get when you deposit USDXP into the Lending Pool. It's a standard ERC-4626 yield-bearing token: your balance stays fixed, but its redeem value in USDXP grows over time as borrowers pay interest.
+`agTOKEN` is the **receipt** you get when you deposit USDC into the Lending Pool. It's a standard ERC-4626 yield-bearing token: your balance stays fixed, but its redeem value in USDC grows over time as borrowers pay interest.
 
-**Example:** you deposit 1,000 USDXP → you receive 1,000 `agTOKEN`. One year later, at 7.2% lender APY, your 1,000 `agTOKEN` are worth 1,072 USDXP when you withdraw.
+**Example:** you deposit 1,000 USDC → you receive 1,000 `agTOKEN`. One year later, at 7.2% lender APY, your 1,000 `agTOKEN` are worth 1,072 USDC when you withdraw.
 
-`agTOKEN` is a regular ERC-20 under the hood — transferable and composable across Rayls DeFi. Yield is delivered through a rising redeem rate (`liquidityIndex`), not through rebasing balances.
+`agTOKEN` is a regular ERC-20 under the hood: transferable and composable across Rayls DeFi. Yield is delivered through a rising redeem rate (`liquidityIndex`), not through rebasing balances.
 
 ## Parameters
 
@@ -39,7 +39,7 @@ Five sub-flows:
 
 ### 1. Deposit & `agTOKEN` minting
 
-User deposits USDXP; optional `depositFee` is deducted; `agTOKEN` is minted 1:1 (after fee) to the user. The `agTOKEN` then appreciates as borrowers pay interest (through the `liquidityIndex`).
+User deposits USDC; optional `depositFee` is deducted; `agTOKEN` is minted 1:1 (after fee) to the user. The `agTOKEN` then appreciates as borrowers pay interest (through the `liquidityIndex`).
 
 ### 2. Vault position & collateral
 
@@ -47,11 +47,11 @@ Borrowers must call `openVaultPosition()` once (paying `vaultOpeningFee`, 0 in V
 
 ### 3. Borrowing
 
-`borrow(adapter, data, amount)` mints `DebtToken` (non-transferable, scaled against the reserve's usage index) and transfers USDXP to the borrower. Standard health-factor validation applies.
+`borrow(adapter, data, amount)` mints `DebtToken` (non-transferable, scaled against the reserve's usage index) and transfers USDC to the borrower. Standard health-factor validation applies.
 
 ### 4. Repayment
 
-`repay(adapter, data, amount)` burns `DebtToken` and pulls USDXP back from the user. Residual dust below `MIN_BORROW_AMOUNT` is rejected.
+`repay(adapter, data, amount)` burns `DebtToken` and pulls USDC back from the user. Residual dust below `MIN_BORROW_AMOUNT` is rejected.
 
 !!! note
 
@@ -59,19 +59,19 @@ Borrowers must call `openVaultPosition()` once (paying `vaultOpeningFee`, 0 in V
 
 ### 5. Liquidation lifecycle
 
-Three stages: `initiateLiquidation()` (flags the position, starts 72-hour grace), `closeLiquidation()` (borrower self-cure during grace), `finalizeLiquidation()` (SP-called, post-grace, moves collateral to SP). All three carry `onlyProxy` — callable only through `LiquidationProxy`.
+Three stages: `initiateLiquidation()` (flags the position, starts 72-hour grace), `closeLiquidation()` (borrower self-cure during grace), `finalizeLiquidation()` (SP-called, post-grace, moves collateral to SP). All three carry `onlyProxy`: callable only through `LiquidationProxy`.
 
 ## Liquidity buffer
 
 !!! warning
 
-    Agama V1 does **not** integrate with an external yield vault for idle USDXP. V1 keeps USDXP idle in the `agTOKEN` contract when not borrowed. The utilization-based rate model still ensures yield for lenders; an idle-yield layer may arrive in V2.
+    Agama V1 does **not** integrate with an external yield vault for idle USDC. V1 keeps USDC idle in the `agTOKEN` contract when not borrowed. The utilization-based rate model still ensures yield for lenders; an idle-yield layer may arrive in V2.
 
 ## Interactions
 
 | Interacts with        | Purpose                                                      |
 |-----------------------|--------------------------------------------------------------|
-| `agTOKEN`             | Mint/burn receipts, transfer underlying USDXP on borrow      |
+| `agTOKEN`             | Mint/burn receipts, transfer underlying USDC on borrow      |
 | `DebtToken`           | Mint/burn scaled debt                                         |
 | `IAssetAdapter`       | Delegate collateral logic                                     |
 | `AgamaStabilityPool`  | Finalize liquidations                                         |

@@ -1,4 +1,4 @@
-# Stability Pool — Liquidations
+# Stability Pool: Liquidations
 
 The liquidation lifecycle is three-stage and manager-gated. The Agama-specific step is routing seized collateral through the [Settlement Vault](/docs/settlement-vault/overview) after seizure.
 
@@ -6,7 +6,7 @@ The liquidation lifecycle is three-stage and manager-gated. The Agama-specific s
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ STAGE 1 — initiateLiquidation (keeper-driven)                │
+│ STAGE 1: initiateLiquidation (keeper-driven)                │
 │   Pre: HF < HEALTH_FACTOR_LIQUIDATION_THRESHOLD               │
 │   Effect: position.isUnderLiquidation = true                  │
 │           liquidationStartTime = block.timestamp              │
@@ -15,19 +15,19 @@ The liquidation lifecycle is three-stage and manager-gated. The Agama-specific s
                             │
                             ▼
 ┌──────────────────────────────────────────────────────────────┐
-│ STAGE 2 — Grace period (72h)                                 │
+│ STAGE 2: Grace period (72h)                                 │
 │   Borrower may repay fully via LendingPool.repay().           │
 │   After zeroing debt, may call closeLiquidation() to clear    │
 │   flags (position remains, collateral retained).              │
-│   V1 has no insurance path — borrower MUST fully repay to cure.│
+│   V1 has no insurance path: borrower MUST fully repay to cure.│
 └──────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌──────────────────────────────────────────────────────────────┐
-│ STAGE 3 — finalizeLiquidation (SP-called, post-grace)         │
+│ STAGE 3: finalizeLiquidation (SP-called, post-grace)         │
 │   SP.liquidateBorrower calls LendingPool.finalizeLiquidation. │
 │   Effect: collateral → SP, debt → burned (user whole on debt).│
-│   SP repays agTOKEN in USDXP (its agTOKEN balance shrinks).    │
+│   SP repays agTOKEN in USDC (its agTOKEN balance shrinks).    │
 │   SP transfers seized collateral → SettlementVault.           │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -51,12 +51,12 @@ function liquidateBorrower(
     // 2. Accrue interest
     lendingPool.updateState();
 
-    // 3. Finalize on pool — collateral transferred to SP, debt burned
+    // 3. Finalize on pool: collateral transferred to SP, debt burned
     lendingPool.finalizeLiquidation(poolAdapter, user, data);
     uint256 scaledDebt = debt;
 
-    // 4. SP makes agTOKEN whole in USDXP
-    //    SP burns its own agTOKEN via lendingPool.withdraw to pull USDXP
+    // 4. SP makes agTOKEN whole in USDC
+    //    SP burns its own agTOKEN via lendingPool.withdraw to pull USDC
     lendingPool.withdraw(scaledDebt);
 
     // 5. Route seized collateral to SettlementVault
@@ -72,21 +72,21 @@ function liquidateBorrower(
 ## Worked example
 
 ```
-State: Alice has 1M AMFI_SENIOR collateral (valued at 800k USDXP after price drop)
-       and 700k USDXP debt. LTV threshold 80% → HF = 800×80% / 700 = 0.914 < 1.
+State: Alice has 1M AMFI_SENIOR collateral (valued at 800k USDC after price drop)
+       and 700k USDC debt. LTV threshold 80% → HF = 800×80% / 700 = 0.914 < 1.
 
 t=0   : Manager keeper detects HF < 1.
         LiquidationProxy.initiateLiquidation(amfiAdapter, alice, data)
         → position.isUnderLiquidation = true, startTime = 0
 
 t=0..72h : Grace period.
-        Alice may repay 700k USDXP + interest and call closeLiquidation.
+        Alice may repay 700k USDC + interest and call closeLiquidation.
         Suppose she does not.
 
 t=72h+1: Manager → SP.liquidateBorrower(amfiAdapter, vaultAdapter, alice, data, minSharesOut)
         → SP.liquidateBorrower:
             → LendingPool.finalizeLiquidation → 1M amfiToken moved to SP, 700k debt burned
-            → SP withdraws 700k via LendingPool.withdraw (agTOKEN burned → USDXP pulled)
+            → SP withdraws 700k via LendingPool.withdraw (agTOKEN burned → USDC pulled)
             → SP transfers 1M amfiToken to SettlementVault
         → SettlementVault.handleSeizure:
             applies LiquidationSplit 200/300/9500/0:
@@ -97,7 +97,7 @@ t=72h+1: Manager → SP.liquidateBorrower(amfiAdapter, vaultAdapter, alice, data
             creates Batch #42, snapshotBlock = current
 
 t=72h..~15d: Manager off-chain initiates AmFi redemption for 950k amfiToken.
-        USDXP arrives:  950k × 0.80 × 0.995 ≈ 757k USDXP
+        USDC arrives:  950k × 0.80 × 0.995 ≈ 757k USDC
                         ─────────  ────────  ─────
                         amount     NAV per   1 − redeem fee (0.5%)
                                    token at
@@ -105,7 +105,7 @@ t=72h..~15d: Manager off-chain initiates AmFi redemption for 950k amfiToken.
                                    (= 0.80,  the price after the
                                     initial drop from 1.00 → 0.80)
 
-t=15d+: Manager calls settleRedemption(batchId=42, 757k USDXP)
+t=15d+: Manager calls settleRedemption(batchId=42, 757k USDC)
         → toSP = min(757k, 700k pegGap) = 700k → LendingPool.deposit(700k) on SP's behalf
         → agTOKEN minted to SP → peg restored
         → excess = 57k → 100% to ReserveFund per ExcessPolicy
@@ -125,11 +125,11 @@ V1 Agama does not offer an insurance pathway (e.g. prepaid premium to delay or s
 - Simpler liquidation logic.
 - Cork Protocol (V2 feature) will provide credit insurance at a higher layer.
 
-## Shortfall handling (if SP depleted)
+## Shortfall handling (if the Stability Pool is depleted)
 
-If at `finalizeLiquidation` time the SP has insufficient `agTOKEN` to cover the debt:
+If at `finalizeLiquidation` time the Stability Pool has insufficient `agTOKEN` to cover the debt:
 
-1. Partial SP absorption for what it can cover.
+1. Partial Stability Pool absorption for what it can cover.
 2. Remaining `(debtLeft, collateralLeft)` routed to Bad-Debt Redistribution.
 
 Redistribution uses the Liquity O(1) technique across remaining active borrowers, weighted by collateral:
@@ -145,5 +145,5 @@ Per-borrower actual state:
 
 !!! warning
 
-    Redistribution is a **last resort**. In practice, the ReserveFund should absorb almost all shortfalls — if redistribution triggers frequently, the protocol's risk parameters need recalibration.
+    Redistribution is a **last resort**. In practice the ReserveFund should absorb almost all shortfalls; if redistribution triggers frequently, the protocol's risk parameters need recalibration.
 

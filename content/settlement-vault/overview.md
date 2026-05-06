@@ -16,11 +16,10 @@ After `SP.liquidateBorrower()`, the Stability Pool holds AmFi senior tranche tok
 
 The Settlement Vault:
 
-1. Takes custody of seized RWA.
-2. Applies a configurable `LiquidationSplit` (treasury / reserve / redeem / in-kind).
-3. Queues the `redeemBps` bucket for manager-executed off-chain redemption.
-4. On redemption settlement, **automatically re-deposits the recovered USDr into the Lending Pool on the Stability Pool's behalf**, restoring the Stability Pool's `agTOKEN` position and lifting `agaSP`'s share price by any excess pro-rata.
-5. Maintains an escape hatch (`emergencyDistributeInKind`) if the manager is inactive beyond `staleBatchPeriod` (60 days).
+1. Takes custody of the seized RWA via `handleSeizure` and queues the batch for off-chain redemption.
+2. The manager redeems the batch with the issuer (~15-day off-chain process).
+3. On `settleRedemption`, applies a configurable `LiquidationSplit` (`treasuryBps` + `redeemBps`) to the **USDr proceeds** (not to the RWA): the Treasury slice is forwarded to `Treasury.deposit(USDr, …)` and the redeem slice is **re-deposited into the Lending Pool on the Stability Pool's behalf**, restoring the Stability Pool's `agYLD` position and lifting `sagYLD`'s share price pro-rata across all holders.
+4. Maintains an escape hatch (`emergencyDistributeInKind`) if the manager is inactive beyond `staleBatchPeriod` (60 days).
 
 ### Key simplification
 

@@ -2,9 +2,9 @@
 
 ## Core operations
 
-### `handleSeizure(address vaultAdapter, bytes data, uint256 seizedAmount, uint256 pegGap, uint256 minSharesOut)`
+### `handleSeizure(address rwaToken, address vaultAdapter, bytes data, uint256 seizedAmount, uint256 pegGap, uint256 minSharesOut) → uint256 batchId`
 
-- **Access**: only callable by the Stability Pool.
+- **Access**: only callable by the Stability Pool (`onlySP`).
 - **Purpose**: called by the SP immediately after the SP receives the seized RWA tokens. Records the batch and takes custody of the RWA. **No split happens here** — the entire `seizedAmount` is held in the batch until settlement.
 - **State**:
   1. `nextBatchId++`; allocate `Batch storage b`.

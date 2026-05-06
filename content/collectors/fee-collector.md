@@ -8,9 +8,9 @@
 
 | Constant | Triggered by |
 |---|---|
-| `FEE_VAULT_OPENING` | `LendingPool.openVaultPosition` (`vaultOpeningFee`, default 0). |
-| `FEE_ORIGINATION` | `LendingPool.borrow` (`originationFeeBps`, default 0). |
-| `FEE_PROTOCOL_REVENUE` | Interest reserve accrual driven by `reserveFactorBps` (default 10%). |
+| `FEE_ORIGINATION` | `LendingPool.borrow` (`originationFeeBps`, default 0) — pulled into the FeeCollector via `collectFee` and forwarded to Treasury under this tag. |
+| `FEE_PROTOCOL_REVENUE` | Interest reserve accrual driven by `reserveFactorBps` (default 10%). Swept via `settle(USDr, FEE_PROTOCOL_REVENUE)`. |
+| `FEE_VAULT_OPENING` | Constant declared on the FeeCollector for off-chain consistency, but **not currently routed through `collectFee`** in V1 — vault-opening fees use a direct `safeTransferFrom(user, feeRecipient, fee)` from the LendingPool, bypassing the FeeCollector tagging path. The constant is reserved for V2 if vault-opening fees are unified through the collector. The default is `vaultOpeningFee = 0` so this is moot in practice today. |
 
 ## Distribution
 

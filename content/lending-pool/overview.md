@@ -38,7 +38,7 @@ Each tranche ships with its own risk profile. Senior and Junior markets are cali
 | **Senior** (sRESOLV / sDIGCAP / sCONDO) | 75% | 85% | 3% | 12% |
 | **Junior** (jRESOLV / jDIGCAP / jCONDO) | 50% | 65% | 8% | 24% |
 
-`ORACLE_STALENESS_MAX` is **7 days** across all current adapters: any read or write that depends on the oracle reverts with `OracleStale()` if the oracle hasn't been updated within the window. The threshold is per-adapter and tunable by governance.
+`ORACLE_STALENESS_MAX` is per-adapter and governance-tunable. The deploy script ships with **24 hours** as the constructor default; the current live deployment on Rayls testnet has been governance-bumped to **7 days** across all six adapters to give the oracle pipeline more slack during demos. Any read or write that depends on the oracle reverts with `OracleStale()` if the oracle hasn't been updated within the window.
 
 ## Per-market debt isolation
 

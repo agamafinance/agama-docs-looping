@@ -22,8 +22,10 @@
 
 Two categories, both governance-controlled through the 48-hour timelock:
 
-- **Pool-wide parameters**: `supplyCap`, `borrowCap`, `MIN_BORROW_AMOUNT`, `liquidationGracePeriod`, `withdrawalsPaused`, IRM curve.
-- **Fee parameters**: `depositFee`, `vaultOpeningFee`, `originationFee`, `reserveFactor`.
+- **Pool-wide parameters**: `supplyCap`, `borrowCap`, `MIN_BORROW_AMOUNT`, `withdrawalsPaused`, IRM curve.
+- **Fee parameters**: `vaultOpeningFee` (default 0), `originationFeeBps` (default 0), `reserveFactorBps` (default 1000 = 10%).
+
+There is no on-chain liquidation grace period — V1 liquidations are atomic. There is also no deposit fee on the lender side; lenders mint `agYLD` 1:1 to the underlying USDr at the current share price.
 
 **Per-adapter risk parameters** (`MAX_LTV`, `LIQUIDATION_THRESHOLD`, `LIQUIDATION_BONUS`, `ORACLE_STALENESS_MAX`) live on the adapter itself — one set per market.
 
@@ -64,7 +66,7 @@ Five sub-flows:
 
 ### 1. Deposit & `agYLD` minting
 
-User deposits USDr; optional `depositFee` is deducted; `agYLD` is minted at the current share price (1:1 only on the very first deposit). The `agYLD` then appreciates as borrowers pay interest, through the rising `liquidityIndex`.
+User deposits USDr; `agYLD` is minted at the current share price (1:1 only on the very first deposit). No deposit fee in V1. The `agYLD` then appreciates as borrowers pay interest, through the rising `liquidityIndex`.
 
 ### 2. Vault position & collateral
 

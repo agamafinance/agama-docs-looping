@@ -4,36 +4,36 @@ Complete function reference. Every signature, access control, state change, vali
 
 ## Liquidity provision
 
-### `deposit(uint256 amount)`
+### `deposit(uint256 amount, address receiver) → uint256 shares`
+
+Standard ERC-4626 deposit. Pulls `amount` USDr from `msg.sender`, mints `agYLD` shares to `receiver` at the current share price.
 
 - **Modifiers**: `nonReentrant`, `whenNotPaused`.
 - **State changes**:
-  - `reserve.updateState()`: accrues interest.
-  - `netAmount = amount − depositFee`.
-  - Pull USDr via **balance-delta accounting** (defends against unknown transfer semantics).
-  - `agTOKEN.mint(msg.sender, netAmount)`.
-  - `depositBlock[msg.sender] = block.number`.
-- **Validation**: `_validateDepositSupplyCap(netAmount)`; `amount > 0`.
-- **Events**: `Deposit(user, amount, agTokenMinted)`.
+  - `reserve.updateState()` accrues interest.
+  - Pull USDr via balance-delta accounting (defends against unknown transfer semantics).
+  - `shares = convertToShares(amount)`; `_mint(receiver, shares)`.
+- **Validation**: `amount > 0`; `totalAssets() + amount ≤ supplyCap` (when `supplyCap` is set).
+- **Events**: standard ERC-4626 `Deposit(sender, owner, assets, shares)`.
 - **Errors**: `SupplyCapExceeded()`, `AmountZero()`.
+- **No deposit fee in V1.** Lenders are not charged on the way in.
 
-### `withdraw(uint256 amount)`
+### `withdraw(uint256 amount, address receiver, address owner) → uint256 shares`
 
-- **Access**: any `agTOKEN` holder.
+Standard ERC-4626 withdraw. Burns `agYLD` from `owner`, transfers `amount` USDr to `receiver`.
+
 - **Modifiers**: `nonReentrant`, `whenNotPaused`.
 - **State changes**:
   - `reserve.updateState()`.
-  - `actualAmount = amount == type(uint256).max ? agTOKEN.balanceOf(msg.sender) : amount`.
-  - `_ensureLiquidity(actualAmount)`.
-  - `agTOKEN.burn(msg.sender, actualAmount)`.
-  - Transfer USDr to user.
-- **Validation**: `!withdrawalsPaused || msg.sender == stabilityPool`; `agTOKEN.balanceOf(msg.sender) >= actualAmount`.
-- **Events**: `Withdraw(user, amount)`.
+  - `shares = convertToShares(amount, Math.Rounding.Ceil)`.
+  - `_burn(owner, shares)`; transfer USDr to `receiver`.
+- **Validation**: `!withdrawalsPaused || msg.sender == stabilityPool`; `shares ≤ balanceOf(owner)`; pool cash ≥ `amount`.
+- **Events**: standard ERC-4626 `Withdraw(sender, receiver, owner, assets, shares)`.
 - **Errors**: `WithdrawalsArePaused()`, `InsufficientBalance()`, `LiquidityShortfall()`.
 
 !!! note
 
-    `withdrawalsPaused` is Pauser-triggered. When set, only the `StabilityPool` can withdraw (required to finalize liquidations).
+    `withdrawalsPaused` is Pauser-triggered. When set, only the `StabilityPool` can withdraw (required to keep liquidations functional).
 
 ## Vault position
 
@@ -63,31 +63,33 @@ Complete function reference. Every signature, access control, state change, vali
   - `reserve.updateState()`.
   - If position has debt: compute post-withdrawal HF and revert if < threshold.
   - `IAssetAdapter(adapter).withdraw(msg.sender, data)`.
-- **HF check formula**:
+- **HF check formula** (per-market — V3 isolation):
   ```
-  remainingCollateralValue = getAssetValue(user, data) − getWithdrawValue(user, data)
+  remainingCollateralValue = adapter.getAssetValue(user, data) − adapter.getWithdrawValue(user, data)
+  scopedDebt               = DebtToken.balanceOf(user, adapter)
   newHF = remainingCollateralValue × liquidationThreshold × RAY
-        / (positionScaledDebt × 10000)
-  require(newHF >= HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
+        / (scopedDebt × 10000)
+  require(newHF >= HF_LIQUIDATION_THRESHOLD)
   ```
-- **Errors**: `WithdrawalWouldLeaveUserUnderCollateralized()`, `CannotWithdrawUnderLiquidation()`.
+  The check uses **per-market debt only** — the user's positions on other adapters do not factor in.
+- **Errors**: `HealthFactorTooLow()`, `UnsupportedAdapter()`, `OracleStale()` (from the adapter when its oracle is past `ORACLE_STALENESS_MAX`).
 
 ## Borrow & repay
 
 ### `borrow(address adapter, bytes calldata data, uint256 amount)`
 
-- **Access**: vault owners.
+- **Access**: vault owners (`vaultOpened[msg.sender] == true`).
 - **State changes**:
   - `reserve.updateState()`.
-  - `_validateBorrow(adapter, data, amount)`: checks collateral sufficiency, borrow cap, `MIN_BORROW_AMOUNT`.
+  - Per-market HF check using the borrower's collateral on `adapter` and the borrower's debt scoped to `(msg.sender, adapter)`.
   - `_ensureLiquidity(amount)`.
-  - `DebtToken.mint(user, user, amount, usageIndex, encoded)` → returns `(newIndex, userBalance, userIncrease, totalIncrease)`.
-  - `position.positionIndex = reserve.usageIndex`; `position.rawDebtBalance += amount + userIncrease`.
-  - `originationFee` (50 bps default) deducted from amount before transfer.
-  - `agTOKEN.transferUnderlying(msg.sender, amount − originationFee)`.
+  - **Origination fee** (`originationFeeBps`, default 0) skimmed from `amount` and forwarded to the FeeCollector under `FEE_ORIGINATION`.
+  - `DebtToken.mint(msg.sender, adapter, amount, usageIndex)` — debt scoped to `(user, adapter)`. The aggregate `DebtToken.totalSupply()` drives pool-wide utilisation; the per-market `DebtToken.totalSupply(adapter)` is the per-market position size.
+  - Transfer `amount − originationFee` of USDr to `msg.sender`.
   - `reserve.updateInterestRates(0, amount)`.
-- **Events**: `Borrow(user, amount, originationFee)`.
-- **Errors**: `CannotBorrowUnderLiquidation()`, `HealthFactorTooLow()`, `BorrowCapExceeded()`, `AmountBelowMinimum()`, `LiquidityShortfall()`.
+- **Validation**: `supportedAdapter[adapter]`; `amount ≥ MIN_BORROW_AMOUNT`; aggregate borrow ≤ `borrowCap`.
+- **Events**: `Borrow(user, adapter, amount, originationFee)`.
+- **Errors**: `HealthFactorTooLow()`, `BorrowCapExceeded()`, `AmountBelowMinimum()`, `LiquidityShortfall()`, `UnsupportedAdapter()`, `OracleStale()` (from the adapter).
 
 ### `repay(address adapter, bytes calldata data, uint256 amount)`
 
@@ -97,7 +99,7 @@ Complete function reference. Every signature, access control, state change, vali
   - `actualRepay = amount == type(uint256).max ? scaledDebt : amount`.
   - `DebtToken.burn(msg.sender, actualRepay, usageIndex, encoded)`.
   - `position.positionIndex = reserve.usageIndex`; `position.rawDebtBalance -= actualRepay`.
-  - USDr pulled via balance-delta; transferred to `agTOKEN` contract.
+  - USDr pulled via balance-delta; transferred to `agYLD` contract.
   - `reserve.updateInterestRates(actualRepay, 0)`.
 - **Validation**: `!isUnderLiquidation`; if partial, residual must be zero or ≥ `MIN_BORROW_AMOUNT`.
 - **Events**: `Repay(payer, onBehalfOf, actualRepay)`.

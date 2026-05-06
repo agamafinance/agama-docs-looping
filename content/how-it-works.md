@@ -76,7 +76,7 @@ The cooldown trade-off is also deliberate. Letting Bob exit the second he sees t
 
 ## When Alice gets liquidated
 
-If Alice's health factor falls below 1 and she doesn't cure within the 72-hour grace period:
+If Alice's health factor on a market falls below 1 and the manager-keeper submits a liquidation before she cures (no on-chain grace period in V1 — the seizure is single-step and atomic):
 
 1. **Collateral leaves Alice's vault.** Her RWA is held by the asset adapter (e.g. `AmFiAdapter`), not by the Lending Pool itself. The adapter transfers the RWA tokens directly to the Stability Pool. Her USDr debt is burned. She loses the collateral, but owes nothing.
 2. **Bob's `agYLD` stays whole.** The Stability Pool immediately repays the Lending Pool's USDr by burning some of its own `agYLD`. Pure lenders (Step 1 only) are never impacted; their `agYLD` keeps appreciating as if nothing happened.

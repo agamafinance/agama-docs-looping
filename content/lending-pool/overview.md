@@ -8,7 +8,7 @@
 - Abstract collateral through adapters so pool logic is asset-agnostic.
 - Accrue interest using an index-based model (two-slope kink, Aave/Compound style).
 - Enforce risk parameters per market (LTV, liquidation threshold, oracle staleness) and at the pool level (borrow cap, supply cap).
-- Coordinate the three-stage liquidation lifecycle with the Stability Pool.
+- Coordinate single-step atomic liquidations with the Stability Pool.
 
 ## What is `agYLD`?
 
@@ -78,9 +78,9 @@ Borrowers must call `openVaultPosition()` once (paying `vaultOpeningFee`, curren
 
 `repay(adapter, data, amount)` burns scoped `DebtToken` and pulls USDr back from the user. Residual dust below `MIN_BORROW_AMOUNT` is rejected. Repaying on one market doesn't affect the borrower's debt on any other market.
 
-### 5. Liquidation lifecycle
+### 5. Liquidation
 
-Three stages: `initiateLiquidation()` (flags the position, starts the grace period), `closeLiquidation()` (borrower self-cure during grace), `finalizeLiquidation()` (SP-called, post-grace, moves collateral to SP). All three carry `onlyProxy`: callable only through `LiquidationProxy`. The flow is isolated to the (user, adapter) pair under liquidation.
+Single atomic `liquidate(adapter, user, data)` call when HF < 1 on a given market. No on-chain grace period: the seizure happens in one transaction, scoped to the (user, adapter) pair. Gated by `LIQUIDATION_PROXY_ROLE` — held by the `LiquidationProxy` and by the Stability Pool — and the proxy itself is manager-gated in V1. See [Stability Pool → Liquidations](/stability-pool/liquidations) for the end-to-end flow.
 
 ## Liquidity buffer
 

@@ -103,38 +103,26 @@ Complete function reference. Every signature, access control, state change, vali
 - **Events**: `Repay(payer, onBehalfOf, actualRepay)`.
 - **Errors**: `CannotRepayUnderLiquidationWithoutInsurance()`, `ResidualCannotBeRepaid()`, `AmountZero()`.
 
-## Liquidation management
+## Liquidation
 
-All three functions carry `onlyProxy`: invokable only through `LiquidationProxy`.
+V1 liquidations are **single-step and atomic**. There is no on-chain grace period and no initiate/finalize staging — the whole seizure happens in one transaction. The function is gated by `LIQUIDATION_PROXY_ROLE`, which is held by the `LiquidationProxy` (manager-gated in V1) and by the Stability Pool itself.
 
-### `initiateLiquidation(address adapter, address user, bytes data)`
+### `liquidate(address adapter, address user, bytes calldata data) → (uint256 absorbedAssets, uint256 badDebt)`
 
-- **Precondition**: position exists; `!isUnderLiquidation`; HF < `HEALTH_FACTOR_LIQUIDATION_THRESHOLD`.
-- **State**: `position.isUnderLiquidation = true`; `liquidationStartTime = block.timestamp`.
-- **Events**: `LiquidationInitiated(sender, user, adapter, data)`.
-- **Errors**: `UserAlreadyUnderLiquidation()`, `HealthFactorTooHigh()`.
-
-### `closeLiquidation(address adapter, bytes data)`
-
-- **Access**: `msg.sender` must be the position owner.
-- **Precondition**: `isUnderLiquidation`; within grace period; position debt == 0 (must have been fully repaid via separate `repay()`).
-- **State**: clear flags.
-- **Events**: `LiquidationClosed(user, adapter, data)`.
-- **Errors**: `NotUnderLiquidation()`, `GracePeriodExpired()`, `DebtNotZero()`.
-
-### `finalizeLiquidation(address adapter, address user, bytes data)`
-
-- **Access**: only `StabilityPool`.
-- **Precondition**: `isUnderLiquidation`; grace period expired.
+- **Access**: `onlyRole(LIQUIDATION_PROXY_ROLE)`. In practice called via `LiquidationProxy.liquidate(...)` → `StabilityPool.liquidateBorrower(...)` → here.
+- **Precondition**: `supportedAdapter[adapter]`; `stabilityPool != address(0)`; HF on the (user, adapter) market < 1. The adapter's stale-oracle check inside `getAssetValue` will revert with `OracleStale()` if the price feed has gone past `ORACLE_STALENESS_MAX` (7 days).
 - **State**:
   1. `reserve.updateState()`.
-  2. `positionDebt = getPositionScaledDebt(adapter, user, data)`.
-  3. `IAssetAdapter(adapter).transferAsset(user, data, stabilityPool)`.
-  4. `DebtToken.burn(user, positionDebt, usageIndex, encoded)`.
-  5. Clear position: `rawDebtBalance = 0`, flags cleared, `positionIndex = reserve.usageIndex`.
-  6. `reserve.updateInterestRates(positionDebt, 0)`.
-- **Events**: `LiquidationFinalized(stabilityPool, user, adapter, data, debtCleared, collateralValue)`.
-- **Errors**: `NotUnderLiquidation()`, `GracePeriodNotExpired()`.
+  2. `_materializeRedistribution(adapter, user)`.
+  3. **V3 isolation**: only the user's debt scoped to `(user, adapter)` is wiped — positions on other markets are untouched.
+  4. `IAssetAdapter(adapter).transferAsset(user, data, stabilityPool)` — seized RWA flows to the SP.
+  5. `DebtToken.burn(user, scopedDebt, usageIndex, ...)` — the per-market debt counter is zeroed.
+  6. Clear the per-market position; `reserve.updateInterestRates(absorbed, 0)`.
+- **Returns**: `(absorbedAssets, badDebt)` — `badDebt > 0` when collateral value < debt at seizure (routed through Reserve Fund / redistribution, see [Stability Pool → Liquidations](/stability-pool/liquidations)).
+- **Events**: `Liquidated(adapter, user, data, absorbed, badDebt)`.
+- **Errors**: `UnsupportedAdapter()`, `StabilityPoolNotSet()`, `HealthFactorTooHigh()`, `OracleStale()` (from the adapter).
+
+> The previous V1 design had a 3-stage flow (`initiateLiquidation` / `closeLiquidation` / `finalizeLiquidation`) with a 72-hour grace period. The current V1 ships **without** that staging — the seizure is instant. The grace was dropped in favour of a single atomic call to keep the audit surface minimal and avoid the partial-state edge cases of a multi-tx liquidation. Borrowers cure by repaying or topping up collateral *before* the manager submits.
 
 ## View functions
 

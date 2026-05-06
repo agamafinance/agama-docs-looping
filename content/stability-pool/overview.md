@@ -113,4 +113,4 @@ Each request is independent: one can be claimable while another is still locked.
 
 - [Why participate?](why-stake.md): the yield stack and the honest pro-rata risk story.
 - [Functions](functions.md): complete function reference.
-- [Liquidations](liquidations.md): the three-stage lifecycle.
+- [Liquidations](liquidations.md): the single-step seizure flow + the ~15-day off-chain settlement window.

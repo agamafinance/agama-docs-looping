@@ -19,12 +19,14 @@ The Settlement Vault:
 1. Takes custody of seized RWA.
 2. Applies a configurable `LiquidationSplit` (treasury / reserve / redeem / in-kind).
 3. Queues the `redeemBps` bucket for manager-executed off-chain redemption.
-4. On redemption settlement, **automatically re-deposits the recovered USDr into the Lending Pool on the Stability Pool's behalf**, restoring the Stability Pool's `agTOKEN` position and, therefore, the `agaSP` 1:1 peg.
+4. On redemption settlement, **automatically re-deposits the recovered USDr into the Lending Pool on the Stability Pool's behalf**, restoring the Stability Pool's `agTOKEN` position and lifting `agaSP`'s share price by any excess pro-rata.
 5. Maintains an escape hatch (`emergencyDistributeInKind`) if the manager is inactive beyond `staleBatchPeriod` (60 days).
 
 ### Key simplification
 
-Rather than distributing USDr per depositor via individual claims (which would require per-deposit balance snapshots), the Settlement Vault funnels recovered USDr back into the Lending Pool, minting fresh `agTOKEN` to the Stability Pool. Every `agaSP` holder benefits proportionally **through the restored peg**: no individual claim mechanism needed.
+Rather than distributing USDr per depositor via individual claims (which would require per-deposit balance snapshots), the Settlement Vault funnels recovered USDr back into the Lending Pool, minting fresh `agTOKEN` to the Stability Pool. Every `agaSP` holder benefits proportionally **through the rising share price**: no individual claim mechanism needed. The same `depositOnBehalf` rail also distributes the liquidation bonus (the `excess` bucket): both the peg-gap repayment and the surplus land in the SP, the share price lifts, and all holders earn pro-rata to their stake.
+
+The Reserve Fund participates in the Stability Pool as a staker like any other, earning pro-rata yields on the capital it has deposited there. There is no privileged slice routed to it from the excess.
 
 This simplification drops an entire `ClaimSettlement` contract from V1 scope.
 
@@ -33,15 +35,15 @@ This simplification drops an entire `ClaimSettlement` contract from V1 scope.
 ```
 SP.liquidateBorrower()
   │
-  ├─ LendingPool.finalizeLiquidation (collateral → SP, debt burned, agTOKEN whole)
+  ├─ LendingPool.liquidate (collateral → SP, debt burned, agYLD whole)
   │
   └─ SP transfers seized RWA → SettlementVault.handleSeizure(adapter, data, seized, pegGap)
        │
        ├─ applies LiquidationSplit:
        │     T = seized × treasuryBps    / 10000   → Treasury.deposit(asset, T)
-       │     B = seized × reserveFundBps / 10000   → ReserveFund.deposit(asset, B)
        │     R = seized × redeemBps      / 10000   → queued in Batch{id, R}
        │     K = seized × inKindBps      / 10000   → (V1 = 0) reserved for V2
+       │     (V1 reserveFundBps = 0; the Reserve Fund earns via its SP stake)
        │
        ├─ emits BatchQueued(id, asset, R, block.timestamp, pegGap)
        │
@@ -58,7 +60,8 @@ Manager → SettlementVault.settleRedemption(batchId, usdrReceived)
   │     → agTOKEN minted to SP → peg restored by `toSP`
   │
   ├─ excess = usdrReceived − toSP
-  │     if excess > 0: routed per ExcessPolicy (V1: 100% → ReserveFund)
+  │     if excess > 0: routed per ExcessPolicy (V1: 100% → SP via depositOnBehalf)
+  │     → fresh agTOKEN minted to the SP, agaSP share price lifts pro-rata
   │
   ├─ shortfall = max(0, pegGap − usdrReceived)
   │     if shortfall > 0: ReserveFund.coverShortfall(shortfall)
@@ -74,8 +77,8 @@ Default V1 values:
 | Bucket             | V1 Default | Reasoning                                                                       |
 |--------------------|-----------:|---------------------------------------------------------------------------------|
 | `treasuryBps`      |  200 (2%)  | Small operational allocation.                                                   |
-| `reserveFundBps`   |  300 (3%)  | ReserveFund buffer growth (was named `burnBps` historically; nothing is burnt). |
-| `redeemBps`        | 9500 (95%) | Maximize USDr recovery to restore the Stability Pool peg.                       |
+| `reserveFundBps`   |    0 (0%)  | No continuous funding in V1. The Reserve Fund is seeded once at testnet launch and earns pro-rata via its SP stake. |
+| `redeemBps`        | 9800 (98%) | Maximize USDr recovery to restore the Stability Pool peg.                       |
 | `inKindBps`        |    0 (0%)  | Retail Stability Pool depositors cannot redeem RWA tokens with the issuer; reserved for V2. |
 
 These should be re-calibrated after the first 10 mainnet liquidations based on realized redemption fees and timing.

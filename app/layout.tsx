@@ -20,11 +20,11 @@ export const metadata: Metadata = {
     default: 'Agama Documentation',
   },
   description:
-    'Agama is a decentralized lending and borrowing protocol for Brazilian Real World Assets on Rayls.',
+    'Agama is a synthetic dollar protocol backed by real-world private credit and bonds.',
   openGraph: {
     title: 'Agama Documentation',
     description:
-      'Decentralized lending against tokenized Brazilian RWA on Rayls.',
+      'Deposit USDC, mint agUSD, and stake for sagUSD — yield backed by real-world private credit and bonds.',
     type: 'website',
   },
 };

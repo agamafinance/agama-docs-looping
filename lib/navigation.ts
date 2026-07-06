@@ -31,36 +31,16 @@ export const navigation: NavSection[] = [
     items: [
       { title: 'Introduction', href: '/introduction' },
       {
-        title: 'Lending Pool',
-        items: [
-          { title: 'Overview', href: '/lending-pool/overview' },
-          { title: 'Functions', href: '/lending-pool/functions' },
-          { title: 'Interest Rate Model', href: '/lending-pool/interest-rate-model' },
-          { title: 'Asset Adapter Interface', href: '/lending-pool/adapter-interface' },
-        ],
+        title: 'Lending Pools',
+        items: [{ title: 'Overview', href: '/lending-pools/overview' }],
       },
       {
-        title: 'Stability Pool',
-        items: [
-          { title: 'Overview', href: '/stability-pool/overview' },
-          { title: 'Functions', href: '/stability-pool/functions' },
-          { title: 'Liquidations', href: '/stability-pool/liquidations' },
-        ],
+        title: 'agUSD',
+        items: [{ title: 'Overview', href: '/agusd/overview' }],
       },
       {
-        title: 'Settlement Vault',
-        items: [
-          { title: 'Overview', href: '/settlement-vault/overview' },
-          { title: 'Functions', href: '/settlement-vault/functions' },
-        ],
-      },
-      {
-        title: 'Collectors',
-        items: [
-          { title: 'Fee Collector', href: '/collectors/fee-collector' },
-          { title: 'Treasury', href: '/collectors/treasury' },
-          { title: 'Reserve Fund', href: '/collectors/reserve-fund' },
-        ],
+        title: 'sagUSD',
+        items: [{ title: 'Overview', href: '/sagusd/overview' }],
       },
     ],
   },
@@ -76,6 +56,7 @@ export const navigation: NavSection[] = [
     icon: 'help',
     items: [
       { title: 'FAQ', href: '/faq' },
+      { title: 'Risks', href: '/risks' },
     ],
   },
 ];

@@ -1,41 +1,16 @@
 # Introduction
 
-Agama is a lending market built specifically for **tokenised real-world asset tranches**. Lenders deposit stable, borrowers post a tokenised credit tranche as collateral and draw stable against it, and a Stability Pool absorbs liquidations as the protocol's safety net.
+Agama is a synthetic dollar protocol backed by real-world private credit and bonds. Depositors put in USDC and come out with either targeted exposure to a specific real-world credit pool, or a diversified, yield-bearing dollar that spreads across the whole book automatically.
 
-## Current scope
-
-| Item | Value |
-|---|---|
-| Reserve stablecoin | `USDr` (Rayls native, 1:1-backed) |
-| Active markets | **6 RWA tranches** — Senior + Junior across 3 issuer pools |
-| Issuers (today) | AmFi (Resolvi, Digcap, Sector Condo) |
-| Network | Rayls testnet, chain id `7295799` |
-| Frontend | [app.agama.finance](https://app.agama.finance) |
-| Liquidation settlement | Off-chain issuer redemption (D+15 cycle) |
-
-Each market has its own (token, oracle, adapter) triplet, its own LTV / liquidation threshold / liquidation bonus, and its own debt counter — but they all share the same USDr liquidity pool. See [Overview](/overview) for the full architecture and [How it works](/how-it-works) for a walk-through.
-
-## The 6 markets
-
-| Symbol | Issuer pool | Tranche | Max LTV | Liq. threshold | Liq. bonus |
-|---|---|---|---:|---:|---:|
-| **sRESOLV** | Resolvi | Senior | 75% | 85% | 3% |
-| **jRESOLV** | Resolvi | Junior | 50% | 65% | 8% |
-| **sDIGCAP** | Digcap | Senior | 75% | 85% | 3% |
-| **jDIGCAP** | Digcap | Junior | 50% | 65% | 8% |
-| **sCONDO** | Sector Condo | Senior | 75% | 85% | 3% |
-| **jCONDO** | Sector Condo | Junior | 50% | 65% | 8% |
-
-New markets ship by deploying an additional adapter — no Lending Pool redeploy.
+Every position is a deposit — the risk you take on is the real-world performance of the pools you're exposed to.
 
 ## Components
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, marginTop: 16 }}>
   {[
-    { title: 'Lending Pool', href: '/lending-pool/overview', desc: 'Single USDr pool. Mints agYLD on deposit. Routes borrow/repay through 6 per-tranche adapters with isolated debt accounting.' },
-    { title: 'Stability Pool', href: '/stability-pool/overview', desc: 'ERC-4626 vault wrapping agYLD. Issues sagYLD. Absorbs liquidations at a discount. 7-day cooldown to unstake.' },
-    { title: 'Settlement Vault', href: '/settlement-vault/overview', desc: 'Holds seized RWA, queues off-chain redemption, refills the Stability Pool with USDr proceeds.' },
-    { title: 'Collectors', href: '/collectors/fee-collector', desc: 'Fee Collector · Treasury · Reserve Fund. Three-pool capital structure.' },
+    { title: 'Lending Pools', href: '/lending-pools/overview', desc: 'Pool A, Pool B (private credit) and Pool C (bonds). Deposit USDC directly for targeted exposure to one pool.' },
+    { title: 'agUSD', href: '/agusd/overview', desc: 'Synthetic dollar minted 1:1 against USDC. Backing auto-allocates across every active Lending Pool.' },
+    { title: 'sagUSD', href: '/sagusd/overview', desc: 'Stake agUSD to receive sagUSD, a yield-bearing token that accrues value as the pools earn.' },
   ].map((c) => (
     <a
       key={c.href}
@@ -56,8 +31,10 @@ New markets ship by deploying an additional adapter — no Lending Pool redeploy
   ))}
 </div>
 
+See [Overview](/overview) for the full architecture and [How it works](/how-it-works) for a walk-through of both entry points.
+
 ## Getting started
 
-- **Lenders / borrowers**: head to [app.agama.finance](https://app.agama.finance), connect a wallet on Rayls testnet, and follow [How it works](/how-it-works).
-- **Developers**: read each component overview, then the corresponding Functions reference. The [Asset Adapter Interface](/lending-pool/adapter-interface) covers the per-tranche extension points.
-- **Integrators** building tooling on top of Agama: the per-market debt views (`DebtToken.balanceOf(user, adapter)` and `totalSupply(adapter)`) are the entry points for any analytics or risk dashboard.
+- **Depositors**: read [How it works](/how-it-works), then decide between a direct pool deposit or minting agUSD.
+- **Yield seekers**: mint agUSD, then stake it for [sagUSD](/sagusd/overview) to compound the blended pool yield.
+- **Everyone**: read [Risks](/risks) before depositing — real-world credit and bond exposure carries risks that don't exist in purely on-chain systems.

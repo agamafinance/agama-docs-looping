@@ -11,7 +11,7 @@ This page tracks the security review of the Agama Soroban contracts. It is updat
 | Scope | Vault, agUSD (SEP-41), sagUSD staking, Allocation Engine and adapters, Oracle Adapter |
 | Report | Published on this page after remediation |
 
-OtterSec is listed in the Stellar Audit Bank. Its Stellar track record includes Blend v2 and Phoenix DEX.
+OtterSec is one of the audit firms coordinating with the Stellar Development Foundation through the Soroban Audit Bank. Its Stellar track record includes Soroswap.
 
 ## Process
 

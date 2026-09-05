@@ -45,7 +45,7 @@ Routes vault capital across pool adapters with on-chain concentration cap enforc
 |---|---|
 | `register_pool(admin, pool_id, originator, jurisdiction, cap_bps)` | Whitelists a pool with metadata and cap. |
 | `set_caps(admin, pool_cap_bps, originator_cap_bps, jurisdiction_cap_bps)` | Updates global concentration limits. |
-| `allocate(admin, pool_id, amount)` | Deploys capital. Reverts if any cap exceeded. |
+| `allocate(admin, pool_id, amount)` | Deploys capital. Reverts if any concentration cap is exceeded or if the call would push idle reserves below the reserve floor. |
 | `deallocate(pool_id, amount)` | Records repayments returning to the vault. |
 | `get_exposure(pool_id) -> i128` | Current allocation per pool. |
 | `get_exposures() -> Map` | Full allocation state. |
@@ -56,7 +56,6 @@ All pool types implement the same interface, keeping the Engine agnostic to pool
 
 | Adapter | Underlying | Settlement | Oracle |
 |---|---|---|---|
-| Blend v2 | Blend lending pool | Instant, on-chain | Not needed, on-chain accrual |
 | Etherfuse | Stablebond contracts | Instant, on-chain | Etherfuse feed, 48h staleness |
 | Private credit | Off-chain originator | D+15 to D+90 | Custom reporter, 7d staleness |
 

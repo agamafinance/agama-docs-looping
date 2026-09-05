@@ -2,9 +2,10 @@
 
 Agama composes existing Stellar ecosystem primitives rather than reimplementing solved problems. Each integration serves a specific architectural role and replaces a component that would otherwise be built from scratch.
 
+Blend v2 was previously used as an allocation target for idle capital and as the instant-withdrawal liquidity buffer. Following the Comet BLND-USDC exploit and the wind-down of Blend V2, that integration has been removed. It is not replaced by another protocol: fast-exit liquidity is now an on-chain reserve floor enforced by the Allocation Engine itself. See [Threat Model](/security/threat-model) for the current withdrawal liquidity order.
+
 | Integration | Role | SCF Integration List |
 |---|---|---|
-| Blend v2 | Lending pools: on-chain yield plus liquidity buffer | Yes |
 | DeFindex | Yield vault accounting for sagUSD | Yes |
 | Soroswap | AMM pools and Router API | Yes |
 | Etherfuse | Stablebonds as Stellar-native RWA collateral | Yes |
@@ -12,25 +13,6 @@ Agama composes existing Stellar ecosystem primitives rather than reimplementing 
 | MoneyGram | Retail fiat cash ramp (SEP-24) | Yes |
 | Bridge | Institutional fiat ramp (bank wires, ACH) | No |
 | Reflector | Oracle price feeds | No |
-
-## Blend v2
-
-Agama uses Blend v2 pools as an allocation target inside the Allocation Engine. Idle vault capital earns Blend supply APY while awaiting private credit deployment, and Blend positions double as the instant-withdrawal liquidity buffer backing the withdrawal queue.
-
-```
-Allocation Engine
-    ├── allocate(blend_adapter, amount)
-    │       └── blend_pool.supply(usdc, amount)
-    │               └── Vault receives Blend LP receipt tokens
-    ├── deallocate(blend_adapter, amount)
-    │       └── blend_pool.withdraw(usdc, amount)
-    └── get_exposure(blend_adapter)
-            └── reads Blend LP token balance + accrued interest
-```
-
-The Blend adapter implements the same interface as the private credit adapters, so pool type stays transparent to the Engine and concentration caps apply identically.
-
-Blend v2 handles interest rate modelling, utilization tracking and liquidation mechanics, all of which are solved problems. Agama's differentiation is the private credit curation layer, not generic lending.
 
 ## DeFindex
 
@@ -68,6 +50,8 @@ Stablebond NAV is deterministic from public bond pricing, so the oracle stalenes
 ## CCTP
 
 Circle's Cross-Chain Transfer Protocol provides native 1:1 USDC bridging from Ethereum, Arbitrum and Base. No wrapped tokens, no third-party bridge risk.
+
+CCTP runs natively on Soroban. Stellar is CCTP domain 27, and `TokenMessengerMinter`, `MessageTransmitter` and `CctpForwarder` are deployed on both Stellar Testnet and Mainnet, so the bridge path can be built and validated on testnet before it ever touches mainnet.
 
 ```
 LP on Ethereum

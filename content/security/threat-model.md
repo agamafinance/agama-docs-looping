@@ -36,15 +36,17 @@ When paused, deposits and withdrawals are blocked. Staking and unstaking continu
 
 The queue is a two-step FIFO. `request_withdrawal` burns agUSD and creates a persistent claim record. `claim_withdrawal` pays USDC once the claim is Ready.
 
-Liquidity is drawn in priority order: idle USDC reserves, then new deposits, then Blend v2 withdrawal (on demand, instant), then Etherfuse Stablebond redemption (on-chain, instant), then private credit repayment (off-chain, D+15 to D+90).
+Liquidity is drawn in priority order: idle USDC reserves held above the on-chain reserve floor, then new deposits, then Etherfuse Stablebond redemption (on-chain, instant), then private credit repayment (off-chain, D+15 to D+90).
+
+The reserve floor is enforced by the Allocation Engine, not by policy: `allocate()` reverts if a call would push vault reserves below it. Fast-exit liquidity is therefore a protocol parameter anyone can read on-chain, rather than a position held inside another protocol.
 
 | Scenario | Expected wait |
 |---|---|
 | Vault has idle reserves | Around 5 minutes, next keeper cycle |
-| Reserves depleted, Blend available | Minutes |
+| Reserves at the floor, Etherfuse available | Minutes |
 | Reserves depleted, only private credit | Days to weeks |
 
-Safeguards: minimum withdrawal amount as anti-dust, queue depth monitoring that triggers proactive Blend withdrawals, strict FIFO with no priority and no jumping including by admin, and no claim expiry.
+Safeguards: minimum withdrawal amount as anti-dust, queue depth monitoring that triggers proactive Etherfuse redemption, strict FIFO with no priority and no jumping including by admin, and no claim expiry.
 
 ## Test coverage
 

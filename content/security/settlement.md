@@ -19,7 +19,6 @@ Originator (fiat repayment: principal + interest)
 | Pool type | Settlement | Notes |
 |---|---|---|
 | Etherfuse Stablebonds | Instant | On-chain redemption |
-| Blend v2 pools | Instant | Subject to utilization |
 | Private credit (invoice) | D+15 to D+30 | Originator payment terms |
 | Private credit (venture) | D+30 to D+90 | Longer-dated instruments |
 
@@ -47,7 +46,6 @@ A deviation above the bound does not silently pass. It is rejected on-chain and 
 | Component | Custody | Controller |
 |---|---|---|
 | USDC idle in Vault | Soroban contract | Non-custodial |
-| USDC in Blend pools | Blend contracts | Non-custodial |
 | Etherfuse Stablebonds | Vault adapter | Non-custodial |
 | Private credit allocations | Off-chain, originator | Originator plus legal agreements |
 | Settlement fiat | Off-chain bank account | Agama entity, custodial |
@@ -56,7 +54,7 @@ A deviation above the bound does not silently pass. It is rejected on-chain and 
 
 Private credit allocations involve custodial, off-chain components. This exposure carries counterparty risk: default, settlement delay and FX risk. That is fundamental to private credit and cannot be eliminated on-chain.
 
-What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse and Blend allocations are fully on-chain and non-custodial.
+What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse allocations and idle reserves are fully on-chain and non-custodial.
 
 ## Default handling
 

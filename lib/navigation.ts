@@ -29,6 +29,7 @@ export const navigation: NavSection[] = [
     title: 'Stellar',
     icon: 'cube',
     items: [
+      { title: 'End-to-End Flow', href: '/stellar/flow' },
       { title: 'Deployments', href: '/stellar/deployments' },
       { title: 'Ecosystem Integrations', href: '/stellar/integrations' },
       { title: 'Soroban Contracts', href: '/stellar/contracts' },

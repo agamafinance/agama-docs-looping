@@ -2,7 +2,7 @@
 
 Agama composes existing Stellar ecosystem primitives rather than reimplementing solved problems. Each integration serves a specific architectural role and replaces a component that would otherwise be built from scratch.
 
-Blend v2 was previously used as an allocation target for idle capital and as the instant-withdrawal liquidity buffer. Following the Comet BLND-USDC exploit and the wind-down of Blend V2, that integration has been removed. It is not replaced by another protocol: fast-exit liquidity is now an on-chain reserve floor enforced by the Allocation Engine itself. See [Threat Model](/security/threat-model) for the current withdrawal liquidity order.
+## Current integrations
 
 | Integration | Role | SCF Integration List |
 |---|---|---|
@@ -13,6 +13,14 @@ Blend v2 was previously used as an allocation target for idle capital and as the
 | MoneyGram | Retail fiat cash ramp (SEP-24) | Yes |
 | Bridge | Institutional fiat ramp (bank wires, ACH) | No |
 | Reflector | Oracle price feeds | No |
+
+## Revision, September 2026: Blend v2 removed
+
+Blend v2 was previously used as an allocation target for idle capital and as the instant-withdrawal liquidity buffer. Following the Comet BLND-USDC exploit and the wind-down of Blend v2, it was removed from the SCF Integration List, and Agama removed the integration from its architecture and from its grant proposal.
+
+It is not replaced by another protocol. The liquidity-buffer role moves inside Agama's own [Allocation Engine](/stellar/contracts#allocation-engine) as a minimum idle USDC reserve floor enforced at contract level: `allocate()` reverts if a call would push vault reserves below the floor. Fast-exit liquidity is therefore a protocol parameter anyone can read on-chain, rather than a position held inside a third party.
+
+Blend v2 appears nowhere else in these docs: not as an allocation target, not as a pool adapter, not as a liquidity source. See [Threat Model](/security/threat-model) for the current withdrawal liquidity order.
 
 ## DeFindex
 

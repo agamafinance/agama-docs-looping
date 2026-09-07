@@ -1,53 +1,71 @@
 # How It Works
 
-Agama has one action, deposit USDC, and two ways to take it. **Alice** wants targeted exposure and picks a pool directly. **Bob** wants diversified, hands-off exposure and mints agUSD, then stakes it for yield.
+One pass through the protocol, from cash to a yield-bearing position and back out, in seven steps. The same walkthrough written for developers, with the exact contract calls, is on [End-to-End Flow](/stellar/flow).
 
-## Alice, the direct depositor
+## 1. Getting USDC onto Stellar
 
-| Attribute | Value |
+Agama takes one asset: native Circle USDC on Stellar, not a wrapped or synthetic version of it. There are three ways to arrive with some.
+
+| Route | What it is |
 |---|---|
-| Deposits | USDC, directly into one Lending Pool |
-| Receives | A claim on that pool's real-world yield |
-| Exposure | Concentrated in a single pool (private credit or bonds) |
-| Goal | Targeted exposure to a specific deal she has a view on |
+| Stellar wallet | USDC you already hold on Stellar |
+| MoneyGram, through a SEP-24 anchor | Physical cash, at a counter, in 180+ countries |
+| CCTP, at Stellar domain 27 | USDC bridged from Ethereum, Arbitrum or Base, burned on one side and minted on the other, with no third-party bridge holding it in between |
 
-Alice has looked at Agama's active pools and prefers Pool A, a private-credit pool, over the bonds pool. She deposits USDC directly into Pool A. Her return depends entirely on how Pool A's underlying private-credit book performs. She isn't exposed to Pool B or Pool C at all.
+## 2. Depositing
 
-This path suits depositors who want to underwrite a specific pool rather than take the blended average across all of them. See [Lending Pools](/lending-pools/overview) for what distinguishes the pools from each other.
+You send USDC to the Vault contract and it mints you agUSD, one for one. The USDC stays in the Vault; the Vault is the protocol's only custodian, and no other contract ever holds it.
 
-## Bob, the diversified depositor
+agUSD is a plain token with no transfer restriction. You can hold it, send it, trade it, or use it inside another Soroban protocol. What it does not do is earn. It is a claim on a dollar, not a share in the book.
 
-Bob's flow has two steps. Step 1 is the baseline position; Step 2 is optional and layers on top.
+## 3. Staking
 
-### Step 1. Mint agUSD (required)
+Staking agUSD gives you sagUSD, and sagUSD is the position that earns. You receive shares at whatever the exchange rate is when you stake, and the number of shares you hold does not change afterwards.
 
-| Attribute | Value |
-|---|---|
-| Deposits | USDC |
-| Receives | agUSD, 1:1 |
-| Exposure | Auto-allocated across every active Lending Pool |
-| Exit | Redeem agUSD back to USDC |
+This is the step people skip and then wonder where the yield went. Holding agUSD is holding a dollar. Holding sagUSD is holding a slice of the credit book.
 
-Bob deposits USDC and mints agUSD 1:1. He doesn't pick a pool: the protocol spreads his backing across Pool A, Pool B, and Pool C automatically. If one pool underperforms, it's a fraction of his exposure, not all of it. See [agUSD](/agusd/overview) for the full mechanics.
+## 4. Allocating
 
-### Step 2. Stake for sagUSD (optional)
+Deposited USDC does not deploy itself. A Curator decides where it goes, pool by pool, and submits that decision as a transaction to the Allocation Engine.
 
-| Attribute | Value |
-|---|---|
-| Deposits | agUSD (from Step 1) |
-| Receives | sagUSD |
-| Yield | Accrues as the underlying pools earn from private credit and bonds |
-| Exit | Unstake back to agUSD |
+The Engine does not choose. It checks, in the same transaction, and refuses:
 
-Bob can leave his agUSD as a flat, transferable synthetic dollar, or stake it for sagUSD to start compounding the blended pool yield. Unlike Alice, Bob never has to think about which pool is doing well, because sagUSD's value reflects the pools' combined performance. See [sagUSD](/sagusd/overview) for how the yield-bearing mechanics work.
+- the pool would hold more than its cap allows
+- the pools fronted by that originator would together exceed the originator cap
+- the pools under that legal regime would together exceed the jurisdiction cap
+- the release would leave the Vault holding less idle USDC than the reserve floor
 
-## Choosing a path
+Any one of those failing reverts the whole call, so a refused allocation moves no money and books no exposure. Capital that passes goes into a whitelisted pool through an adapter: a credit vault, or Etherfuse Stablebonds for Stellar-native government bond exposure.
 
-| | Alice's path (direct) | Bob's path (agUSD → sagUSD) |
-|---|---|---|
-| Decision required | Which pool | None, diversified by default |
-| Concentration | Single pool | Spread across all active pools |
-| Yield-bearing token | No, a direct pool position | Yes, once staked into sagUSD |
-| Best for | A specific view on one pool | Hands-off, blended exposure |
+## 5. Earning
 
-Both paths draw on the same underlying pools and the same real-world yield. The difference is how much of the allocation decision Agama makes for you. See [Overview](/overview) for the architecture that ties both paths together, and [Risks](/risks) for what to weigh before depositing either way.
+Credit pays back on its own schedule. Etherfuse Stablebonds accrue on-chain and redeem instantly. Private credit repays off-chain, on originator terms that run from fifteen to ninety days, and that cash comes back through banking rails, converts to USDC, and returns to the Vault.
+
+Before any of it moves the accounting, the Oracle Adapter checks the reported value against that feed's own limits: how old the number is allowed to be, and how far it is allowed to move since the last report. A feed that is too old does not quietly degrade, it errors. Once the value is validated, distributing the yield raises the sagUSD exchange rate.
+
+That is the whole yield mechanism. Your sagUSD balance stays where it is and each share becomes redeemable for more agUSD. There is nothing to claim and nothing to compound manually.
+
+## 6. Withdrawing
+
+Exiting is two steps, and deliberately less immediate than depositing, because the assets behind agUSD are credit positions that settle in weeks rather than in blocks.
+
+First you unstake, converting sagUSD back to agUSD at the current rate. Then you request a withdrawal: the agUSD is burned immediately and you receive a numbered claim. Burning up front is what makes the queue mean something, since a position that is waiting in line cannot also be sold or staked. Second, once the claim is at the front of the line and the Vault holds the cash, you claim it and receive USDC.
+
+The queue is strictly first in, first out. There is no priority tier, no fast lane, and no admin function that reorders it. Liquidity reaches it in this order:
+
+1. Idle reserves the Vault holds above the reserve floor
+2. New deposits
+3. Etherfuse Stablebond redemption, instant and on-chain
+4. Private credit repayment, fifteen to ninety days
+
+So the wait depends on where the money currently is. With idle reserves available it is minutes. With reserves at the floor and Stablebonds to redeem it is still minutes. With everything deployed into private credit it is days to weeks. [Threat Model](/security/threat-model) sets out the safeguards and the expected wait per scenario.
+
+## 7. Or leaving without queueing
+
+The queue is not the only exit. agUSD trades against USDC on Soroswap, so anyone who wants out immediately can swap in a single transaction and take the market price instead of waiting for settlement.
+
+That is also what keeps the peg honest in both directions. Above a dollar, mint at 1:1 from the Vault and sell. Below a dollar, buy on Soroswap and redeem through the queue.
+
+## What is live today
+
+agUSD, sagUSD and the six credit vaults are deployed on Stellar Testnet and verifiable on [Stellar Expert](/stellar/deployments). The Vault, the Allocation Engine and the Oracle Adapter are written and tested, and their testnet deployment is scheduled. [End-to-End Flow](/stellar/flow) marks each step of this walkthrough with its status.

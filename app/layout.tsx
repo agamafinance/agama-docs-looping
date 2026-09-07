@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Agama Documentation',
     description:
-      'Deposit USDC, mint agUSD, and stake for sagUSD — yield backed by real-world private credit and bonds.',
+      'Deposit USDC, mint agUSD, and stake for sagUSD: yield backed by real-world private credit and bonds.',
     type: 'website',
   },
 };

@@ -75,7 +75,7 @@ These pool adapters are distinct from the Oracle Adapter below. Pool adapters mo
 
 ## Oracle Adapter
 
-Single source of truth for NAV data, bridging multiple feed types with unified validation. See [Oracle Design](/security/oracle).
+Single source of truth for NAV data, bridging three feed types with unified validation. See [Oracle Design](/security/oracle).
 
 ## Storage and TTL
 

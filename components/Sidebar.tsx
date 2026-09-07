@@ -202,7 +202,7 @@ export function Sidebar({ searchIndex }: { searchIndex: SearchEntry[] }) {
 
   return (
     <>
-      {/* Mobile toggle button — hidden while the sidebar is open */}
+      {/* Mobile toggle button, hidden while the sidebar is open */}
       {!mobileOpen && (
         <button
           type="button"

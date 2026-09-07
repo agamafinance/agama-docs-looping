@@ -1,4 +1,4 @@
-# Agama Protocol — Documentation
+# Agama Protocol Documentation
 
 Documentation site for the [Agama Protocol](https://agama.fi).
 
@@ -41,9 +41,9 @@ content/     Source markdown (one file per page)
 Plain Markdown in `content/`. Supported:
 
 - GFM tables, task lists, strikethrough
-- MkDocs-style admonitions (`!!! note`, `!!! warning`, …) — inlined as plain content
+- MkDocs-style admonitions (`!!! note`, `!!! warning`, …), inlined as plain content
 - Heading anchors via `{ #custom-id }`
-- Internal links ending in `.md` — auto-rewritten to clean URLs
+- Internal links ending in `.md`, auto-rewritten to clean URLs
 - Fenced code blocks with `shiki` highlighting
 
 ## License

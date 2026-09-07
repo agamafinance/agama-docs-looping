@@ -42,7 +42,7 @@ export const navigation: NavSection[] = [
       { title: 'Introduction', href: '/introduction' },
       {
         title: 'Credit Vaults',
-        items: [{ title: 'Overview', href: '/lending-pools/overview' }],
+        items: [{ title: 'Overview', href: '/credit-vaults/overview' }],
       },
       {
         title: 'agUSD',

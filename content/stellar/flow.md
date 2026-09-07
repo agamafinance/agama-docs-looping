@@ -1,48 +1,62 @@
 # End-to-End Flow
 
-One pass through the protocol, from cash to a yield-bearing position and back out.
+One pass through the protocol, from cash to a yield-bearing position and back out. Each step carries a tag saying whether it is live today or funded by the SCF grant.
+
+<Diagram src="/images/stellar-architecture.svg" alt="Agama on Stellar. Entry rails (Stellar wallet, MoneyGram SEP-24, CCTP domain 27, Bridge) feed USDC into the Agama dApp and the Soroban contract core: Vault Contract, Allocation Engine, Oracle Adapter, agUSD and sagUSD. The Allocation Engine routes into Etherfuse Stablebonds and private credit pools under concentration caps and a minimum idle USDC reserve floor. Soroswap provides an exit without queueing." width="900" caption="The Agama architecture on Stellar: entry rails, the Soroban contract core, the on-chain guards enforced by allocate(), and the allocation targets behind them." />
 
 ## 1. In
 
-A user brings USDC to Stellar three ways: directly from a Stellar wallet, from another chain over [CCTP](/stellar/integrations) at Stellar domain 27, or from physical cash through a MoneyGram SEP-24 anchor.
+*(funded by this grant: CCTP bridge and SEP-24 anchor integration)*
+
+USDC reaches Stellar from a Stellar wallet, from another chain over [CCTP](/stellar/integrations) at Stellar domain 27, or from physical cash through a MoneyGram SEP-24 anchor.
 
 ## 2. Deposit
 
-The user calls `deposit()` on the Vault contract. The Vault takes the USDC and mints **agUSD** 1:1. agUSD is a plain SEP-41 token, transferable and composable, with no transfer restrictions.
+*(agUSD is live today, the Vault contract is funded by this grant)*
+
+`deposit()` on the Vault takes the USDC and mints agUSD 1:1, a plain SEP-41 token with no transfer restrictions.
 
 ## 3. Stake
 
-The user calls `stake()` on the sagUSD contract and receives **sagUSD** shares at the current exchange rate. Holding agUSD alone earns nothing. sagUSD is the yield-bearing position.
+*(live today)*
+
+`stake()` returns sagUSD shares at the current exchange rate. agUSD alone earns nothing; sagUSD is the yield-bearing position.
 
 ## 4. Allocate
 
-The Curator calls `allocate()` on the Allocation Engine, which routes vault capital into a whitelisted pool through an adapter. Every adapter exposes the same three functions, `allocate`, `deallocate` and `get_exposure`, so the Engine does not need to know what kind of pool it is talking to.
+*(funded by this grant)*
 
-The call reverts if it would breach a concentration cap, or if it would push idle reserves below the on-chain reserve floor.
+`allocate()` on the [Allocation Engine](/stellar/contracts#allocation-engine) routes capital into a whitelisted pool through a pool adapter. Every pool adapter exposes `allocate`, `deallocate` and `get_exposure`, so the Engine stays pool-agnostic. The call reverts on a cap breach, or if it would push idle reserves below the reserve floor.
 
 ## 5. Earn
 
-The pool generates yield. The Oracle Adapter validates the reported NAV against per-feed staleness and deviation bounds, then the yield distributor calls `distribute_yield()`, which raises the sagUSD/agUSD exchange rate.
+*(funded by this grant)*
 
-No claim step and no rebase. The holder's position is simply worth more agUSD than it was.
+The [Oracle Adapter](/security/oracle) validates NAV against per-feed staleness and deviation bounds, then `distribute_yield()` raises the sagUSD/agUSD exchange rate. No claim step, no rebase.
 
 ## 6. Out
 
-The user calls `unstake()` to return to agUSD, then `request_withdrawal()`, which burns the agUSD and enqueues a FIFO claim. When the claim is Ready, `claim_withdrawal()` pays USDC.
+*(funded by this grant: the production withdrawal queue)*
+
+`unstake()`, then `request_withdrawal()` burns agUSD and enqueues a FIFO claim. `claim_withdrawal()` pays USDC once Ready.
 
 Liquidity is drawn in order:
 
 1. Idle reserves held above the on-chain reserve floor
 2. New deposits
 3. Etherfuse Stablebond redemption, instant and on-chain
-4. Private credit repayment, as it settles
+4. Private credit repayment, D+15 to D+90
 
-## 7. Exit without queueing
+See [Threat Model](/security/threat-model) for the queue safeguards and expected wait per scenario.
 
-A user who does not want to wait swaps agUSD for USDC on Soroswap instead, in a single Soroban transaction.
+## 7. Or exit without queueing
 
-## What is live today
+*(funded by this grant: Soroswap Router integration)*
 
-Steps 1, 2, 3 and the whole token layer are deployed on Stellar Testnet and verifiable on [Stellar Expert](/stellar/deployments).
+Swap agUSD for USDC on Soroswap in a single Soroban transaction.
 
-Steps 4 and 5, the Allocation Engine, its adapters and the Oracle Adapter, plus the production withdrawal queue in step 6, are the modules currently under development.
+## What is live and what the grant builds
+
+Live on Stellar Testnet today and verifiable on [Stellar Expert](/stellar/deployments): agUSD, sagUSD and the six credit vault contracts curated with Qiro and Tenka. Everything else in this flow is what the grant builds.
+
+The two modules SCF named are both in step 4: the Allocation Engine and its pool adapters, Etherfuse and private credit. Step 5 is the Oracle Adapter, a separate module that values those positions.

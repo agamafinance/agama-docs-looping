@@ -1,23 +1,34 @@
 # sagUSD Overview
 
-sagUSD is what you get for staking agUSD. It's the yield-bearing side of Agama: hold sagUSD, and its value accrues over time as the underlying Lending Pools collect yield from real-world private credit and bonds.
+sagUSD is staked agUSD, and it is the position that earns. Stake agUSD and you receive sagUSD shares at the current exchange rate. Yield arrives by raising that rate, so the shares you hold become redeemable for more agUSD over time.
 
 ## Stake and unstake
 
 | Action | Effect |
 |---|---|
-| **Stake** | Deposit agUSD, receive sagUSD |
-| **Unstake** | Return sagUSD, receive agUSD back |
+| **Stake** | Lock agUSD, receive sagUSD shares at the current rate |
+| **Unstake** | Burn shares, receive agUSD back at the current rate |
 
-There's no separate claim step: sagUSD accrues value in place, the same pattern used by other yield-bearing wrapper tokens: your sagUSD balance doesn't change, but what it's redeemable for in agUSD grows as the underlying pools earn.
+The share accounting follows the DeFindex convention: distributing yield increases assets per share rather than minting new tokens. sagUSD positions are therefore readable by any DeFindex-integrated wallet or protocol without extra integration work. This is interface compatibility, not a routing relationship: Agama does not send funds through DeFindex vault contracts.
 
-## Why stake
+## How the yield arrives
 
-Minting agUSD gets you diversified exposure to Agama's pools, but agUSD on its own doesn't compound that exposure into yield; it just tracks USDC 1:1. Staking into sagUSD is the step that turns diversified exposure into a yield-bearing position:
+Yield is distributed by an authorized distributor calling `distribute_yield()`, which raises the sagUSD/agUSD exchange rate. That is the entire mechanism.
 
-- **Blended yield.** Because agUSD is already spread across every active pool, sagUSD's accrual reflects the combined performance of Pool A, Pool B, and Pool C, not a single pool's outcome.
-- **No active management.** You don't rebalance or reclaim yield manually; it shows up as sagUSD's redeem value rising.
+- **No claim step.** Nothing to harvest, nothing to sign, no reward that expires unclaimed.
+- **No rebase.** Your balance does not change. What each share is worth does.
+- **No manual compounding.** The next distribution applies to the same shares at the higher rate.
 
-## What can move it
+Every distribution emits an event carrying the amount and the resulting exchange rate, so the full history of the share price can be reconstructed from the chain rather than taken on trust.
 
-sagUSD's value is a direct function of how the underlying pools perform. Strong private-credit and bond performance lifts the redeem rate; underperformance in one or more pools slows it. See [Lending Pools](/lending-pools/overview) for what the pools are exposed to, and [Risks](/risks) for how real-world credit and bond risk ultimately reaches sagUSD holders.
+## What moves the rate
+
+The rate tracks what the credit book behind the Vault actually earns: repayments from the [credit vaults](/lending-pools/overview), and interest from Etherfuse Stablebonds. Private credit repays off-chain on originator terms, so distributions follow settlement cycles rather than a block schedule.
+
+Before a reported value can move accounting, the [Oracle Adapter](/security/oracle) validates it against that feed's staleness threshold and deviation bound. A stale feed does not degrade quietly, it errors, and a report that moves further than the bound allows is rejected rather than stored.
+
+Underperformance works the same way in reverse. There is no tranching in V1, so a credit loss is not absorbed by a junior class before it reaches holders. See [Settlement & NAV](/security/settlement) for how a default is handled and [Risks](/risks) for what that means in practice.
+
+## Getting out
+
+Unstaking returns agUSD. Converting that agUSD back to USDC goes through the Vault's two-step withdrawal queue, which is first in, first out and can take from minutes to weeks depending on where the capital currently sits. See [agUSD](/agusd/overview) for the redemption path and [How It Works](/how-it-works) for the liquidity order the queue draws on.

@@ -27,7 +27,7 @@ The rate tracks what the credit book behind the Vault actually earns: repayments
 
 Before a reported value can move accounting, the [Oracle Adapter](/security/oracle) validates it against that feed's staleness threshold and deviation bound. A stale feed does not degrade quietly, it errors, and a report that moves further than the bound allows is rejected rather than stored.
 
-Underperformance works the same way in reverse. There is no tranching in V1, so a credit loss is not absorbed by a junior class before it reaches holders. See [Settlement & NAV](/security/settlement) for how a default is handled and [Risks](/risks) for what that means in practice.
+Underperformance works the same way in reverse. Agama does not tranche its own positions in V1, so there is no junior class of holders absorbing a credit loss before it reaches everyone else. See [Settlement & NAV](/security/settlement) for how a default is handled and [Risks](/risks) for what that means in practice.
 
 ## Getting out
 

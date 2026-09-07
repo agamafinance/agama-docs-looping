@@ -10,7 +10,7 @@ Private credit instruments settle off-chain. An originator repays in fiat, on it
 
 The custody picture follows from that. Idle USDC in the Vault and Etherfuse Stablebond positions are on-chain and non-custodial. Private credit allocations sit off-chain with the originator, governed by legal agreements, and the settlement fiat sits in a bank account controlled by an Agama entity. Two of the four components are therefore custodial.
 
-If a pool defaults, the reported NAV is written down, the admin delists the pool, and the existing exposure runs off rather than being force-unwound. There is no tranching in V1, so losses are socialized across holders rather than absorbed by a junior class first. A later partial repayment writes NAV back up. See [Settlement & NAV](/security/settlement) for the full flow and the custody table.
+If a pool defaults, the reported NAV is written down, the admin delists the pool, and the existing exposure runs off rather than being force-unwound. Agama does not tranche its own positions in V1, so losses are socialized across holders rather than absorbed by a junior class first. A later partial repayment writes NAV back up. See [Settlement & NAV](/security/settlement) for the full flow and the custody table.
 
 ## Withdrawal queue liquidity
 

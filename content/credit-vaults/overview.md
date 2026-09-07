@@ -51,7 +51,7 @@ That off-chain leg is the protocol's core trust assumption and it is stated in f
 
 ## What isolation does and does not mean
 
-Each vault is a separate contract with separate accounting, and a problem in one does not corrupt the state of another. It does not follow that a loss in one vault is contained to a subset of holders: there is no tranching in V1, so credit losses are socialized.
+Each vault is a separate contract with separate accounting, and a problem in one does not corrupt the state of another. It does not follow that a loss in one vault is contained to a subset of holders. Agama does not tranche its own positions in V1, so credit losses are socialized across all holders whatever vault they came from.
 
 What limits the damage is the concentration caps, and they are contract-level rather than policy-level. The per-pool cap stops any single vault from taking the book. The per-originator cap catches the case where several vaults are fronted by the same counterparty and would otherwise add up to concentrated risk without any single cap being breached. The per-jurisdiction cap stops the book from being one legal regime deep. All three are measured against total assets, so allocating in small pieces does not get around them.
 

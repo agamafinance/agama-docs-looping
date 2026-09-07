@@ -14,7 +14,7 @@ Agama takes one asset: native Circle USDC on Stellar, not a wrapped or synthetic
 
 ## 2. Depositing
 
-You send USDC to the Vault contract and it mints you agUSD, one for one. The USDC stays in the Vault; the Vault is the protocol's only custodian, and no other contract ever holds it.
+You send USDC to the Vault contract and it mints you agUSD, one for one. The USDC stays in the Vault until the Allocation Engine instructs a release. The Vault is the protocol's only custodian: the Engine decides where capital goes but never holds any of it.
 
 agUSD is a plain token with no transfer restriction. You can hold it, send it, trade it, or use it inside another Soroban protocol. What it does not do is earn. It is a claim on a dollar, not a share in the book.
 
@@ -28,7 +28,7 @@ This is the step people skip and then wonder where the yield went. Holding agUSD
 
 Deposited USDC does not deploy itself. A Curator decides where it goes, pool by pool, and submits that decision as a transaction to the Allocation Engine.
 
-The Engine does not choose. It checks, in the same transaction, and refuses:
+The Engine does not choose. It checks the call, in the same transaction, and reverts if any of these is true:
 
 - the pool would hold more than its cap allows
 - the pools fronted by that originator would together exceed the originator cap
@@ -49,7 +49,7 @@ That is the whole yield mechanism. Your sagUSD balance stays where it is and eac
 
 Exiting is two steps, and deliberately less immediate than depositing, because the assets behind agUSD are credit positions that settle in weeks rather than in blocks.
 
-First you unstake, converting sagUSD back to agUSD at the current rate. Then you request a withdrawal: the agUSD is burned immediately and you receive a numbered claim. Burning up front is what makes the queue mean something, since a position that is waiting in line cannot also be sold or staked. Second, once the claim is at the front of the line and the Vault holds the cash, you claim it and receive USDC.
+If you are staked, you unstake first, converting sagUSD back to agUSD at the current rate. The exit itself is then the two steps. Requesting a withdrawal burns the agUSD immediately and gives you a numbered claim, and burning up front is what makes the queue mean something, since a position waiting in line cannot also be sold or staked. Claiming pays the USDC, once that claim has reached the front of the line and the Vault holds enough to cover it.
 
 The queue is strictly first in, first out. There is no priority tier, no fast lane, and no admin function that reorders it. Liquidity reaches it in this order:
 

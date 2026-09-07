@@ -1,33 +1,64 @@
-# Lending Pools Overview
+# Credit Vaults
 
-The Lending Pools are where deposited USDC actually goes to work. Each pool funds a specific kind of real-world exposure, and each is isolated from the others: a shortfall in one pool doesn't touch the capital in another.
+Credit vaults are where deposited USDC goes to work. Each one funds a specific real-world credit strategy, and each is an independent Soroban contract with its own share token, so exposure to it is a position the protocol holds and anyone can read on-chain.
 
-## The active pools
+## The six live vaults
 
-| Pool | Type | Description |
-|---|---|---|
-| **Pool A** | Private credit | Real-world private credit deals |
-| **Pool B** | Private credit | Real-world private credit deals |
-| **Pool C** | Bonds | Real-world bond exposure |
+Six credit vaults are deployed on Stellar Testnet, curated with [Qiro](https://www.qiro.fi/investor) and [Tenka](https://tenka.fi/).
 
-Private credit and bonds behave differently (different duration, different recovery profile, different sensitivity to rates), which is exactly why Agama keeps them as separate pools rather than one blended fund. See [Risks](/risks) for how those differences show up as risk.
+| Vault | Curator | Strategy | Share token |
+|---|---|---|---|
+| Payment Financing | Qiro | Short-term payment receivables | qPAY |
+| Private Credit | Qiro | Diversified credit fund | qPCV |
+| Institutional Credit | Qiro | Institutional lender financing | qICV |
+| Flagship | Tenka | ABF senior | tFLAG |
+| High Yield | Tenka | ABF mezzanine | tHY |
+| Deal Vaults | Tenka | Deal-by-deal | tDEAL |
 
-## Two ways capital reaches a pool
+Contract addresses for all six are on [Deployments](/stellar/deployments) and verifiable on Stellar Expert.
 
-1. **Direct deposit.** Depositing USDC straight into a pool gives concentrated exposure to that pool alone.
-2. **Via agUSD.** Minting [agUSD](/agusd/overview) auto-allocates the backing across every active pool. Pool-level allocation is handled by the protocol, not the depositor.
+Two different things are called curation here, and it is worth separating them. Qiro and Tenka curate the strategies: they source the credit and run the vaults. Curator with a capital C is a protocol role, held by the admin multi-sig in V1, which whitelists a pool in the Allocation Engine and sets the risk parameters that bound it. See [Threat Model](/security/threat-model) for the full role table.
 
-Both paths fund the same pools. The difference is whether one depositor's capital lands in a single pool or is spread across all of them.
+## How capital reaches a vault
 
-## Isolation
+There is no direct deposit into a credit vault. Users deposit USDC into the [Vault contract](/stellar/contracts#vault-contract) and receive agUSD; capital reaches the credit vaults only through the [Allocation Engine](/stellar/contracts#allocation-engine), in two admin-gated steps.
 
-Each pool's accounting is separate. A pool takes on the real-world credit or bond exposure it was created for, and its performance doesn't cross over into the other pools:
+1. **Registration.** `register_pool()` whitelists a pool along with the metadata the caps aggregate over: its originator, its jurisdiction, and its own cap. A pool that is not registered cannot receive capital at all.
+2. **Allocation.** `allocate()` releases USDC from the Vault into the pool, and only if the resulting book still respects the cap on that pool, the cap on everything that originator fronts, the cap on that jurisdiction, and the minimum idle USDC reserve floor. Any one of them failing reverts the whole call.
 
-- A direct depositor in Pool A is exposed only to Pool A's performance.
-- An agUSD holder is exposed to a blend of every pool, so a single pool underperforming is diluted across the whole allocation rather than concentrated.
+Both steps emit events, so the composition of the book and every change to it are reconstructable from the chain.
+
+## The adapter model
+
+The Engine does not know what kind of pool it is talking to. Every pool is reached through an adapter exposing the same three functions, `allocate`, `deallocate` and `get_exposure`, which is what lets an off-chain credit facility and a tokenized government bond sit behind the same code path.
+
+Two adapters are in scope.
+
+| Adapter | Underlying | Settlement | Oracle |
+|---|---|---|---|
+| Private credit | Off-chain originator | D+15 to D+90 | Custom reporter, 7 day staleness, 5% deviation bound |
+| Etherfuse | Stablebond contracts | Instant, on-chain | Etherfuse feed, 48 hour staleness, deterministic |
+
+The six vaults above are private credit, so they sit behind the private credit adapter. Etherfuse Stablebonds are the second target: Stellar-native tokens backed by government bonds, lower yield, redeemable on-chain in a single transaction, which is what makes them useful to the withdrawal queue as well as to the book.
+
+These pool adapters are not the same thing as the Oracle Adapter. A pool adapter moves capital into a pool. The [Oracle Adapter](/security/oracle) values the resulting positions and never touches funds.
+
+## Settlement and repayment
+
+Etherfuse redeems on-chain and instantly. Private credit does not: the originator repays in fiat on its own terms, the cash moves through banking rails, converts to USDC, and comes back on-chain, at which point `deallocate()` reduces the recorded exposure and the USDC lands back in the Vault's idle reserves. Invoice-style instruments run D+15 to D+30, longer-dated ones D+30 to D+90.
+
+That off-chain leg is the protocol's core trust assumption and it is stated in full on [Settlement & NAV](/security/settlement).
+
+## What isolation does and does not mean
+
+Each vault is a separate contract with separate accounting, and a problem in one does not corrupt the state of another. It does not follow that a loss in one vault is contained to a subset of holders: there is no tranching in V1, so credit losses are socialized.
+
+What limits the damage is the concentration caps, and they are contract-level rather than policy-level. The per-pool cap stops any single vault from taking the book. The per-originator cap catches the case where several vaults are fronted by the same counterparty and would otherwise add up to concentrated risk without any single cap being breached. The per-jurisdiction cap stops the book from being one legal regime deep. All three are measured against total assets, so allocating in small pieces does not get around them.
+
+If a pool does default, the admin delists it and the existing exposure runs off naturally rather than being force-unwound.
 
 ## Where the yield comes from
 
-Pools deploy capital into the real-world private credit and bond deals they're built for, and the yield those deals generate flows back to the pool, and from there to direct depositors or to agUSD's backing. There's no protocol emission subsidizing the return; it's a pass-through of real-world yield, net of any protocol costs.
+Real-world borrowers pay it: private credit obligors and bond issuers. There is no protocol emission subsidizing the return and no depositor paying another depositor. Repayments return to the Vault, and reach holders as a higher [sagUSD](/sagusd/overview) exchange rate.
 
-See [agUSD](/agusd/overview) for how pool yield reaches the diversified path, and [sagUSD](/sagusd/overview) for how it compounds once staked.
+See [Risks](/risks) for what can go wrong on the real-world side.

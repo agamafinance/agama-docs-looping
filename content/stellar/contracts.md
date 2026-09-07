@@ -2,6 +2,8 @@
 
 The on-chain core is five Soroban contracts written in Rust and compiled to WASM. Source is public at [github.com/agamafinance/agama-soroban](https://github.com/agamafinance/agama-soroban) under Apache-2.0.
 
+The [End-to-End Flow](/stellar/flow) page carries the architecture diagram showing how these five contracts fit together with the entry rails and the allocation targets.
+
 ## Vault Contract
 
 Entry point for capital. Accepts USDC deposits, mints agUSD 1:1, manages NAV-based accounting and the FIFO withdrawal queue.
@@ -50,14 +52,20 @@ Routes vault capital across pool adapters with on-chain concentration cap enforc
 | `get_exposure(pool_id) -> i128` | Current allocation per pool. |
 | `get_exposures() -> Map` | Full allocation state. |
 
-### Adapter interface
+### Reserve floor
 
-All pool types implement the same interface, keeping the Engine agnostic to pool type.
+The Engine also enforces a minimum idle USDC reserve floor on the Vault. `allocate()` reverts if a call would push vault reserves below it, which is what keeps fast-exit liquidity available to the withdrawal queue without holding a position in a third-party protocol. See [Threat Model](/security/threat-model) for how the floor sits in the withdrawal liquidity order.
 
-| Adapter | Underlying | Settlement | Oracle |
+### Pool adapter interface
+
+Every pool adapter exposes the same three functions, `allocate`, `deallocate` and `get_exposure`, keeping the Engine agnostic to pool type. Two pool adapters are in scope: Etherfuse and private credit.
+
+| Pool adapter | Underlying | Settlement | Oracle |
 |---|---|---|---|
 | Etherfuse | Stablebond contracts | Instant, on-chain | Etherfuse feed, 48h staleness |
 | Private credit | Off-chain originator | D+15 to D+90 | Custom reporter, 7d staleness |
+
+These pool adapters are distinct from the Oracle Adapter below. Pool adapters move capital into a pool; the Oracle Adapter values the resulting positions and never touches funds.
 
 ### Operational model
 

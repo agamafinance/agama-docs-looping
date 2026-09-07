@@ -8,7 +8,7 @@ This page tracks the security review of the Agama Soroban contracts. It is updat
 |---|---|
 | Stage | Pre-audit. Contracts in development on testnet. |
 | Auditor | OtterSec |
-| Scope | Vault, agUSD (SEP-41), sagUSD staking, Allocation Engine and adapters, Oracle Adapter |
+| Scope | Vault, agUSD (SEP-41), sagUSD staking, Allocation Engine and its pool adapters, Oracle Adapter |
 | Report | Published on this page after remediation |
 
 OtterSec is one of the audit firms coordinating with the Stellar Development Foundation through the Soroban Audit Bank. Its Stellar track record includes Soroswap.

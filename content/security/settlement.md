@@ -9,7 +9,7 @@ Originator (fiat repayment: principal + interest)
     → Settlement Account (off-chain bank, Agama entity or custodian)
         → Fiat to USDC conversion (via Bridge API or MoneyGram)
             → Settlement Manager (backend)
-                → deallocate(pool_adapter, amount) on Allocation Engine
+                → deallocate(pool_id, amount) on Allocation Engine
                     → USDC returns to Vault idle reserves
                         → Withdrawal queue processed (FIFO)
 ```
@@ -46,7 +46,7 @@ A deviation above the bound does not silently pass. It is rejected on-chain and 
 | Component | Custody | Controller |
 |---|---|---|
 | USDC idle in Vault | Soroban contract | Non-custodial |
-| Etherfuse Stablebonds | Vault adapter | Non-custodial |
+| Etherfuse Stablebonds | Etherfuse pool adapter | Non-custodial |
 | Private credit allocations | Off-chain, originator | Originator plus legal agreements |
 | Settlement fiat | Off-chain bank account | Agama entity, custodial |
 
@@ -54,7 +54,7 @@ A deviation above the bound does not silently pass. It is rejected on-chain and 
 
 Private credit allocations involve custodial, off-chain components. This exposure carries counterparty risk: default, settlement delay and FX risk. That is fundamental to private credit and cannot be eliminated on-chain.
 
-What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse allocations and idle reserves are fully on-chain and non-custodial.
+What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse allocations and idle reserves are fully on-chain and non-custodial, and the minimum idle USDC reserve floor is enforced by `allocate()` rather than by policy.
 
 ## Default handling
 

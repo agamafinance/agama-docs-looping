@@ -2,7 +2,7 @@
 
 Agama is a synthetic dollar protocol backed by real-world private credit and bonds. Depositors put in USDC and come out with either targeted exposure to a specific real-world credit pool, or a diversified, yield-bearing dollar that spreads across the whole book automatically.
 
-Every position is a deposit — the risk you take on is the real-world performance of the pools you're exposed to.
+Every position is a deposit: the risk you take on is the real-world performance of the pools you're exposed to.
 
 ## Components
 
@@ -37,4 +37,4 @@ See [Overview](/overview) for the full architecture and [How it works](/how-it-w
 
 - **Depositors**: read [How it works](/how-it-works), then decide between a direct pool deposit or minting agUSD.
 - **Yield seekers**: mint agUSD, then stake it for [sagUSD](/sagusd/overview) to compound the blended pool yield.
-- **Everyone**: read [Risks](/risks) before depositing — real-world credit and bond exposure carries risks that don't exist in purely on-chain systems.
+- **Everyone**: read [Risks](/risks) before depositing, because real-world credit and bond exposure carries risks that don't exist in purely on-chain systems.

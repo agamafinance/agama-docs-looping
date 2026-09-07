@@ -13,7 +13,7 @@ The yield-bearing form of agUSD. Stake agUSD to receive sagUSD, which accrues va
 Deposit directly if you want concentrated exposure to one pool. Mint agUSD if you'd rather have diversified exposure across every active pool without picking one. See [How It Works](/how-it-works).
 
 **Is agUSD redeemable for USDC?**
-Yes — agUSD can be redeemed back to USDC. Redemption is subject to the underlying pools' available liquidity; see [Risks](/risks).
+Yes, agUSD can be redeemed back to USDC. Redemption is subject to the underlying pools' available liquidity; see [Risks](/risks).
 
 **What backs the yield?**
-Real-world private credit and bond deals. Pools deploy deposited capital into those deals directly, and the yield they generate flows back to depositors — there's no protocol emission subsidizing the return.
+Real-world private credit and bond deals. Pools deploy deposited capital into those deals directly, and the yield they generate flows back to depositors. There's no protocol emission subsidizing the return.

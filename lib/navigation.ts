@@ -26,12 +26,22 @@ export const navigation: NavSection[] = [
     ],
   },
   {
+    title: 'Stellar',
+    icon: 'cube',
+    items: [
+      { title: 'End-to-End Flow', href: '/stellar/flow' },
+      { title: 'Deployments', href: '/stellar/deployments' },
+      { title: 'Ecosystem Integrations', href: '/stellar/integrations' },
+      { title: 'Soroban Contracts', href: '/stellar/contracts' },
+    ],
+  },
+  {
     title: 'Protocol',
     icon: 'cube',
     items: [
       { title: 'Introduction', href: '/introduction' },
       {
-        title: 'Lending Pools',
+        title: 'Credit Vaults',
         items: [{ title: 'Overview', href: '/lending-pools/overview' }],
       },
       {
@@ -42,6 +52,16 @@ export const navigation: NavSection[] = [
         title: 'sagUSD',
         items: [{ title: 'Overview', href: '/sagusd/overview' }],
       },
+    ],
+  },
+  {
+    title: 'Security',
+    icon: 'shield',
+    items: [
+      { title: 'Settlement & NAV', href: '/security/settlement' },
+      { title: 'Oracle Design', href: '/security/oracle' },
+      { title: 'Threat Model', href: '/security/threat-model' },
+      { title: 'Audit Status', href: '/security/audit' },
     ],
   },
   {

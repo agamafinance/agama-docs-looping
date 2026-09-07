@@ -13,7 +13,7 @@ No. A withdrawal returns one USDC per agUSD burned, and the redemption rate does
 Staked agUSD, and the position that earns. You receive shares at the current exchange rate, and yield arrives by raising that rate rather than by changing balances. No claim step, no rebase, no manual compounding.
 
 **Can I deposit straight into one credit vault?**
-No. There is one entry point, USDC into the Vault. Capital reaches the credit vaults only through the Allocation Engine, which is admin-directed in V1 and constraint-enforcing on every call. See [Credit Vaults](/lending-pools/overview).
+No. There is one entry point, USDC into the Vault. Capital reaches the credit vaults only through the Allocation Engine, which is admin-directed in V1 and constraint-enforcing on every call. See [Credit Vaults](/credit-vaults/overview).
 
 **Who decides where the capital goes?**
 A Curator, which in V1 is the admin multi-sig. The Engine does not choose, it refuses: every `allocate()` call is checked against a cap per pool, a cap per originator, a cap per jurisdiction and a minimum idle USDC reserve floor, and any one of them failing reverts the whole call. In V2 an off-chain optimizer proposes allocations through the same admin-gated functions, with the same enforcement.

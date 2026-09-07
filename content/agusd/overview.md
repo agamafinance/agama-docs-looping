@@ -30,4 +30,4 @@ That is deliberate. agUSD is a unit of account, not a share in the book, which i
 
 Every agUSD is backed by the Vault's assets: idle USDC plus everything the [Allocation Engine](/stellar/contracts#allocation-engine) has deployed into credit vaults and Etherfuse Stablebonds. The Engine cannot deploy that backing freely. Each allocation is checked on-chain against a cap per pool, per originator and per jurisdiction, and against the minimum idle USDC reserve floor that keeps fast-exit liquidity in the Vault.
 
-See [Credit Vaults](/lending-pools/overview) for what the capital is deployed into, [Overview](/overview) for how agUSD fits the wider architecture, and [Risks](/risks) for what can go wrong.
+See [Credit Vaults](/credit-vaults/overview) for what the capital is deployed into, [Overview](/overview) for how agUSD fits the wider architecture, and [Risks](/risks) for what can go wrong.

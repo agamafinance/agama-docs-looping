@@ -23,7 +23,7 @@ Every distribution emits an event carrying the amount and the resulting exchange
 
 ## What moves the rate
 
-The rate tracks what the credit book behind the Vault actually earns: repayments from the [credit vaults](/lending-pools/overview), and interest from Etherfuse Stablebonds. Private credit repays off-chain on originator terms, so distributions follow settlement cycles rather than a block schedule.
+The rate tracks what the credit book behind the Vault actually earns: repayments from the [credit vaults](/credit-vaults/overview), and interest from Etherfuse Stablebonds. Private credit repays off-chain on originator terms, so distributions follow settlement cycles rather than a block schedule.
 
 Before a reported value can move accounting, the [Oracle Adapter](/security/oracle) validates it against that feed's staleness threshold and deviation bound. A stale feed does not degrade quietly, it errors, and a report that moves further than the bound allows is rejected rather than stored.
 

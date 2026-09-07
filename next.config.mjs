@@ -26,6 +26,17 @@ const nextConfig = {
         destination: '/how-it-works',
         permanent: true,
       },
+      // Lending Pools was renamed Credit Vaults; keep the old links alive
+      {
+        source: '/lending-pools',
+        destination: '/credit-vaults/overview',
+        permanent: true,
+      },
+      {
+        source: '/lending-pools/:path*',
+        destination: '/credit-vaults/:path*',
+        permanent: true,
+      },
     ];
   },
 };

@@ -18,7 +18,7 @@ The other half of the problem is the one that gets less attention. Once capital 
 
 The protocol has four parts.
 
-1. **Credit vaults.** Six are live on Stellar Testnet, curated with [Qiro](https://www.qiro.fi/investor) and [Tenka](https://tenka.fi/), each an independent Soroban contract with its own share token. They are where deposited capital earns: short-term payment receivables, diversified credit funds, institutional lender financing, asset-backed senior and mezzanine tranches. See [Credit Vaults](/lending-pools/overview).
+1. **Credit vaults.** Six are live on Stellar Testnet, curated with [Qiro](https://www.qiro.fi/investor) and [Tenka](https://tenka.fi/), each an independent Soroban contract with its own share token. They are where deposited capital earns: short-term payment receivables, diversified credit funds, institutional lender financing, asset-backed senior and mezzanine tranches. See [Credit Vaults](/credit-vaults/overview).
 
 2. **agUSD.** A synthetic dollar. The Vault mints it 1:1 against USDC and is the only address allowed to mint or burn it. It is a plain SEP-41 token with no transfer restriction, so other Soroban protocols can hold it and compose with it. agUSD on its own earns nothing. See [agUSD](/agusd/overview).
 
@@ -45,6 +45,6 @@ The return is paid by real-world borrowers, private credit obligors and bond iss
 ## Getting started
 
 - **New here**: [How It Works](/how-it-works) walks the full path, from cash to a yield-bearing position and back out.
-- **Looking at the credit side**: [Credit Vaults](/lending-pools/overview).
+- **Looking at the credit side**: [Credit Vaults](/credit-vaults/overview).
 - **Looking at the tokens**: [agUSD](/agusd/overview) and [sagUSD](/sagusd/overview).
 - **Looking at the contracts**: [Soroban Contracts](/stellar/contracts) and [Deployments](/stellar/deployments).

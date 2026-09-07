@@ -2,45 +2,49 @@
 
 **A synthetic dollar backed by real-world private credit and bonds.**
 
-Agama turns USDC into yield-bearing exposure to real-world lending (private credit and bonds) without a fund subscription, a lock-up negotiation, or picking a single deal blind. Deposit USDC, choose how directly you want to be exposed, and let the protocol do the allocation.
+Agama turns USDC into a yield-bearing position in curated real-world credit, without a fund subscription, a lock-up negotiation, or underwriting a single deal blind. Deposit USDC into the Vault, receive agUSD, stake it for sagUSD, and a Curator deploys the capital into vetted credit vaults under limits the contracts enforce.
 
 ## The problem
 
-Private credit and bonds pay real yield, but that yield is locked behind slow, manual, fund-style access: subscription paperwork, minimum tickets, and settlement cycles measured in weeks. On-chain capital has no fast way in, and no way to diversify across deals without doing that paperwork many times over.
+Private credit and bonds pay real yield, but that yield sits behind slow, manual, fund-style access: subscription paperwork, minimum tickets, and settlement cycles measured in weeks. On-chain capital has no fast way in, and no way to spread across several deals without doing that paperwork many times over.
 
-Agama wraps that access in two on-chain primitives: pick a pool directly, or mint a synthetic dollar that is automatically spread across every pool the protocol runs.
+The other half of the problem is the one that gets less attention. Once capital is pooled, somebody has to decide where it goes, and in most structures that decision is a policy document. Agama makes it a contract call that can be refused.
 
 ## Architecture in one picture
 
-<Diagram src="/images/architecture.png" alt="Lenders deposit USDC directly into Agama Lending Pools (Pool A, Pool B, Pool C: private credit and bonds), or mint agUSD 1:1 against USDC. agUSD auto-allocates across all pools. agUSD can be staked into sagUSD, a yield-bearing token. The Lending Pools deploy capital into private credit and bonds, the real-world yield backing every pool." width="760" />
+<Diagram src="/images/architecture.svg" alt="LPs deposit USDC into the Vault Contract, which mints agUSD 1:1 and runs a two-step FIFO withdrawal queue. agUSD stakes into sagUSD, a share-based position. The Allocation Engine releases idle USDC into credit vaults and Etherfuse Stablebonds only when allocate() passes four on-chain checks: a cap per pool, per originator and per jurisdiction, plus a minimum idle USDC reserve floor. The Oracle Adapter feeds validated NAV back to the Vault." width="820" caption="USDC in, agUSD out, sagUSD for the yield, and an Allocation Engine that holds nothing and enforces the limits." />
 
 ## Components
 
-The protocol has three parts:
+The protocol has four parts.
 
-1. **Lending Pools.** Each pool funds one real-world credit or bond exposure: Pool A and Pool B are private credit, Pool C is bonds. Depositing USDC straight into a pool gives targeted exposure to that pool's real-world yield.
+1. **Credit vaults.** Six are live on Stellar Testnet, curated with [Qiro](https://www.qiro.fi/investor) and [Tenka](https://tenka.fi/), each an independent Soroban contract with its own share token. They are where deposited capital earns: short-term payment receivables, diversified credit funds, institutional lender financing, asset-backed senior and mezzanine tranches. See [Credit Vaults](/credit-vaults/overview).
 
-2. **agUSD.** A synthetic dollar, minted 1:1 against USDC. Instead of sitting in one pool, agUSD's backing is auto-allocated across every active Lending Pool, a single deposit that spreads across the whole book.
+2. **agUSD.** A synthetic dollar. The Vault mints it 1:1 against USDC and is the only address allowed to mint or burn it. It is a plain SEP-41 token with no transfer restriction, so other Soroban protocols can hold it and compose with it. agUSD on its own earns nothing. See [agUSD](/agusd/overview).
 
-3. **sagUSD.** Stake agUSD to receive sagUSD, a yield-bearing token. Its value accrues over time as the underlying pools collect yield from private credit and bonds, with no separate claim step required.
+3. **sagUSD.** Stake agUSD and receive sagUSD shares at the current exchange rate. Yield arrives by raising that rate, not by changing balances, so there is no claim step and no rebase. See [sagUSD](/sagusd/overview).
 
-## Two ways in
+4. **The Allocation Engine.** The contract between the Vault and the credit vaults. In V1 a Curator directs it: a person chooses the pool and the amount and calls `allocate()`. What the Engine contributes is refusal. Every call is checked in the same transaction against a cap per pool, a cap per originator, a cap per jurisdiction, and a minimum idle USDC reserve floor, and any one of them failing reverts the whole call. See [Soroban Contracts](/stellar/contracts#allocation-engine).
 
-Agama deliberately supports both a direct and a diversified path, because they serve different users:
+## What the contracts enforce, rather than the policy
 
-| | Direct pool deposit | agUSD |
-|---|---|---|
-| **You choose** | A specific pool (private credit or bonds) | Nothing, exposure is spread automatically |
-| **Exposure** | Concentrated in one deal | Diversified across every active pool |
-| **Best for** | Users with a view on a specific pool | Users who want blended, hands-off exposure |
-| **Upgrade path** | n/a | Stake into sagUSD for yield-bearing exposure |
+Three properties are worth stating precisely, because each is a line of Rust rather than a commitment.
+
+| Property | How it is enforced |
+|---|---|
+| No single pool, originator or jurisdiction takes the book | `allocate()` measures the resulting exposure against total assets and reverts on a breach |
+| Fast-exit liquidity is always available | The reserve floor: `allocate()` reverts if the call would leave the Vault holding less idle USDC than the floor |
+| The withdrawal queue cannot be reordered | Claims are paid strictly in request order, and there is no admin path around it |
+
+An Engine that has been deployed but not configured cannot deploy capital at all: every cap starts at zero and the reserve floor starts at 100%. Opening it up is an explicit admin action that emits an event.
 
 ## Where the yield comes from
 
-Every pool's return is ultimately paid by real-world borrowers (private credit obligors or bond issuers), not by protocol emissions or other depositors. The **Private Credit / Bonds** layer in the diagram is that real-world backing: it's what every pool, and by extension agUSD and sagUSD, is earning against. See [Lending Pools](/lending-pools/overview) for how a pool is structured, and [Risks](/risks) for what can go wrong on the real-world side.
+The return is paid by real-world borrowers, private credit obligors and bond issuers, not by protocol emissions or by other depositors. Repayments settle off-chain through banking rails, come back on-chain as USDC, return to the Vault, and reach holders as a higher sagUSD exchange rate. That off-chain leg is the part of the system that carries the most trust, and it is documented in full in [Settlement & NAV](/security/settlement) and [Risks](/risks).
 
 ## Getting started
 
-- **New users**: read [How It Works](/how-it-works) for a walk-through of both paths: direct pool deposits and minting agUSD.
-- **Depositors comparing pools**: [Lending Pools → Overview](/lending-pools/overview).
-- **Looking for yield-bearing exposure**: [agUSD](/agusd/overview) and [sagUSD](/sagusd/overview).
+- **New here**: [How It Works](/how-it-works) walks the full path, from cash to a yield-bearing position and back out.
+- **Looking at the credit side**: [Credit Vaults](/credit-vaults/overview).
+- **Looking at the tokens**: [agUSD](/agusd/overview) and [sagUSD](/sagusd/overview).
+- **Looking at the contracts**: [Soroban Contracts](/stellar/contracts) and [Deployments](/stellar/deployments).

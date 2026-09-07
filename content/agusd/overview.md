@@ -1,26 +1,33 @@
 # agUSD Overview
 
-agUSD is Agama's synthetic dollar: mint it 1:1 against USDC, and its backing is automatically spread across every active [Lending Pool](/lending-pools/overview), private credit and bonds alike, instead of sitting in a single pool.
+agUSD is Agama's synthetic dollar. The [Vault](/stellar/contracts#vault-contract) mints it 1:1 against USDC on deposit and is the only address permitted to mint or burn it. Holders face no such restriction: agUSD is a plain [SEP-41](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0041.md) token that anyone can transfer, approve or hold in another contract.
 
 ## Mint and redeem
 
 | Action | Effect |
 |---|---|
-| **Mint** | Deposit USDC, receive agUSD 1:1 |
-| **Redeem** | Return agUSD, receive USDC back |
+| **Deposit** | Send USDC to the Vault, receive agUSD 1:1 |
+| **Request withdrawal** | agUSD is burned immediately, you receive a numbered claim |
+| **Claim withdrawal** | Once the claim reaches the front of the queue and the Vault holds the cash, you receive USDC |
 
-There's no pool to pick and no allocation decision to make: minting agUSD is a single deposit that stands in for a diversified position across the whole book.
+Depositing is instant. Redemption is two steps, because the assets backing agUSD are credit positions that settle in fifteen to ninety days. A vault promising instant redemption against that book would be promising something it can only honour while nobody asks.
 
-## Auto-allocation
+The agUSD is burned when the withdrawal is requested, not when it is claimed. That is what makes the queue meaningful: once the tokens are gone the holder cannot sell, stake or re-request the same position while it waits, and the supply already reflects the exit. Claims are paid in strict request order, with no priority path, including for the admin. There is a minimum withdrawal of 1 agUSD, so a stream of dust requests cannot push real withdrawals behind thousands of one-stroop claims.
 
-Once minted, agUSD's backing is auto-allocated across every active Lending Pool. If Agama adds a new pool, agUSD's diversification extends to it automatically, and holders don't need to do anything to pick up the new exposure.
+## agUSD does not earn
 
-This is the core difference from a direct pool deposit ([How It Works → Alice's path](/how-it-works#alice-the-direct-depositor)): a direct depositor is exposed to one pool's performance, while an agUSD holder's exposure is blended across all of them.
+A withdrawal returns one USDC per agUSD burned. The redemption rate does not move with the portfolio: NAV from the [Oracle Adapter](/security/oracle) is read for reporting and monitoring, not applied to the rate at which agUSD redeems.
+
+That is deliberate. agUSD is a unit of account, not a share in the book, which is what keeps it usable as collateral and as a quote asset in the protocols it composes into. Yield reaches holders through [sagUSD](/sagusd/overview), whose exchange rate rises as the book earns. Holding agUSD and expecting it to appreciate is the one misunderstanding worth avoiding here.
 
 ## What agUSD is for
 
-- **A diversified base position.** Hold agUSD as a synthetic dollar backed by a spread of real-world private credit and bonds, rather than concentrated in a single deal.
-- **A stepping stone to yield.** agUSD itself doesn't compound, so [stake it for sagUSD](/sagusd/overview) to start accruing the pools' yield.
-- **A transferable unit.** agUSD is a standard token: send it, hold it, or move it elsewhere before deciding whether to stake.
+- **A composable dollar.** No transfer restriction and no whitelist, so any Soroban protocol can accept it.
+- **The step before yield.** Stake it for [sagUSD](/sagusd/overview) to hold the earning position.
+- **An exit that does not queue.** agUSD trades against USDC on Soroswap, so a holder who wants out immediately can swap at the market price instead of waiting for settlement. The same pool is what arbitrages the peg: mint at 1:1 and sell when agUSD is above a dollar, buy and redeem when it is below.
 
-See [Overview](/overview) for how agUSD fits into the wider architecture, and [Risks](/risks) for what backs it and what can go wrong.
+## What backs it
+
+Every agUSD is backed by the Vault's assets: idle USDC plus everything the [Allocation Engine](/stellar/contracts#allocation-engine) has deployed into credit vaults and Etherfuse Stablebonds. The Engine cannot deploy that backing freely. Each allocation is checked on-chain against a cap per pool, per originator and per jurisdiction, and against the minimum idle USDC reserve floor that keeps fast-exit liquidity in the Vault.
+
+See [Credit Vaults](/credit-vaults/overview) for what the capital is deployed into, [Overview](/overview) for how agUSD fits the wider architecture, and [Risks](/risks) for what can go wrong.

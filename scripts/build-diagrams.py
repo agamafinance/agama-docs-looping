@@ -18,9 +18,9 @@ MUTED = "#9CA3AF"
 
 
 def main():
-    # NOTE: the main architecture diagram (public/images/architecture.png) is
-    # a hand-authored asset, not generated from this script.
-    print("nothing to build — no graphviz diagrams defined yet.")
+    # NOTE: the architecture diagrams under public/images/ are hand-authored
+    # SVGs, rendered to PNG with `rsvg-convert`, not generated from this script.
+    print("nothing to build, no graphviz diagrams defined yet.")
 
 
 if __name__ == "__main__":

@@ -1,16 +1,16 @@
 # Introduction
 
-Agama is a synthetic dollar protocol backed by real-world private credit and bonds. Depositors put in USDC and come out with either targeted exposure to a specific real-world credit pool, or a diversified, yield-bearing dollar that spreads across the whole book automatically.
+Agama is a synthetic dollar protocol backed by real-world private credit and bonds, built natively on Stellar as Soroban contracts. Depositors put in USDC, receive agUSD, and stake it for sagUSD, the position that earns. A Curator deploys the capital into vetted credit vaults, and the contracts decide what the Curator is allowed to do.
 
-Every position is a deposit: the risk you take on is the real-world performance of the pools you're exposed to.
+There is one entry point and one asset: USDC into the Vault. The risk you take is the real-world performance of the credit book behind it.
 
 ## Components
 
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, marginTop: 16 }}>
   {[
-    { title: 'Lending Pools', href: '/lending-pools/overview', desc: 'Pool A, Pool B (private credit) and Pool C (bonds). Deposit USDC directly for targeted exposure to one pool.' },
-    { title: 'agUSD', href: '/agusd/overview', desc: 'Synthetic dollar minted 1:1 against USDC. Backing auto-allocates across every active Lending Pool.' },
-    { title: 'sagUSD', href: '/sagusd/overview', desc: 'Stake agUSD to receive sagUSD, a yield-bearing token that accrues value as the pools earn.' },
+    { title: 'Credit Vaults', href: '/credit-vaults/overview', desc: 'Six live on testnet, curated with Qiro and Tenka. Each is an independent Soroban contract with its own share token.' },
+    { title: 'agUSD', href: '/agusd/overview', desc: 'Synthetic dollar, SEP-41, minted 1:1 against USDC. Mint and burn restricted to the Vault, no transfer restriction on holders.' },
+    { title: 'sagUSD', href: '/sagusd/overview', desc: 'Staked agUSD. Share-based, DeFindex-compatible. Yield raises the exchange rate, so no claim step and no rebase.' },
   ].map((c) => (
     <a
       key={c.href}
@@ -31,10 +31,13 @@ Every position is a deposit: the risk you take on is the real-world performance 
   ))}
 </div>
 
-See [Overview](/overview) for the full architecture and [How it works](/how-it-works) for a walk-through of both entry points.
+Behind those three sits the [Allocation Engine](/stellar/contracts#allocation-engine), which routes Vault capital into the credit vaults and enforces the concentration caps and the minimum idle USDC reserve floor on every call.
+
+See [Overview](/overview) for the architecture in one picture and [How It Works](/how-it-works) for the full path from cash to a yield-bearing position and back out.
 
 ## Getting started
 
-- **Depositors**: read [How it works](/how-it-works), then decide between a direct pool deposit or minting agUSD.
-- **Yield seekers**: mint agUSD, then stake it for [sagUSD](/sagusd/overview) to compound the blended pool yield.
-- **Everyone**: read [Risks](/risks) before depositing, because real-world credit and bond exposure carries risks that don't exist in purely on-chain systems.
+- **Depositors**: read [How It Works](/how-it-works), then deposit USDC for agUSD.
+- **Yield seekers**: stake agUSD for [sagUSD](/sagusd/overview). agUSD on its own does not earn.
+- **Reviewers and integrators**: [Soroban Contracts](/stellar/contracts) for the function-level view, [Deployments](/stellar/deployments) for the addresses.
+- **Everyone**: read [Risks](/risks) before depositing. Real-world credit exposure carries risks that do not exist in purely on-chain systems, and the withdrawal queue is not instant.

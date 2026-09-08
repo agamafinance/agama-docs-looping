@@ -16,10 +16,35 @@ Agama runs natively on Stellar. All protocol logic is implemented as Soroban sma
 | Contract | Standard | Address |
 |---|---|---|
 | USDC (Circle) | Stellar asset contract | [`CBIELTK6...XQDAMA`](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA) |
-| agUSD | SEP-41 | [`CCXEP6QA...NQ6H3`](https://stellar.expert/explorer/testnet/contract/CCXEP6QAAYEMFMV2JGBULD2NS6AQB6KQSBHLPPBJSDBCN6HOYIHNQ6H3) |
-| sagUSD | SEP-41, DeFindex-compatible shares | [`CABPYD4U...XTALX`](https://stellar.expert/explorer/testnet/contract/CABPYD4U5FAYLBEBMY2MVGVF7BILXTNPWGLOPIXCMUK3QQGIAE2XTALX) |
+| Vault | Custody, mint, FIFO withdrawal queue | [`CCGPF36P...F5KVRR`](https://stellar.expert/explorer/testnet/contract/CCGPF36PDG2WBBK6ZROLMNMHD67UV4MNG6PHQCN2PXWLLRBXCYF5KVRR) |
+| agUSD | SEP-41, minted only by the Vault | [`CCW763RT...U4ALZL`](https://stellar.expert/explorer/testnet/contract/CCW763RTVRDQTEEQ42XCAARSJ42AKWRB2DDM62QV4XVUJFCDAWU4ALZL) |
+| sagUSD | SEP-41, DeFindex-compatible shares | [`CBMEW3QA...WFTHZF`](https://stellar.expert/explorer/testnet/contract/CBMEW3QALCS6FFJMK5FR7LVKUWX3MPIP26LQQQAFYMQFYVG6VUWFTHZF) |
+| Allocation Engine | Caps and reserve floor | [`CAFJKWLU...SZ5HUX`](https://stellar.expert/explorer/testnet/contract/CAFJKWLUGUSYEC7L5ZBNFIFEPSO5MLI7SKDMVVJCGC6Z2TGVP5SZ5HUX) |
+| Oracle Adapter | Per-feed staleness and deviation guards | [`CDV5BC4X...XCSV7G`](https://stellar.expert/explorer/testnet/contract/CDV5BC4XCNT5ASOZNFXBQXRGKVXGKHLRVK5EDX6XP5J6EBIZWSXCSV7G) |
 
 The USDC issuer on Stellar is `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`.
+
+## Pool adapters
+
+Both implement the same interface (`allocate`, `deallocate`, `get_exposure`), so the Allocation Engine stays agnostic to pool type.
+
+| Adapter | Settlement | Address |
+|---|---|---|
+| Private credit | D+15 to D+90, off-chain originator | [`CBAPY7KR...ZGFTOZ`](https://stellar.expert/explorer/testnet/contract/CBAPY7KRVIG3FPGSP3VKXXA6SCDKZUWBSFDWISRJXR5V7PYPVQZGFTOZ) |
+| Etherfuse | Instant, on-chain redemption | [`CBA3GQLH...AH7EWI`](https://stellar.expert/explorer/testnet/contract/CBA3GQLHCEOCCZIDVFZ74AG4FUCEO2SN7AMGY4RSAMN4DTHW2WAH7EWI) |
+
+## Superseded deployments
+
+Earlier generations stay on the ledger rather than being deleted from the record. They are listed here so nothing published previously points somewhere unexplained.
+
+| Contract | Address | Why it was superseded |
+|---|---|---|
+| agUSD, first generation | [`CCXEP6QA...NQ6H3`](https://stellar.expert/explorer/testnet/contract/CCXEP6QAAYEMFMV2JGBULD2NS6AQB6KQSBHLPPBJSDBCN6HOYIHNQ6H3) | A self-contained vault rather than a plain token. It mints only inside its own `deposit()` and exposes no `mint` entry point, so a separate Vault contract cannot mint against a deposit. |
+| Vault, first deployments | [`CAVKHGBQ...F5OFJW3`](https://stellar.expert/explorer/testnet/contract/CAVKHGBQUEPVTWHFJGU42ZVZA6VZSM6RZXFHCUXTT72JFRWNPF5OFJW3) and [`CDQP7L5R...B4TR3KS4`](https://stellar.expert/explorer/testnet/contract/CDQP7L5RZ6AM4J2PZETMG7TC4M3CDTVQ6QAMYPLG43Z6GAOCB4TR3KS4) | Each stored a counterparty address at `initialize()` with no setter, so one could never mint and the other could never deploy capital. |
+| sagUSD, first deployment | [`CABPYD4U...XTALX`](https://stellar.expert/explorer/testnet/contract/CABPYD4U5FAYLBEBMY2MVGVF7BILXTNPWGLOPIXCMUK3QQGIAE2XTALX) | Accepts the first generation agUSD and stores it at `initialize()` with no setter. It also has **no re-initialization guard**: anyone can call its `initialize` a second time and take it over, so the agUSD it still custodies should be treated as at risk. The current sagUSD rejects a second `initialize` with `AlreadyInitialized`. |
+| Allocation Engine and pool adapters, first deployments | [`CANDJEHB...KSL2SGS`](https://stellar.expert/explorer/testnet/contract/CANDJEHBZUPGBWQMWM567Z3NQR4AHJKJSMWB4LTXPT6SC7GSRKSL2SGS), [`CCDZRKZD...KCXT3VZ`](https://stellar.expert/explorer/testnet/contract/CCDZRKZDCWJWTFMLVJFW4LRALZEWRDKWOOD727EDO3EFFKLNDKCXT3VZ), [`CBS3OGCV...WKFLYKK`](https://stellar.expert/explorer/testnet/contract/CBS3OGCVYMI3XQN2ORZZNE2WKGYK24VSTVDUB3QS5HCZHBQQFWKFLYKK) | Bound to a superseded Vault at `initialize()` with no setter. Their replacements carry admin-gated setters, guarded so they are refused once the contract holds state the change would invalidate. |
+
+These are testnet contracts and hold no user funds. They are documented rather than removed because a published address that quietly disappears is worse than one explained.
 
 ## Credit vaults
 

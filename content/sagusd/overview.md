@@ -14,7 +14,7 @@ Unstaking is two steps, not one. There is no single `unstake()` call. `request_u
 
 Pricing at request rather than at claim is the point of the design. If the position were priced when you claimed it, the cooldown would be a free option: you could request an exit, watch the rate for the length of the cooldown, and only take it if the number moved your way. Burning and pricing up front closes that. It also means a position waiting out its cooldown cannot keep earning, be transferred, or be re-requested.
 
-The share accounting follows the DeFindex convention: distributing yield increases assets per share rather than minting new tokens. sagUSD positions are therefore readable by any DeFindex-integrated wallet or protocol without extra integration work. This is interface compatibility, not a routing relationship: Agama does not send funds through DeFindex vault contracts.
+The share accounting follows the same economic convention as DeFindex: distributing yield raises the assets behind each share rather than minting new tokens or rebasing balances, so anything that understands share-price accounting can value the position from the exchange rate alone. That is a shared economic model rather than compatibility with DeFindex's contract interface, and it is not a routing relationship: Agama does not send funds through DeFindex vault contracts, and a DeFindex-integrated wallet would need integration work to read sagUSD. See [Ecosystem Integrations](/stellar/integrations#defindex) for what the two models do and do not share.
 
 ## How the yield arrives
 

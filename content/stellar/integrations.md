@@ -6,7 +6,7 @@ Agama composes existing Stellar ecosystem primitives rather than reimplementing 
 
 | Integration | Role | SCF Integration List |
 |---|---|---|
-| DeFindex | Yield vault accounting for sagUSD | Yes |
+| DeFindex | Shared share-price accounting convention for sagUSD, no contract calls | Yes |
 | Soroswap | AMM pools and Router API | Yes |
 | Etherfuse | Stablebonds as Stellar-native RWA collateral | Yes |
 | CCTP (Circle) | Native cross-chain USDC bridge | Yes |
@@ -24,9 +24,13 @@ Blend v2 appears nowhere else in these docs: not as an allocation target, not as
 
 ## DeFindex
 
-sagUSD uses DeFindex-compatible vault accounting. `distribute_yield()` increases assets-per-share, the standard DeFindex share-price model, so sagUSD positions are natively readable by any DeFindex-integrated wallet or protocol without additional integration work.
+sagUSD follows the same economic convention as DeFindex: yield accrues by raising the assets behind each share, rather than by minting new shares or rebasing balances. `distribute_yield()` moves agUSD into the contract and `exchange_rate()` rises; no holder's balance changes. Anything that understands share-price accounting can value a sagUSD position from that one number.
 
-This is interface compatibility, not a protocol-level integration: Agama does not route funds through DeFindex vault contracts.
+This is a shared accounting model, not call-level compatibility, and not a protocol-level integration. Agama does not route funds through DeFindex vault contracts, and nothing in Agama depends on a DeFindex deployment.
+
+Being precise about what the shared convention is not, because the claim is checkable: DeFindex's own vault interface publishes neither `distribute_yield` nor `exchange_rate`. It is multi-asset, `get_asset_amounts_per_shares` returns one amount per underlying asset rather than a scalar price per share, and it has no vault-level yield distribution entry point. A DeFindex-integrated wallet would therefore need integration work to read sagUSD, exactly as it would for any share-based vault outside DeFindex's own deployments. What is genuinely shared is the economics, and that part is not a small thing: shares are never rebased, nothing is pushed to holders, and a position appreciates because the assets behind each share grow. DeFindex remains the reference point the model was taken from.
+
+Verified against [`vault/src/interface.rs`](https://github.com/defindex-io/stellar-contracts/blob/main/vault/src/interface.rs) in `defindex-io/stellar-contracts`, the live repository, in September 2026. The former `paltalabs/defindex` repository was archived in July 2026.
 
 ## Soroswap
 

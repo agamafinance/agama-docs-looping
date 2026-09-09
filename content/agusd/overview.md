@@ -1,6 +1,10 @@
 # agUSD Overview
 
-agUSD is Agama's synthetic dollar. The [Vault](/stellar/contracts#vault-contract) mints it 1:1 against USDC on deposit and is the only address permitted to mint or burn it. Holders face no such restriction: agUSD is a plain [SEP-41](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0041.md) token that anyone can transfer, approve or hold in another contract.
+agUSD is Agama's synthetic dollar. The [Vault](/stellar/contracts#vault-contract) mints it 1:1 against USDC on deposit and is the only address permitted to mint it. Holders face no such restriction: agUSD is a plain [SEP-41](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0041.md) token that anyone can transfer, approve or hold in another contract.
+
+Burning is not restricted to the Vault. `burn` and `burn_from` are the standard SEP-41 holder-authorized paths, so any holder can burn their own agUSD and a spender can burn against an allowance. The Vault's `request_withdrawal` uses that same path, calling `burn` on the withdrawer inside a transaction the withdrawer has already signed, rather than a privilege of its own.
+
+That asymmetry is deliberate and it is the right way round for a redeemable dollar. Supply can only go up through the Vault, which is what makes every unit in circulation something the Vault is accountable for. Supply can go down through anyone, because burning agUSD destroys a claim rather than creating one, so a holder-authorized burn cannot cost anybody else anything.
 
 ## Mint and redeem
 
@@ -28,6 +32,6 @@ That is deliberate. agUSD is a unit of account, not a share in the book, which i
 
 ## What backs it
 
-Every agUSD is backed by the Vault's assets: idle USDC plus everything the [Allocation Engine](/stellar/contracts#allocation-engine) has deployed into credit vaults and Etherfuse Stablebonds. The Engine cannot deploy that backing freely. Each allocation is checked on-chain against a cap per pool, per originator and per jurisdiction, and against the minimum idle USDC reserve floor that keeps fast-exit liquidity in the Vault.
+Every agUSD is backed by the Vault's assets: idle USDC plus everything the [Allocation Engine](/stellar/contracts#allocation-engine) has deployed into credit vaults and Etherfuse Stablebonds. The Engine cannot deploy that backing freely. Each allocation is checked on-chain against a cap per pool, per originator and per jurisdiction, and against the reserve floor that keeps fast-exit liquidity in the Vault. The floor is a share of total assets rather than a fixed sum, 2500 bps on testnet, so the cash held back against redemptions scales with the size of the book it is held against.
 
 See [Credit Vaults](/credit-vaults/overview) for what the capital is deployed into, [Overview](/overview) for how agUSD fits the wider architecture, and [Risks](/risks) for what can go wrong.

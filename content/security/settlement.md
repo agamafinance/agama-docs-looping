@@ -54,12 +54,12 @@ A deviation above the bound does not silently pass. It is rejected on-chain and 
 
 Private credit allocations involve custodial, off-chain components. This exposure carries counterparty risk: default, settlement delay and FX risk. That is fundamental to private credit and cannot be eliminated on-chain.
 
-What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse allocations and idle reserves are fully on-chain and non-custodial, and the minimum idle USDC reserve floor is enforced by `allocate()` rather than by policy.
+What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse allocations and idle reserves are fully on-chain and non-custodial, and the reserve floor, a minimum share of total assets held as idle USDC, is enforced by `allocate()` rather than by policy.
 
 ## Default handling
 
 1. **Detection.** The backend flags a missed payment. The oracle receives a reduced NAV.
-2. **NAV write-down.** The agUSD share price declines proportionally.
+2. **NAV write-down.** The reported value of the book falls, and the sagUSD exchange rate falls with it. agUSD itself has no share price: it stays a claim on a dollar, and a write-down reaches holders through sagUSD.
 3. **Loss distribution.** Socialized across all agUSD holders. There is no tranching in V1.
 4. **Pool removal.** Admin delists the defaulting pool. Existing exposure runs off naturally.
 5. **Recovery.** A partial repayment later writes NAV back up.

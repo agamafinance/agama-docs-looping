@@ -45,7 +45,7 @@ An oracle failure blocks state changes rather than corrupting them. When the rep
 
 V1 runs on a 2-of-3 multi-sig, and it is a genuine trust assumption. The admin can pause the protocol, register and delist pools, set the concentration caps and the reserve floor, update the reporter set, and direct allocations.
 
-The bounds matter as much as the powers. There is no function that moves user funds to an arbitrary address: the admin cannot transfer USDC out of the Vault, only instruct an allocation to a pool that is already whitelisted and only within the caps that are already set. The admin cannot mint or burn agUSD, which only the Vault can do. The admin cannot reorder the withdrawal queue. Pausing blocks deposits, withdrawals and new allocations, and leaves staking and oracle updates running, so it is a circuit breaker on capital movement rather than a freeze on accounting.
+The bounds matter as much as the powers. There is no function that moves user funds to an arbitrary address: the admin cannot transfer USDC out of the Vault, only instruct an allocation to a pool that is already whitelisted and only within the caps that are already set. The admin cannot mint agUSD, which only the Vault can do, and cannot burn anyone else's, since burning is authorized by the holder. The admin cannot reorder the withdrawal queue. Pausing blocks deposits, withdrawals and new allocations, and leaves staking and oracle updates running, so it is a circuit breaker on capital movement rather than a freeze on accounting.
 
 The powers that remain are still real: an admin that widens the caps and reallocates, or delists a pool, changes the risk of the book. V2 moves the role to governance with a 48 hour timelock. V1 contracts are immutable, so an upgrade means redeployment and migration rather than a silent change under the same addresses.
 
@@ -56,9 +56,9 @@ Several of the mitigations above are commitments in most protocols. Here they ar
 - a cap on how much any one pool can hold, as a share of total assets
 - a cap on everything a single originator fronts, summed across its pools
 - a cap per jurisdiction
-- a minimum idle USDC reserve floor the Vault must be left holding
+- a reserve floor, a minimum share of total assets the Vault must be left holding as idle USDC, 2500 bps on testnet
 
-Total assets are the denominator on purpose, so allocating in small pieces does not get around a cap. Caps start at zero and the floor starts at 100% on deployment, so an Engine that has not been configured cannot deploy capital at all. Every change to a cap or to the floor emits an event.
+Total assets are the denominator on purpose, so allocating in small pieces does not get around a cap. Caps start at zero and the floor starts at 10000 bps, which is 100%, on deployment, so an Engine that has not been configured cannot deploy capital at all. Every change to a cap or to the floor emits an event.
 
 This does not make the exposure safe. It makes the limits on it readable on-chain by anyone, and enforced without trusting an operator to respect them.
 

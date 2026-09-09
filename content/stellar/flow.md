@@ -26,7 +26,7 @@ USDC reaches Stellar from a Stellar wallet, from another chain over [CCTP](/stel
 
 *(funded by this grant)*
 
-`allocate()` on the [Allocation Engine](/stellar/contracts#allocation-engine) routes capital into a whitelisted pool through a pool adapter. Every pool adapter exposes `allocate`, `deallocate`, `write_down`, `get_exposure`, `engine` and `vault`, so the Engine stays pool-agnostic. The call reverts on a cap breach, or if it would leave free reserves below `reserve_floor_bps()` of net assets. All four limits are basis points of net assets, and the floor is 2500 bps on testnet. The Vault applies the floor again on its own numbers when it releases, so the limit does not depend on the Engine being the contract it claims to be.
+`allocate()` on the [Allocation Engine](/stellar/contracts#allocation-engine) routes capital into a whitelisted pool through a pool adapter. Every pool adapter exposes `allocate`, `deallocate`, `write_down`, `get_exposure`, `engine` and `vault`, so the Engine stays pool-agnostic. The call reverts on a cap breach, or if it would leave free reserves below `reserve_floor_bps()` of `floor_base()`, which is net assets plus everything ever written off. All four limits are basis points, and the floor is 2500 bps on testnet. The Vault applies the floor again on its own numbers when it releases, so the limit does not depend on the Engine being the contract it claims to be.
 
 ## 5. Earn
 
@@ -42,7 +42,7 @@ Two queues, in order.
 
 `request_unstake()` burns the sagUSD shares and prices them at the current rate, then `claim()` pays the agUSD out once `cooldown()` has elapsed, 60 seconds on testnet. There is no single `unstake()` call: pricing at request rather than at claim is what stops the cooldown being a free option on the exchange rate.
 
-Then `request_withdrawal()` burns the agUSD and enqueues a FIFO claim, and `claim_withdrawal()` pays USDC once that claim is Ready. `claim_status()` reports which of Pending, Ready or Claimed a claim is in, computed from the queue position and the Vault's idle reserves rather than stored.
+Then `request_withdrawal()` burns the agUSD and enqueues a FIFO claim, and `claim_withdrawal()` pays USDC once that claim is Ready. `settle_withdrawal()` lets anyone pay the head claim to its recorded owner, and a claim the USDC contract refuses to deliver is deferred and stepped over rather than freezing the queue. `claim_status()` reports which of Pending, Ready or Claimed a claim is in, computed from the queue position and the Vault's idle reserves rather than stored.
 
 Liquidity is drawn in order:
 

@@ -54,16 +54,17 @@ A deviation above the bound does not silently pass. It is rejected on-chain and 
 
 Private credit allocations involve custodial, off-chain components. This exposure carries counterparty risk: default, settlement delay and FX risk. That is fundamental to private credit and cannot be eliminated on-chain.
 
-What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse allocations and idle reserves are fully on-chain and non-custodial, and the reserve floor, a minimum share of net assets held as free USDC, is enforced by the Allocation Engine and again by the Vault itself when it releases the cash.
+What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse allocations and idle reserves are fully on-chain and non-custodial, and the reserve floor, a minimum share of net assets plus recognised losses held as free USDC, is enforced by the Allocation Engine and again by the Vault itself when it releases the cash.
 
 Free, not gross. A withdrawal request burns its agUSD immediately and leaves the USDC in the Vault until the claim is paid, so between those two moments the money is on the balance sheet and already owed to somebody. The floor and the caps subtract it before they measure anything, so capital the queue is owed cannot be deployed out from under it.
 
 ## Default handling
 
 1. **Detection.** The backend flags a missed payment. The oracle receives a reduced NAV on the pool's feed, within that feed's deviation bound and rate limit.
-2. **Write-down.** `write_down` on the Allocation Engine reduces the recorded exposure without requiring the cash back. It is admin-gated, it emits an event carrying a reason, and it moves three books in the same transaction so they cannot disagree: the Engine's exposure record, the adapter's own, and the Vault's deployed capital.
-3. **Pool removal.** Admin delists the defaulting pool. Existing exposure runs off naturally.
-4. **Recovery.** A partial repayment later is an ordinary deallocation against whatever exposure remains. There is no path that writes an exposure back up.
+2. **Write-down.** `write_down` on the Allocation Engine reduces the recorded exposure without requiring the cash back. It is admin-gated, it emits an event carrying a reason, and it moves three books in the same transaction so they cannot disagree: the Engine's exposure record, the adapter's own, and the Vault's deployed capital. The Vault leg needs the Vault admin's signature as well as the Engine's call.
+3. **And it buys nothing.** The amount is added to a cumulative loss counter on both contracts that never falls and stays in the reserve floor's denominator for good. Without that, a write-down lowered the number the floor is a percentage of, so recognising a loss, real or fabricated, released cash the floor had already refused. It is also the more honest treatment of a real default: agUSD redeems one for one, so a loss reduces the assets and not what the Vault owes.
+4. **Pool removal.** Admin delists the defaulting pool. Existing exposure runs off naturally.
+5. **Recovery.** A partial repayment later is an ordinary deallocation against whatever exposure remains. There is no path that writes an exposure back up.
 
 ### Where the loss lands
 

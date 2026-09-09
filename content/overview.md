@@ -24,18 +24,20 @@ The protocol has four parts.
 
 3. **sagUSD.** Stake agUSD and receive sagUSD shares at the current exchange rate. Yield arrives by raising that rate, not by changing balances, so there is no claim step and no rebase. See [sagUSD](/sagusd/overview).
 
-4. **The Allocation Engine.** The contract between the Vault and the credit vaults. In V1 a Curator directs it: a person chooses the pool and the amount and calls `allocate()`. What the Engine contributes is refusal. Every call is checked in the same transaction against a cap per pool, a cap per originator, a cap per jurisdiction, and a reserve floor, and any one of them failing reverts the whole call. All four are measured in basis points of net assets, and the floor is 2500 bps on testnet. The Vault holds its own copy of the floor and applies it again when it releases the cash, because the Engine is only an address the Vault authorizes. See [Soroban Contracts](/stellar/contracts#allocation-engine).
+4. **The Allocation Engine.** The contract between the Vault and the credit vaults. In V1 a Curator directs it: a person chooses the pool and the amount and calls `allocate()`. What the Engine contributes is refusal. Every call is checked in the same transaction against a cap per pool, a cap per originator, a cap per jurisdiction, and a reserve floor, and any one of them failing reverts the whole call. The three caps are measured in basis points of net assets and the floor in basis points of net assets plus everything ever written off, so that recognising a loss cannot create room to deploy; the floor is 2500 bps on testnet. The Vault holds its own copy of the floor and applies it again when it releases the cash, because the Engine is only an address the Vault authorizes. See [Soroban Contracts](/stellar/contracts#allocation-engine).
 
 ## What the contracts enforce, rather than the policy
 
-Three properties are worth stating precisely, because each is a line of Rust rather than a commitment.
+Some properties are worth stating precisely, because each is a line of Rust rather than a commitment.
 
 | Property | How it is enforced |
 |---|---|
 | No single pool, originator or jurisdiction takes the book | `allocate()` measures the resulting exposure against net assets and reverts on a breach |
-| Fast-exit liquidity scales with the book | The reserve floor: an allocation reverts if the call would leave the Vault holding less free USDC than `floor_bps` of net assets, 2500 bps on testnet, checked by the Engine and again by the Vault |
+| Fast-exit liquidity scales with the book | The reserve floor: an allocation reverts if the call would leave the Vault holding less free USDC than `floor_bps` of `floor_base`, 2500 bps on testnet, checked by the Engine and again by the Vault |
+| Recognising a credit loss cannot release capital | Written-off exposure stays in the floor's denominator permanently, so a write-down moves the book and does not move the limit |
 | A queued withdrawal cannot be lent out | Queued claims are tracked on-chain and subtracted from free reserves and net assets before any limit is computed |
 | A queue cannot be stalled | `settle_withdrawal()` is permissionless and pays the head claim to its recorded owner |
+| A queue cannot be frozen | A claim the USDC contract refuses to deliver is deferred and stepped over, unpaid and still owed, rather than trapping the payout |
 | The withdrawal queue cannot be reordered | Claims are paid strictly in request order, and there is no admin path around it |
 
 An Engine that has been deployed but not configured cannot deploy capital at all: every cap starts at zero and the reserve floor starts at 10000 bps, which is 100%. Opening it up is an explicit admin action that emits an event.

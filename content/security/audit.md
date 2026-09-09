@@ -10,13 +10,13 @@ This page tracks the security review of the Agama Soroban contracts. It is updat
 | Auditor | OtterSec |
 | Scope | Vault, agUSD (SEP-41), sagUSD staking, Allocation Engine and its pool adapters, Oracle Adapter |
 | Report | Published on this page after remediation |
-| Before the audit | Two adversarial reviews, run internally. Every Critical and High closed, tested and redeployed. |
+| Before the audit | Three adversarial reviews, run internally. Every Critical and High closed, tested and redeployed. |
 
 OtterSec is one of the audit firms coordinating with the Stellar Development Foundation through the Soroban Audit Bank. Its Stellar track record includes Soroswap.
 
-## Before the audit: two adversarial reviews
+## Before the audit: three adversarial reviews
 
-The contracts have not been audited. They have been attacked twice, deliberately, before any external auditor sees them, on the view that an audit is a poor place to discover the obvious problems. Both reviews were run in September 2026. Everything below is in the public repository, finding by finding, with the code that fixes it and the test that fails without it.
+The contracts have not been audited. They have been attacked three times, deliberately, before any external auditor sees them, on the view that an audit is a poor place to discover the obvious problems. All three reviews were run in September 2026. Everything below is in the public repository, finding by finding, with the code that fixes it and the test that fails without it.
 
 ### The first review: nine findings
 
@@ -38,6 +38,16 @@ The second Critical reopened a first-review finding by a different mechanism. Wi
 
 The second review also recorded six Medium and seven Low findings, none of them fixed at the time. Every Medium was closed in a third pass, which re-derived each one from the code rather than trusting the write-up: two of them turned out not to say quite what the summary said. Nothing was declined. Test count went from 125 to 130 and then to 149.
 
+### The third review: nothing Critical, one High
+
+The third review was pointed at the surface the second round's fixes had added: the concentration caps' new numerator, the recovery path that brings written-off capital home, an unauthenticated call for extending a claim record's lifetime, and the constructor that replaced `initialize` on all seven contracts.
+
+It found nothing at Critical. The claim the second round rested on, that what a write-down cannot buy a recovery cannot buy back, was re-derived from the source rather than re-read, and it holds for a stronger reason than the one originally given: the base the reserve floor is a share of can be lowered only by the two calls that book returning cash, both of which are bounded by the balance the Vault cannot already account for, and every unit of that cash had raised the base by the same amount when it arrived. The order of allocations, write-downs and recoveries does not matter, and neither does where the recovered cash came from.
+
+The one High was not in the new surface at all. `register_pool` proves that a pool adapter names this Engine and this Engine's Vault, and that check ran once, at registration. Half of the condition is a fact about the Engine, and `set_vault` can change it: the pool registry is a map with no way to remove an entry, so the moment the Vault pointer moved, every adapter already registered went on naming the Vault the Engine had just stopped governing. The next allocation released the new Vault's USDC to an adapter that repays the old one, which in this protocol is a superseded Vault where nothing can move USDC at all, and the position could not be unwound either, because the repayment path sends the cash to the old Vault and then asks the new one to confirm it arrived. `allocate`, `deallocate` and `recover` now re-run the check. Every other edge of that wiring was checked on both sides; this was the one checked once.
+
+Only the Allocation Engine changed, so only the Allocation Engine was redeployed. The Vault and both pool adapters were repointed in place through their own setters. Test count went from 149 to 150.
+
 ### The exploits were submitted, not simulated
 
 Several findings were proved by attacking the superseded contracts, which are still live on the ledger. That makes them evidence about the chain rather than only about the source.
@@ -51,13 +61,15 @@ The write-down exploit, run against the superseded Vault and Allocation Engine:
 | Write the whole position off, no cash moving | The adapter still holds every dollar | [`0a422d69`](https://stellar.expert/explorer/testnet/tx/0a422d6932b615d2a39a6f9593cbb8826a8ca2735c5b5c5029848e75a45f57c6) |
 | The identical allocation that was just refused | Accepted. The Vault ends below the floor it promised | [`6820cec4`](https://stellar.expert/explorer/testnet/tx/6820cec478b6b518bf4bcd74f90378a4d5f9c095dfccd638c168013ee46802c7) |
 
+The third review's finding was proved the same way, against an Engine built from the commit before its fix: with the Engine following its Vault to a new generation and the registered adapter left behind, [the allocation went through](https://stellar.expert/explorer/testnet/tx/7583fb3123a6010183220bf903e1321611dae86e33d02df8c114d15042b6402e) and the money landed at an adapter that repays somebody else. The fixed Engine refuses the identical call with `AdapterMismatch`, and [accepts it](https://stellar.expert/explorer/testnet/tx/2a417f6e727bd73f1228c9a3366cb282a55be71288a68df433e43d110705fcac) once the adapter is brought across, so it is a check rather than a wall.
+
 The same sequence against the fixed contracts is refused with `ReserveFloorBreached`. The frozen-queue finding was proved the same way, with a claimant holding no USDC trustline: the undeliverable head claim is [deferred rather than fatal](https://stellar.expert/explorer/testnet/tx/b785c0b7b36a19a6381d0043cb624f4bbaf7d5c1f37dce96b4f4853d69d6fc46), and its owner [collects it out of head order](https://stellar.expert/explorer/testnet/tx/ca28d12b5c2bb23875e828770182737fe7578bbbc0cb9745bad82cdb8d560585) once the trustline exists.
 
 Refusals are shown by simulation with the contract error code asserted, because the CLI will not submit a transaction whose simulation fails. That is sound for a refusal and not sound for authorization, so every authorization property is proved by a submitted transaction signed by the key under test.
 
 ### The reviews did not fix as they went
 
-Findings were rated and written up before anything was repaired. The second review closed its two Criticals and deliberately left every Medium and Low unfixed, recorded for triage, so no severity was argued down once the cost of fixing it became apparent. The reserve-floor Critical is the case that justifies the discipline: it was rated Critical against a module comment that claimed the floor bounded the admin, and the review's conclusion was that the comment was false rather than that the finding was theoretical.
+Findings were rated and written up before anything was repaired. The second and third reviews closed everything at Critical and High and deliberately left every Medium and Low unfixed, recorded for triage, so no severity was argued down once the cost of fixing it became apparent. The third wrote its complete findings list, severities included, before a line of the contracts was changed, for the same reason. The reserve-floor Critical is the case that justifies the discipline: it was rated Critical against a module comment that claimed the floor bounded the admin, and the review's conclusion was that the comment was false rather than that the finding was theoretical.
 
 None of this is a substitute for the external audit. It is what the contracts look like going into one.
 

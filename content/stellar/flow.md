@@ -26,7 +26,7 @@ USDC reaches Stellar from a Stellar wallet, from another chain over [CCTP](/stel
 
 *(funded by this grant)*
 
-`allocate()` on the [Allocation Engine](/stellar/contracts#allocation-engine) routes capital into a whitelisted pool through a pool adapter. Every pool adapter exposes `allocate`, `deallocate`, `write_down`, `get_exposure`, `engine` and `vault`, so the Engine stays pool-agnostic. The call reverts on a cap breach, or if it would leave free reserves below `reserve_floor_bps()` of `floor_base()`, which is net assets plus everything ever written off. All four limits are basis points, and the floor is 2500 bps on testnet. The Vault applies the floor again on its own numbers when it releases, so the limit does not depend on the Engine being the contract it claims to be.
+`allocate()` on the [Allocation Engine](/stellar/contracts#allocation-engine) routes capital into a whitelisted pool through a pool adapter. Every pool adapter exposes `allocate`, `deallocate`, `write_down`, `recover_surplus`, `get_exposure`, `engine` and `vault`, so the Engine stays pool-agnostic. The call reverts on a cap breach, measured on what a pool holds plus what has been written off against it and not recovered, or if it would leave free reserves below `reserve_floor_bps()` of `floor_base()`, which is net assets plus the same write-offs. All four limits are basis points, and the floor is 2500 bps on testnet. The Vault applies the floor again on its own numbers when it releases, so the limit does not depend on the Engine being the contract it claims to be.
 
 ## 5. Earn
 

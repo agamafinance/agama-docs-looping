@@ -184,7 +184,9 @@ The constraint layer. It decides nothing about where capital goes, which in V1 i
 
 Every adapter implements the same interface, which is what lets the Engine route to an off-chain credit facility and to a tokenized bond through identical code. `allocate`, `deallocate` and `write_down` are callable only by the stored Engine; `recover_surplus` by the Engine or the adapter's admin, and it sends to the adapter's stored Vault rather than anywhere the caller names.
 
-`allocate(amount: i128)`, `deallocate(amount: i128)`, `write_down(amount: i128)`, `recover_surplus(caller: Address) -> i128`, `get_exposure() -> i128`, `engine() -> Address`, `vault() -> Address`, `admin() -> Address`, `pool_kind() -> Symbol`, `oracle_feed() -> Symbol`, `settlement_window()`, `set_counterparties(admin, engine, vault)`, `propose_admin`, `accept_admin`, `pending_admin`.
+`allocate(amount: i128)`, `deallocate(amount: i128)`, `write_down(amount: i128)`, `recover_surplus(caller: Address) -> i128`, `get_exposure() -> i128`, `engine() -> Address`, `vault() -> Address`, `admin() -> Address`, `pool_kind() -> Symbol`, `oracle_feed() -> Symbol`, `set_counterparties(admin, engine, vault)`, `propose_admin`, `accept_admin`, `pending_admin`.
+
+The settlement figure is the one place the two adapters differ, and they differ because the instruments do. Private credit publishes `settlement_window() -> (u32, u32)`, a range of 15 to 90 days; Etherfuse publishes `settlement_days() -> u32`, which is zero, because a Stablebond redemption is on-chain and returns in the same call. Nothing on-chain enforces either. They are published so that the Engine's operators and the withdrawal queue can be sized against the real cash conversion time of the book.
 
 Error ranges: 600 for the private credit adapter, 700 for Etherfuse, with matching variants. `NotEmpty` 605 and 705 is the refusal to repoint an adapter that is still holding something; `NothingToRecover` 611 and 711 is `recover_surplus` finding no surplus.
 

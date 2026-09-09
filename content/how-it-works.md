@@ -33,7 +33,7 @@ The Engine does not choose. It checks the call, in the same transaction, and rev
 - the pool would hold more than its cap allows
 - the pools fronted by that originator would together exceed the originator cap
 - the pools under that legal regime would together exceed the jurisdiction cap
-- the release would leave the Vault holding less idle USDC than the reserve floor, which is a share of total assets rather than a fixed sum, and is 25% on testnet
+- the release would leave the Vault holding less free USDC than the reserve floor, which is a share of net assets rather than a fixed sum, and is 25% on testnet. Free rather than gross: USDC owed to a queued withdrawal is on the Vault's balance and is not deployable. The Vault checks the same floor itself when it releases the cash
 
 Any one of those failing reverts the whole call, so a refused allocation moves no money and books no exposure. Capital that passes goes into a whitelisted pool through an adapter: a credit vault, or Etherfuse Stablebonds for Stellar-native government bond exposure.
 
@@ -55,7 +55,7 @@ Exiting is deliberately less immediate than depositing, because the assets behin
 
 The queue is strictly first in, first out. There is no priority tier, no fast lane, and no admin function that reorders it. Liquidity reaches it in this order:
 
-1. Idle reserves the Vault holds above the reserve floor, which is 25% of total assets on testnet
+1. Free reserves the Vault holds above the reserve floor, which is 25% of net assets on testnet
 2. New deposits
 3. Etherfuse Stablebond redemption, instant and on-chain
 4. Private credit repayment, fifteen to ninety days

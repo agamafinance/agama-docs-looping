@@ -10,7 +10,9 @@ Private credit instruments settle off-chain. An originator repays in fiat, on it
 
 The custody picture follows from that. Idle USDC in the Vault and Etherfuse Stablebond positions are on-chain and non-custodial. Private credit allocations sit off-chain with the originator, governed by legal agreements, and the settlement fiat sits in a bank account controlled by an Agama entity. Two of the four components are therefore custodial.
 
-If a pool defaults, the reported NAV is written down, the admin delists the pool, and the existing exposure runs off rather than being force-unwound. Agama does not tranche its own positions in V1, so losses are socialized across holders rather than absorbed by a junior class first. A later partial repayment writes NAV back up. See [Settlement & NAV](/security/settlement) for the full flow and the custody table.
+If a pool defaults, the exposure is written down on-chain through an admin-gated, evented call that moves the Engine's book, the adapter's book and the Vault's deployed capital together, the admin delists the pool, and the existing exposure runs off rather than being force-unwound. A later partial repayment is an ordinary deallocation against whatever exposure remains.
+
+**Who bears that loss is not decided by the contracts, and this page used to say otherwise.** There is no tranching in V1 and no loss-socialisation mechanism either: a deposit mints exactly what was deposited, a queued claim pays exactly what is recorded on it, and no contract reduces either against a loss. The withdrawal queue is paid strictly in order, so a shortfall lands on whoever is at the back of it when the cash runs out. That is a first-mover advantage and a run incentive, and how losses should be shared between agUSD and sagUSD holders remains an open product decision. See [Settlement & NAV](/security/settlement) for the full flow and the custody table.
 
 ## Withdrawal queue liquidity
 
@@ -53,10 +55,10 @@ The powers that remain are still real: an admin that widens the caps and realloc
 
 Several of the mitigations above are commitments in most protocols. Here they are guards inside `allocate()`, checked in the same transaction as the allocation, with any single failure reverting the whole call:
 
-- a cap on how much any one pool can hold, as a share of total assets
+- a cap on how much any one pool can hold, as a share of net assets
 - a cap on everything a single originator fronts, summed across its pools
 - a cap per jurisdiction
-- a reserve floor, a minimum share of total assets the Vault must be left holding as idle USDC, 2500 bps on testnet
+- a reserve floor, a minimum share of net assets the Vault must be left holding as free USDC, 2500 bps on testnet, enforced by the Allocation Engine and again by the Vault itself
 
 Total assets are the denominator on purpose, so allocating in small pieces does not get around a cap. Caps start at zero and the floor starts at 10000 bps, which is 100%, on deployment, so an Engine that has not been configured cannot deploy capital at all. Every change to a cap or to the floor emits an event.
 

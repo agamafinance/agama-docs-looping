@@ -16,22 +16,22 @@ Agama runs natively on Stellar. All protocol logic is implemented as Soroban sma
 | Contract | Standard | Address |
 |---|---|---|
 | USDC (Circle) | Stellar asset contract | [`CBIELTK6...XQDAMA`](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA) |
-| Vault | Custody, mint, FIFO withdrawal queue | [`CCGPF36P...F5KVRR`](https://stellar.expert/explorer/testnet/contract/CCGPF36PDG2WBBK6ZROLMNMHD67UV4MNG6PHQCN2PXWLLRBXCYF5KVRR) |
-| agUSD | SEP-41, minted only by the Vault | [`CCW763RT...U4ALZL`](https://stellar.expert/explorer/testnet/contract/CCW763RTVRDQTEEQ42XCAARSJ42AKWRB2DDM62QV4XVUJFCDAWU4ALZL) |
-| sagUSD | SEP-41, DeFindex-compatible shares | [`CCBEDKRQ...L6HFO2`](https://stellar.expert/explorer/testnet/contract/CCBEDKRQHKAP2W3NC4UIYC4WZSMJVYRXN6EQERHFII45M3PD4JL6HFO2) |
-| Allocation Engine | Caps and reserve floor, all in bps of total assets | [`CAFJKWLU...SZ5HUX`](https://stellar.expert/explorer/testnet/contract/CAFJKWLUGUSYEC7L5ZBNFIFEPSO5MLI7SKDMVVJCGC6Z2TGVP5SZ5HUX) |
-| Oracle Adapter | Per-feed staleness and deviation guards | [`CDV5BC4X...XCSV7G`](https://stellar.expert/explorer/testnet/contract/CDV5BC4XCNT5ASOZNFXBQXRGKVXGKHLRVK5EDX6XP5J6EBIZWSXCSV7G) |
+| Vault | Custody, mint, FIFO withdrawal queue, its own reserve floor | [`CCW5EQCV...KDSIWP`](https://stellar.expert/explorer/testnet/contract/CCW5EQCVHXA2PTXN4Y4QMO4O4YMG6BRMB7M2PYASILFI53BL3CKDSIWP) |
+| agUSD | SEP-41, minted only by the Vault | [`CANR4HJC...VJGIYG`](https://stellar.expert/explorer/testnet/contract/CANR4HJCDO7KDIUKTNGOJJUSZ45VB6EVR5IFHTOPQUCGAZ2XEDVJGIYG) |
+| sagUSD | SEP-41, DeFindex-compatible shares | [`CDU7BYCE...GVYE7X`](https://stellar.expert/explorer/testnet/contract/CDU7BYCE535Y4WU6FAQTMNPLR3RD7HTGWR2NETW7EEPAQTLY2XGVYE7X) |
+| Allocation Engine | Caps and reserve floor, all in bps of net assets | [`CAOGJDWH...KJDONN`](https://stellar.expert/explorer/testnet/contract/CAOGJDWH5SZAVPGLBB2NCKGPT4OUFT3YEKUCKEJP6BVN3CR2WUKJDONN) |
+| Oracle Adapter | Per-feed staleness, deviation, band and rate limit | [`CCIABPQM...N4DWJG`](https://stellar.expert/explorer/testnet/contract/CCIABPQMPGS4HSDQYN46M67LV6B5LCYO6X2XLCI27JSOMKUMN3N4DWJG) |
 
 The USDC issuer on Stellar is `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`.
 
 ## Pool adapters
 
-Both implement the same interface (`allocate`, `deallocate`, `get_exposure`), so the Allocation Engine stays agnostic to pool type.
+Both implement the same interface (`allocate`, `deallocate`, `write_down`, `get_exposure`, `engine`, `vault`), so the Allocation Engine stays agnostic to pool type. `register_pool` reads the last two and refuses any adapter that does not name the Engine registering it and that Engine's Vault: an adapter pointed elsewhere would take capital from this Vault and repay a third party while the Engine's book decremented as though the money had come home.
 
 | Adapter | Settlement | Address |
 |---|---|---|
-| Private credit | D+15 to D+90, off-chain originator | [`CBAPY7KR...ZGFTOZ`](https://stellar.expert/explorer/testnet/contract/CBAPY7KRVIG3FPGSP3VKXXA6SCDKZUWBSFDWISRJXR5V7PYPVQZGFTOZ) |
-| Etherfuse | Instant, on-chain redemption | [`CBA3GQLH...AH7EWI`](https://stellar.expert/explorer/testnet/contract/CBA3GQLHCEOCCZIDVFZ74AG4FUCEO2SN7AMGY4RSAMN4DTHW2WAH7EWI) |
+| Private credit | D+15 to D+90, off-chain originator | [`CBWFVABY...JT5BBT`](https://stellar.expert/explorer/testnet/contract/CBWFVABYRGKAGDN54MIN4GIXQO3ALVPJ3POSVFDFKUQSLYL4M4JT5BBT) |
+| Etherfuse | Instant, on-chain redemption | [`CADNIBDB...KF4ZFV`](https://stellar.expert/explorer/testnet/contract/CADNIBDB5LZHGOOSVTL2LF47XCRPEL53IHBES2Y4RIORI4I3VCKF4ZFV) |
 
 ## Superseded deployments
 
@@ -44,6 +44,8 @@ Earlier generations stay on the ledger rather than being deleted from the record
 | sagUSD, first deployment | [`CABPYD4U...XTALX`](https://stellar.expert/explorer/testnet/contract/CABPYD4U5FAYLBEBMY2MVGVF7BILXTNPWGLOPIXCMUK3QQGIAE2XTALX) | Accepts the first generation agUSD and stores it at `initialize()` with no setter. It also has **no re-initialization guard**: anyone can call its `initialize` a second time and take it over, so the agUSD it still custodies should be treated as at risk. The current sagUSD rejects a second `initialize` with `AlreadyInitialized`. |
 | sagUSD, second and third deployments | [`CDY3ED6T...BTC345`](https://stellar.expert/explorer/testnet/contract/CDY3ED6T72VJDX5RCMQOZNCV5XKJBHQVAYPNOXTWB66RNBVOS5BTC345) and [`CBMEW3QA...WFTHZF`](https://stellar.expert/explorer/testnet/contract/CBMEW3QALCS6FFJMK5FR7LVKUWX3MPIP26LQQQAFYMQFYVG6VUWFTHZF) | The second was replaced within the day after review, because its `set_agusd` guard keyed off the stake counter alone and delivered yield takes custody without touching it. The third exposed `accrue_yield` and `share_price`, the names the contract shipped with, rather than `distribute_yield` and `exchange_rate`, the names Agama committed to. Both were superseded holding nothing: NAV and share supply were zero at each handover. |
 | Allocation Engine and pool adapters, first deployments | [`CANDJEHB...KSL2SGS`](https://stellar.expert/explorer/testnet/contract/CANDJEHBZUPGBWQMWM567Z3NQR4AHJKJSMWB4LTXPT6SC7GSRKSL2SGS), [`CCDZRKZD...KCXT3VZ`](https://stellar.expert/explorer/testnet/contract/CCDZRKZDCWJWTFMLVJFW4LRALZEWRDKWOOD727EDO3EFFKLNDKCXT3VZ), [`CBS3OGCV...WKFLYKK`](https://stellar.expert/explorer/testnet/contract/CBS3OGCVYMI3XQN2ORZZNE2WKGYK24VSTVDUB3QS5HCZHBQQFWKFLYKK) | Bound to a superseded Vault at `initialize()` with no setter. Their replacements carry admin-gated setters, guarded so they are refused once the contract holds state the change would invalidate. |
+
+| Vault, agUSD, Allocation Engine, Oracle Adapter, both pool adapters and sagUSD, September 2026 | [`CCGPF36P...F5KVRR`](https://stellar.expert/explorer/testnet/contract/CCGPF36PDG2WBBK6ZROLMNMHD67UV4MNG6PHQCN2PXWLLRBXCYF5KVRR), [`CCW763RT...U4ALZL`](https://stellar.expert/explorer/testnet/contract/CCW763RTVRDQTEEQ42XCAARSJ42AKWRB2DDM62QV4XVUJFCDAWU4ALZL), [`CAFJKWLU...SZ5HUX`](https://stellar.expert/explorer/testnet/contract/CAFJKWLUGUSYEC7L5ZBNFIFEPSO5MLI7SKDMVVJCGC6Z2TGVP5SZ5HUX), [`CDV5BC4X...XCSV7G`](https://stellar.expert/explorer/testnet/contract/CDV5BC4XCNT5ASOZNFXBQXRGKVXGKHLRVK5EDX6XP5J6EBIZWSXCSV7G), [`CBAPY7KR...ZGFTOZ`](https://stellar.expert/explorer/testnet/contract/CBAPY7KRVIG3FPGSP3VKXXA6SCDKZUWBSFDWISRJXR5V7PYPVQZGFTOZ), [`CBA3GQLH...AH7EWI`](https://stellar.expert/explorer/testnet/contract/CBA3GQLHCEOCCZIDVFZ74AG4FUCEO2SN7AMGY4RSAMN4DTHW2WAH7EWI), [`CCBEDKRQ...L6HFO2`](https://stellar.expert/explorer/testnet/contract/CCBEDKRQHKAP2W3NC4UIYC4WZSMJVYRXN6EQERHFII45M3PD4JL6HFO2) | Replaced together after an adversarial security review ahead of the OtterSec audit. The Vault delegated the reserve floor entirely to whatever Allocation Engine it pointed at; queued withdrawals were counted as free liquidity by the floor and the caps; one unclaimed withdrawal froze the queue for everyone behind it; a credit loss could not be recognised on-chain at all; the oracle accepted an unbounded first value and had no rate limit; sagUSD carried `report_nav`, a bare setter on the denominator of its own share price; and no contract had admin rotation. None of these contracts is upgradeable, so every fix is a redeployment. |
 
 These are testnet contracts and hold no user funds. They are documented rather than removed because a published address that quietly disappears is worse than one explained.
 

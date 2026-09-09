@@ -14,13 +14,22 @@ Entry point for capital. Accepts USDC deposits, mints agUSD 1:1, manages NAV-bas
 | `deposit(from, amount) -> i128` | Transfers USDC, mints agUSD. Returns minted amount. |
 | `request_withdrawal(from, amount) -> u64` | Burns agUSD, enqueues claim. Returns `claim_id`. |
 | `claim_withdrawal(from, claim_id)` | Pays USDC when Ready. FIFO order. |
+| `settle_withdrawal()` | Pays the head claim to its recorded owner. Permissionless: no claim id and no recipient, so the caller can neither redirect a payment nor skip ahead. |
+| `set_reserve_floor(admin, floor_bps)` | The Vault's own copy of the reserve floor, enforced in `settle_allocation`. Ships closed at 10000. |
+| `record_repayment(amount)` | Called by the Engine. The Vault verifies the cash actually arrived in its own balance before reducing `deployed_capital`. |
+| `record_writedown(admin, amount)` | Called by the Engine and signed by the admin. Reduces `deployed_capital` with no cash arriving. |
 | `settle_allocation(pool, amount)` | Releases idle USDC to a pool. Callable only by the Allocation Engine, which has already checked the caps and the floor. |
 | `set_agusd(admin, agusd_token)` | Repoints the token the Vault mints. Closes at the first deposit. |
-| `set_engine(admin, allocation_engine)` | Repoints the Engine allowed to release reserves. Refuses any address that does not answer that it governs this Vault. |
+| `set_engine(admin, allocation_engine)` | Repoints the Engine allowed to release reserves. Refuses any address that does not answer that it governs this Vault with an empty book, and refuses to move while this Vault has capital deployed. |
 | `set_oracle(admin, oracle, feed_id)` | Points the Vault at an Oracle Adapter and the feed it reads NAV from. |
-| `set_paused(admin, paused)` | Circuit breaker. |
-| `idle_reserves() -> i128` | USDC the Vault is holding. What the reserve floor protects and what claims are paid from. |
-| `get_total_assets() -> i128` | Idle reserves plus deployed allocations. |
+| `set_paused(admin, paused)` | Circuit breaker on deposits, withdrawal requests and new allocations. Payouts stay open, because a queued claim has already burned its agUSD. |
+| `idle_reserves() -> i128` | USDC the Vault is holding, gross. What claims are paid from. |
+| `outstanding_liabilities() -> i128` | USDC owed to queued withdrawal claims that have burned their agUSD and not been paid. |
+| `free_reserves() -> i128` | Idle reserves less what the queue is owed. What the reserve floor protects. |
+| `deployed_capital() -> i128` | Capital this Vault has released and not seen back, from its own records rather than the Engine's. |
+| `reserve_floor_bps() -> u32` | The Vault's own floor, in bps of net assets. |
+| `get_total_assets() -> i128` | Gross: idle reserves plus deployed allocations. Counts USDC owed to the queue, which is still an asset until it is paid. |
+| `get_net_assets() -> i128` | Free reserves plus deployed capital. The denominator the floor uses. |
 | `get_nav() -> i128` | Latest validated NAV from the Oracle Adapter. Propagates `OracleStale` rather than returning an old number. |
 | `get_claim(claim_id) -> Claim` | The stored claim record. |
 | `claim_status(claim_id) -> ClaimStatus` | Pending, Ready or Claimed. Ready is computed rather than stored: a claim becomes payable when the queue reaches it and reserves cover it, without anyone touching it. |
@@ -28,10 +37,22 @@ Entry point for capital. Accepts USDC deposits, mints agUSD 1:1, manages NAV-bas
 | `queue_tail() -> u64` | Next claim id to be handed out. |
 | `queue_length() -> u64` | Claims requested and not yet paid. |
 | `deposits() -> u64` | Deposits taken since deployment. What `set_agusd` keys off. |
+| `propose_admin(admin, new_admin)` / `accept_admin(new_admin)` | Two-step admin handover. The successor authorizes the second step itself. |
+| `pending_admin() -> Option<Address>` | The proposed successor, if a handover is in flight. |
 
-Events: `Deposit`, `WithdrawalRequested`, `WithdrawalClaimed`, `PauseToggled`, `AgUsdRepointed`, `EngineRepointed`.
+Events: `Deposit`, `WithdrawalRequested`, `WithdrawalClaimed`, `PauseToggled`, `AgUsdRepointed`, `EngineRepointed`, `ReserveFloorSet`, `RepaymentRecorded`, `WriteDownRecorded`, `AdminProposed`, `AdminChanged`.
 
-Security: initialization guard, `require_auth()` on all state-changing calls, zero and negative validation, pause circuit breaker, minimum withdrawal amount, strict FIFO with no priority.
+Security: initialization guard, `require_auth()` on all state-changing calls, zero and negative validation, a pause circuit breaker on deposits, requests and allocations but never on payouts, minimum withdrawal amount, strict FIFO with no priority and no way to stall it, and the reserve floor enforced against the Vault's own book.
+
+### The Vault is the last word on its own reserves
+
+`settle_allocation` used to release USDC on the Engine's say-so and check nothing itself, on the reasoning that duplicating the Engine's limits would mean two implementations that can disagree. The Engine, though, is simply an address the Vault authorizes, and `set_engine`'s guard, which asks an incoming Engine whether it governs this Vault, is answered correctly by any contract that stores one address and returns it. A limit enforced only in the Engine is therefore a limit any contract holding that authorization can skip.
+
+The Vault now keeps its own floor, its own deployed capital book and its own record of what the withdrawal queue is owed, and `settle_allocation` refuses any release that would take free reserves below the floor or below the queued claims. `deployed_capital` rises with every release the Vault performs and falls in exactly two ways: a repayment the Vault can see in its own balance, or a write-down carrying the admin's signature as well as the Engine's call. An honest Engine never meets the check, because it applied the same arithmetic to the same book one call earlier.
+
+### A queued claim is a liability
+
+A withdrawal request burns the agUSD immediately and leaves the USDC in the Vault until the claim is paid, so between those two moments the money is on the balance sheet and no longer anybody's to lend out. Every limit that asks how much may be deployed reads free reserves and net assets rather than the gross balance.
 
 ## agUSD Token (SEP-41)
 
@@ -70,29 +91,30 @@ Converting the agUSD back to USDC is then a separate two-step queue on the Vault
 
 ## Allocation Engine
 
-Routes vault capital across pool adapters with on-chain concentration cap enforcement and a reserve floor. All four limits are measured in basis points of total assets, so the floor is read in the same units as the caps and the two cannot be compared wrongly.
+Routes vault capital across pool adapters with on-chain concentration cap enforcement and a reserve floor. All four limits are measured in basis points of net assets, so the floor is read in the same units as the caps and the two cannot be compared wrongly.
 
 | Function | Description |
 |---|---|
 | `initialize(admin, vault)` | One-time setup. Ships fail-closed: every cap at zero and the reserve floor at 10000 bps, so an unconfigured Engine can deploy nothing. |
 | `register_pool(admin, pool_id, originator, jurisdiction, cap_bps)` | Whitelists a pool with metadata and cap. |
-| `set_caps(admin, pool_cap_bps, originator_cap_bps, jurisdiction_cap_bps)` | Updates global concentration limits, in bps of total assets. |
-| `set_reserve_floor(admin, floor_bps: u32)` | Sets the minimum share of total assets, in basis points, that must stay as idle USDC in the Vault. Rejects anything above 10000. Admin-gated; emits an event. |
+| `set_caps(admin, pool_cap_bps, originator_cap_bps, jurisdiction_cap_bps)` | Updates global concentration limits, in bps of net assets. |
+| `set_reserve_floor(admin, floor_bps: u32)` | Sets the minimum share of net assets, in basis points, that must stay as free USDC in the Vault. Rejects anything above 10000. Admin-gated; emits an event. The Vault keeps its own copy and enforces it independently. |
 | `set_vault(admin, vault)` | Repoints the Engine at a different Vault. Refused while any capital is deployed, so the book and the balance sheet the caps measure it against stay one Vault's. |
-| `allocate(admin, pool_id, amount)` | Deploys capital. Reverts if any concentration cap is exceeded, or if the call would leave idle reserves below `floor_bps` of total assets. |
+| `allocate(admin, pool_id, amount)` | Deploys capital. Reverts if any concentration cap is exceeded, or if the call would leave free reserves below `floor_bps` of net assets. The Vault applies the same floor again when it releases. |
+| `write_down(admin, pool_id, amount, reason)` | Recognises a credit loss. Reduces this Engine's exposure, the adapter's own and the Vault's deployed capital in one transaction, with no cash required. Admin-gated; emits an event carrying the reason. |
 | `deallocate(pool_id, amount)` | Records repayments returning to the vault. |
 | `get_exposure(pool_id) -> i128` | Current allocation per pool. |
 | `get_exposures() -> Map` | Full allocation state. Pools with no exposure appear as zero, so the map doubles as the whitelist. |
-| `total_allocated() -> i128` | Total booked as deployed across every pool. The Vault reads it to compute total assets. |
+| `total_allocated() -> i128` | Total booked as deployed across every pool. |
 | `caps() -> Caps` | The three concentration limits currently in force, in bps. |
-| `reserve_floor_bps() -> u32` | Current reserve floor, in bps of total assets. Readable by anyone. |
-| `get_reserve_ratio() -> u32` | Idle reserves as an actual share of total assets, in bps: the number the floor is a lower bound on, read in the same units. |
+| `reserve_floor_bps() -> u32` | Current reserve floor, in bps of net assets. Readable by anyone. |
+| `get_reserve_ratio() -> u32` | Free reserves as an actual share of net assets, in bps: the number the floor is a lower bound on, read in the same units. |
 | `get_pool(pool_id) -> Pool` | A registered pool's originator, jurisdiction and cap. |
 | `pools() -> Vec<Address>` | Every registered pool adapter. |
 
 ### Reserve floor
 
-The Engine enforces the reserve floor as a share of total assets rather than as an amount of USDC. `set_reserve_floor(admin, floor_bps)` takes basis points, `reserve_floor_bps()` returns them, and `get_reserve_ratio()` returns what idle reserves actually are as a share of total assets, in the same units, so the limit and the reality are read off the same scale. Testnet runs at 2500 bps, which is 25%.
+The Engine enforces the reserve floor as a share of net assets rather than as an amount of USDC. `set_reserve_floor(admin, floor_bps)` takes basis points, `reserve_floor_bps()` returns them, and `get_reserve_ratio()` returns what free reserves actually are as a share of net assets, in the same units, so the limit and the reality are read off the same scale. Testnet runs at 2500 bps, which is 25%. The Vault holds the same number and applies it again when it releases the cash, against its own book.
 
 Total assets are idle reserves plus everything the Engine has booked as deployed. `allocate()` computes what the Vault would be left holding once the release settles, and reverts if that is below `floor_bps` of the total. The check happens in the same transaction as the transfer, so a refused allocation moves no funds and books no exposure.
 
@@ -121,7 +143,7 @@ These pool adapters are distinct from the Oracle Adapter below. Pool adapters mo
 
 ## Oracle Adapter
 
-Single source of truth for NAV data, bridging three feed types with unified validation. See [Oracle Design](/security/oracle).
+Single source of truth for NAV data, bridging three feed types with unified validation. Each feed carries a staleness window, a per-push deviation bound, an absolute band and a minimum interval in ledger time between accepted values, and the reference point lives in persistent storage so it cannot expire out from under the checks that read it. See [Oracle Design](/security/oracle).
 
 ## Storage and TTL
 
@@ -129,16 +151,17 @@ Soroban storage is tiered deliberately.
 
 | Contract | Type | Data | Rationale |
 |---|---|---|---|
-| Vault | Instance | Admin, tokens, pause, queue pointers | Small, read every call |
+| Vault | Instance | Admin, pending admin, tokens, pause, queue pointers, reserve floor, deployed capital, queued liabilities, accounted balance | Small, read every call |
 | Vault | Persistent | Withdrawal claims by `claim_id` | Claims pending for weeks |
 | agUSD | Persistent | Balances, allowances | Long-lived user data |
-| sagUSD | Instance | Admin, staked token, NAV, cooldown, stake counter | Touched every stake and unstake |
+| sagUSD | Instance | Admin, pending admin, staked token, NAV, cooldown, stake counter | Touched every stake and unstake |
 | sagUSD | Persistent | Share balances, pending unstake requests | A request outlives the shares that created it |
-| Allocation Engine | Instance | Admin, Vault, caps, reserve floor in bps, pool registry | Config, read every allocation |
+| Allocation Engine | Instance | Admin, pending admin, Vault, caps, reserve floor in bps, pool registry | Config, read every allocation |
 | Allocation Engine | Persistent | Per-pool exposure records | Must persist across settlement |
-| Oracle | Temporary | Latest NAV and timestamp | Replaced each update, auto-expires |
+| Oracle | Instance | Admin, pending admin, reporter set, per-feed guards | Configuration |
+| Oracle | Persistent | Latest NAV, its reported timestamp, and the ledger time it was accepted at | The reference every guard is measured against. It was temporary, and an expired reference removes the monotonicity check, the deviation bound and the rate limit at once |
 
-Instance storage is bumped automatically on invocation. Persistent hot data is bumped on user interaction. Cold data such as claimed withdrawals archives naturally. A backend keeper handles periodic bumps for system-critical entries.
+Instance storage is bumped automatically on invocation. Persistent hot data is bumped on user interaction. Cold data such as claimed withdrawals archives naturally. A backend keeper handles periodic bumps for system-critical entries. Nothing a guard reads lives in temporary storage: an entry that can expire is a guard that can be waited out.
 
 ## Upgrade path
 

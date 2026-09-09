@@ -33,7 +33,7 @@ The Engine does not choose. It checks the call, in the same transaction, and rev
 - the pool would hold more than its cap allows
 - the pools fronted by that originator would together exceed the originator cap
 - the pools under that legal regime would together exceed the jurisdiction cap
-- the release would leave the Vault holding less idle USDC than the reserve floor
+- the release would leave the Vault holding less idle USDC than the reserve floor, which is a share of total assets rather than a fixed sum, and is 25% on testnet
 
 Any one of those failing reverts the whole call, so a refused allocation moves no money and books no exposure. Capital that passes goes into a whitelisted pool through an adapter: a credit vault, or Etherfuse Stablebonds for Stellar-native government bond exposure.
 
@@ -47,13 +47,15 @@ That is the whole yield mechanism. Your sagUSD balance stays where it is and eac
 
 ## 6. Withdrawing
 
-Exiting is two steps, and deliberately less immediate than depositing, because the assets behind agUSD are credit positions that settle in weeks rather than in blocks.
+Exiting is deliberately less immediate than depositing, because the assets behind agUSD are credit positions that settle in weeks rather than in blocks. If you are staked, there are two waits, not one.
 
-If you are staked, you unstake first, converting sagUSD back to agUSD at the current rate. The exit itself is then the two steps. Requesting a withdrawal burns the agUSD immediately and gives you a numbered claim, and burning up front is what makes the queue mean something, since a position waiting in line cannot also be sold or staked. Claiming pays the USDC, once that claim has reached the front of the line and the Vault holds enough to cover it.
+**Unstaking is itself two steps.** `request_unstake` burns your sagUSD shares straight away and prices them at the rate showing at that moment, which fixes what you are owed in agUSD. `claim` pays it out once the cooldown has elapsed, 60 seconds on testnet. Burning and pricing at request is what stops the cooldown being a free option: you cannot watch the rate for a minute and then decide.
+
+**Then the Vault queue, also two steps.** Requesting a withdrawal burns the agUSD immediately and gives you a numbered claim, and burning up front is what makes the queue mean something, since a position waiting in line cannot also be sold or staked. Claiming pays the USDC, once that claim has reached the front of the line and the Vault holds enough to cover it.
 
 The queue is strictly first in, first out. There is no priority tier, no fast lane, and no admin function that reorders it. Liquidity reaches it in this order:
 
-1. Idle reserves the Vault holds above the reserve floor
+1. Idle reserves the Vault holds above the reserve floor, which is 25% of total assets on testnet
 2. New deposits
 3. Etherfuse Stablebond redemption, instant and on-chain
 4. Private credit repayment, fifteen to ninety days

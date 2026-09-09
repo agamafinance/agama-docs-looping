@@ -24,7 +24,7 @@ Two different things are called curation here, and it is worth separating them. 
 There is no direct deposit into a credit vault. Users deposit USDC into the [Vault contract](/stellar/contracts#vault-contract) and receive agUSD; capital reaches the credit vaults only through the [Allocation Engine](/stellar/contracts#allocation-engine), in two admin-gated steps.
 
 1. **Registration.** `register_pool()` whitelists a pool along with the metadata the caps aggregate over: its originator, its jurisdiction, and its own cap. A pool that is not registered cannot receive capital at all.
-2. **Allocation.** `allocate()` releases USDC from the Vault into the pool, and only if the resulting book still respects the cap on that pool, the cap on everything that originator fronts, the cap on that jurisdiction, and the minimum idle USDC reserve floor. Any one of them failing reverts the whole call.
+2. **Allocation.** `allocate()` releases USDC from the Vault into the pool, and only if the resulting book still respects the cap on that pool, the cap on everything that originator fronts, the cap on that jurisdiction, and the reserve floor, a minimum share of total assets that stays in the Vault as idle USDC. Any one of them failing reverts the whole call.
 
 Both steps emit events, so the composition of the book and every change to it are reconstructable from the chain.
 

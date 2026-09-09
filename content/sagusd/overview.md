@@ -4,22 +4,27 @@ sagUSD is staked agUSD, and it is the position that earns. Stake agUSD and you r
 
 ## Stake and unstake
 
-| Action | Effect |
-|---|---|
-| **Stake** | Lock agUSD, receive sagUSD shares at the current rate |
-| **Unstake** | Burn shares, receive agUSD back at the current rate |
+| Action | Call | Effect |
+|---|---|---|
+| **Stake** | `stake(from, amount)` | Lock agUSD, receive sagUSD shares at the current rate |
+| **Unstake, step 1** | `request_unstake(from, shares)` | Burn the shares now, price them at the current rate, lock the agUSD owed behind the cooldown |
+| **Unstake, step 2** | `claim(from)` | Receive that agUSD, once the cooldown has elapsed |
+
+Unstaking is two steps, not one. There is no single `unstake()` call. `request_unstake` burns your shares and fixes what you are owed at the rate showing at that moment; `claim` pays it out after `cooldown()`, which is 60 seconds on testnet.
+
+Pricing at request rather than at claim is the point of the design. If the position were priced when you claimed it, the cooldown would be a free option: you could request an exit, watch the rate for the length of the cooldown, and only take it if the number moved your way. Burning and pricing up front closes that. It also means a position waiting out its cooldown cannot keep earning, be transferred, or be re-requested.
 
 The share accounting follows the DeFindex convention: distributing yield increases assets per share rather than minting new tokens. sagUSD positions are therefore readable by any DeFindex-integrated wallet or protocol without extra integration work. This is interface compatibility, not a routing relationship: Agama does not send funds through DeFindex vault contracts.
 
 ## How the yield arrives
 
-Yield is distributed by an authorized distributor calling `distribute_yield()`, which raises the sagUSD/agUSD exchange rate. That is the entire mechanism.
+Yield is distributed by an authorized distributor calling `distribute_yield()`, which raises the sagUSD/agUSD exchange rate. The distributor is the stored admin in V1, and the call moves that account's own agUSD into the contract, so a distribution cannot invent value, only move it in. That is the entire mechanism.
 
 - **No claim step.** Nothing to harvest, nothing to sign, no reward that expires unclaimed.
 - **No rebase.** Your balance does not change. What each share is worth does.
 - **No manual compounding.** The next distribution applies to the same shares at the higher rate.
 
-Every distribution emits an event carrying the amount and the resulting exchange rate, so the full history of the share price can be reconstructed from the chain rather than taken on trust.
+Every distribution moves real agUSD into the contract, so it leaves a SEP-41 `transfer` event on the chain along with the matching move in `nav()` and `exchange_rate()`. The full history is reconstructable from those, rather than taken on trust. A dedicated `yield_distributed` event carrying the amount and the resulting rate in one record is planned, so the reconstruction will not need two sources joined together.
 
 ## What moves the rate
 
@@ -31,4 +36,4 @@ Underperformance works the same way in reverse. Agama does not tranche its own p
 
 ## Getting out
 
-Unstaking returns agUSD. Converting that agUSD back to USDC goes through the Vault's two-step withdrawal queue, which is first in, first out and can take from minutes to weeks depending on where the capital currently sits. See [agUSD](/agusd/overview) for the redemption path and [How It Works](/how-it-works) for the liquidity order the queue draws on.
+Leaving fully is two queues, not one. Unstaking returns agUSD through the request and claim pair above, behind the sagUSD cooldown. Converting that agUSD back to USDC then goes through the Vault's own two-step withdrawal queue, which is first in, first out and can take from minutes to weeks depending on where the capital currently sits. See [agUSD](/agusd/overview) for the redemption path and [How It Works](/how-it-works) for the liquidity order the queue draws on.

@@ -12,7 +12,7 @@ The other half of the problem is the one that gets less attention. Once capital 
 
 ## Architecture in one picture
 
-<Diagram src="/images/architecture.svg" alt="LPs deposit USDC into the Vault Contract, which mints agUSD 1:1 and runs a two-step FIFO withdrawal queue. agUSD stakes into sagUSD, a share-based position. The Allocation Engine releases idle USDC into credit vaults and Etherfuse Stablebonds only when allocate() passes four on-chain checks: a cap per pool, per originator and per jurisdiction, plus a minimum idle USDC reserve floor. The Oracle Adapter feeds validated NAV back to the Vault." width="820" caption="USDC in, agUSD out, sagUSD for the yield, and an Allocation Engine that holds nothing and enforces the limits." />
+<Diagram src="/images/architecture.svg" alt="LPs deposit USDC into the Vault Contract, which mints agUSD 1:1 and runs a two-step FIFO withdrawal queue. agUSD stakes into sagUSD, a share-based position. The Allocation Engine releases idle USDC into credit vaults and Etherfuse Stablebonds only when allocate() passes four on-chain checks: a cap per pool, per originator and per jurisdiction, plus a reserve floor requiring a minimum share of total assets to stay in the Vault as idle USDC. The Oracle Adapter feeds validated NAV back to the Vault." width="820" caption="USDC in, agUSD out, sagUSD for the yield, and an Allocation Engine that holds nothing and enforces the limits." />
 
 ## Components
 
@@ -20,11 +20,11 @@ The protocol has four parts.
 
 1. **Credit vaults.** Six are live on Stellar Testnet, curated with [Qiro](https://www.qiro.fi/investor) and [Tenka](https://tenka.fi/), each an independent Soroban contract with its own share token. They are where deposited capital earns: short-term payment receivables, diversified credit funds, institutional lender financing, asset-backed senior and mezzanine tranches. See [Credit Vaults](/credit-vaults/overview).
 
-2. **agUSD.** A synthetic dollar. The Vault mints it 1:1 against USDC and is the only address allowed to mint or burn it. It is a plain SEP-41 token with no transfer restriction, so other Soroban protocols can hold it and compose with it. agUSD on its own earns nothing. See [agUSD](/agusd/overview).
+2. **agUSD.** A synthetic dollar. The Vault mints it 1:1 against USDC and is the only address allowed to mint it. Burning is the holder's own: `burn` and `burn_from` are the standard SEP-41 paths, and the Vault uses that same path when it burns a withdrawer's agUSD. Supply can only go up through the Vault, and down through anyone holding the token. It is a plain SEP-41 token with no transfer restriction, so other Soroban protocols can hold it and compose with it. agUSD on its own earns nothing. See [agUSD](/agusd/overview).
 
 3. **sagUSD.** Stake agUSD and receive sagUSD shares at the current exchange rate. Yield arrives by raising that rate, not by changing balances, so there is no claim step and no rebase. See [sagUSD](/sagusd/overview).
 
-4. **The Allocation Engine.** The contract between the Vault and the credit vaults. In V1 a Curator directs it: a person chooses the pool and the amount and calls `allocate()`. What the Engine contributes is refusal. Every call is checked in the same transaction against a cap per pool, a cap per originator, a cap per jurisdiction, and a minimum idle USDC reserve floor, and any one of them failing reverts the whole call. See [Soroban Contracts](/stellar/contracts#allocation-engine).
+4. **The Allocation Engine.** The contract between the Vault and the credit vaults. In V1 a Curator directs it: a person chooses the pool and the amount and calls `allocate()`. What the Engine contributes is refusal. Every call is checked in the same transaction against a cap per pool, a cap per originator, a cap per jurisdiction, and a reserve floor, and any one of them failing reverts the whole call. All four are measured in basis points of total assets, and the floor is 2500 bps on testnet. See [Soroban Contracts](/stellar/contracts#allocation-engine).
 
 ## What the contracts enforce, rather than the policy
 
@@ -33,10 +33,10 @@ Three properties are worth stating precisely, because each is a line of Rust rat
 | Property | How it is enforced |
 |---|---|
 | No single pool, originator or jurisdiction takes the book | `allocate()` measures the resulting exposure against total assets and reverts on a breach |
-| Fast-exit liquidity is always available | The reserve floor: `allocate()` reverts if the call would leave the Vault holding less idle USDC than the floor |
+| Fast-exit liquidity scales with the book | The reserve floor: `allocate()` reverts if the call would leave the Vault holding less idle USDC than `floor_bps` of total assets, 2500 bps on testnet |
 | The withdrawal queue cannot be reordered | Claims are paid strictly in request order, and there is no admin path around it |
 
-An Engine that has been deployed but not configured cannot deploy capital at all: every cap starts at zero and the reserve floor starts at 100%. Opening it up is an explicit admin action that emits an event.
+An Engine that has been deployed but not configured cannot deploy capital at all: every cap starts at zero and the reserve floor starts at 10000 bps, which is 100%. Opening it up is an explicit admin action that emits an event.
 
 ## Where the yield comes from
 

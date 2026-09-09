@@ -9,7 +9,7 @@ There is one entry point and one asset: USDC into the Vault. The risk you take i
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, marginTop: 16 }}>
   {[
     { title: 'Credit Vaults', href: '/credit-vaults/overview', desc: 'Six live on testnet, curated with Qiro and Tenka. Each is an independent Soroban contract with its own share token.' },
-    { title: 'agUSD', href: '/agusd/overview', desc: 'Synthetic dollar, SEP-41, minted 1:1 against USDC. Mint and burn restricted to the Vault, no transfer restriction on holders.' },
+    { title: 'agUSD', href: '/agusd/overview', desc: 'Synthetic dollar, SEP-41, minted 1:1 against USDC. Minting restricted to the Vault, burning holder-authorized, no transfer restriction.' },
     { title: 'sagUSD', href: '/sagusd/overview', desc: 'Staked agUSD. Share-based, DeFindex-compatible. Yield raises the exchange rate, so no claim step and no rebase.' },
   ].map((c) => (
     <a
@@ -31,7 +31,7 @@ There is one entry point and one asset: USDC into the Vault. The risk you take i
   ))}
 </div>
 
-Behind those three sits the [Allocation Engine](/stellar/contracts#allocation-engine), which routes Vault capital into the credit vaults and enforces the concentration caps and the minimum idle USDC reserve floor on every call.
+Behind those three sits the [Allocation Engine](/stellar/contracts#allocation-engine), which routes Vault capital into the credit vaults and enforces the concentration caps and the reserve floor on every call, all four measured in basis points of total assets.
 
 See [Overview](/overview) for the architecture in one picture and [How It Works](/how-it-works) for the full path from cash to a yield-bearing position and back out.
 

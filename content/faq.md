@@ -4,7 +4,7 @@
 A protocol that turns USDC into a yield-bearing position in real-world private credit and bonds. You deposit USDC into the Vault and receive agUSD, you stake agUSD for sagUSD, and a Curator deploys the capital into vetted credit vaults under limits the contracts enforce on every allocation.
 
 **What is agUSD?**
-A synthetic dollar. The Vault mints it 1:1 against USDC and is the only address allowed to mint or burn it. It is a plain SEP-41 token with no transfer restriction on holders, so other Soroban protocols can accept it. See [agUSD](/agusd/overview).
+A synthetic dollar. The Vault mints it 1:1 against USDC and is the only address allowed to mint it. Burning is holder-authorized, the standard SEP-41 way, so supply can only go up through the Vault and down through anyone holding the token. It is a plain SEP-41 token with no transfer restriction on holders, so other Soroban protocols can accept it. See [agUSD](/agusd/overview).
 
 **Does agUSD earn yield?**
 No. A withdrawal returns one USDC per agUSD burned, and the redemption rate does not move with the portfolio. Yield reaches holders through sagUSD, whose exchange rate rises as the book earns. See [sagUSD](/sagusd/overview).
@@ -12,11 +12,14 @@ No. A withdrawal returns one USDC per agUSD burned, and the redemption rate does
 **What is sagUSD?**
 Staked agUSD, and the position that earns. You receive shares at the current exchange rate, and yield arrives by raising that rate rather than by changing balances. No claim step, no rebase, no manual compounding.
 
+**How do I unstake sagUSD?**
+In two steps, behind a cooldown. `request_unstake` burns your shares immediately and prices them at the rate showing then, fixing what you are owed. `claim` pays the agUSD out once the cooldown has elapsed, 60 seconds on testnet. Pricing at request rather than at claim is what stops the cooldown being a free option on the exchange rate. Converting that agUSD back to USDC is then a separate two-step queue on the Vault.
+
 **Can I deposit straight into one credit vault?**
 No. There is one entry point, USDC into the Vault. Capital reaches the credit vaults only through the Allocation Engine, which is admin-directed in V1 and constraint-enforcing on every call. See [Credit Vaults](/credit-vaults/overview).
 
 **Who decides where the capital goes?**
-A Curator, which in V1 is the admin multi-sig. The Engine does not choose, it refuses: every `allocate()` call is checked against a cap per pool, a cap per originator, a cap per jurisdiction and a minimum idle USDC reserve floor, and any one of them failing reverts the whole call. In V2 an off-chain optimizer proposes allocations through the same admin-gated functions, with the same enforcement.
+A Curator, which in V1 is the admin multi-sig. The Engine does not choose, it refuses: every `allocate()` call is checked against a cap per pool, a cap per originator, a cap per jurisdiction and a reserve floor, and any one of them failing reverts the whole call. All four are shares of total assets in basis points, and the floor is 2500 bps on testnet. In V2 an off-chain optimizer proposes allocations through the same admin-gated functions, with the same enforcement.
 
 **Is agUSD redeemable for USDC?**
 Yes, through a two-step queue. Requesting a withdrawal burns the agUSD and gives you a numbered claim; claiming pays USDC once that claim is at the front of the queue and the Vault holds the cash. The queue is strictly first in, first out, with no priority path for anyone including the admin. Waits run from around five minutes when the Vault has idle reserves to days or weeks when everything is deployed into private credit. See [Risks](/risks).

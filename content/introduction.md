@@ -10,7 +10,7 @@ There is one entry point and one asset: USDC into the Vault. The risk you take i
   {[
     { title: 'Credit Vaults', href: '/credit-vaults/overview', desc: 'Six live on testnet, curated with Qiro and Tenka. Each is an independent Soroban contract with its own share token.' },
     { title: 'agUSD', href: '/agusd/overview', desc: 'Synthetic dollar, SEP-41, minted 1:1 against USDC. Minting restricted to the Vault, burning holder-authorized, no transfer restriction.' },
-    { title: 'sagUSD', href: '/sagusd/overview', desc: 'Staked agUSD. Share-based, DeFindex-compatible. Yield raises the exchange rate, so no claim step and no rebase.' },
+    { title: 'sagUSD', href: '/sagusd/overview', desc: 'Staked agUSD. Share-based accounting. Yield raises the exchange rate, so no claim step and no rebase.' },
   ].map((c) => (
     <a
       key={c.href}

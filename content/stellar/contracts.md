@@ -91,7 +91,7 @@ agUSD carries no transfer restriction. It is permissionless and composable, whic
 
 ## sagUSD Staking Contract
 
-Yield-bearing staked agUSD with DeFindex-compatible share-based accounting. Yield increases the sagUSD/agUSD exchange rate rather than rebasing balances, so no claim step is required.
+Yield-bearing staked agUSD with share-based accounting, following the same share-price economics as DeFindex rather than its contract interface. Yield increases the sagUSD/agUSD exchange rate rather than rebasing balances, so no claim step is required.
 
 | Function | Description |
 |---|---|

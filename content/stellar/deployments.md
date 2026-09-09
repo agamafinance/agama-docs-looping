@@ -18,7 +18,7 @@ Agama runs natively on Stellar. All protocol logic is implemented as Soroban sma
 | USDC (Circle) | Stellar asset contract | [`CBIELTK6...XQDAMA`](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA) |
 | Vault | Custody, mint, FIFO withdrawal queue, its own reserve floor | [`CBNAGG47...Y2BUSB`](https://stellar.expert/explorer/testnet/contract/CBNAGG47MEXJQ3KQYXU75VLU4QC5CAEZ6VHY43MSOWHUZWVREPY2BUSB) |
 | agUSD | SEP-41, minted only by the Vault | [`CCUGWQ5D...JFHA7V`](https://stellar.expert/explorer/testnet/contract/CCUGWQ5DRO66BASGU5UZIX6YWIWJ6GKQOBAABT2246OE5WZOI6JFHA7V) |
-| sagUSD | SEP-41, DeFindex-compatible shares | [`CDFKRDCD...CHYLEZ`](https://stellar.expert/explorer/testnet/contract/CDFKRDCD7U4YU4DM2DJ4C76KQHB3B6UTYPH64HVUZLGEIITFVYCHYLEZ) |
+| sagUSD | SEP-41, share-price accounting shares | [`CDFKRDCD...CHYLEZ`](https://stellar.expert/explorer/testnet/contract/CDFKRDCD7U4YU4DM2DJ4C76KQHB3B6UTYPH64HVUZLGEIITFVYCHYLEZ) |
 | Allocation Engine | Caps in bps of net assets, reserve floor in bps of `floor_base` | [`CAOUV6AA...VVULBX`](https://stellar.expert/explorer/testnet/contract/CAOUV6AA632DFRAUZ33J24OS2QNUMWQESH5HVZNOCT52JYCKHEVVULBX) |
 | Oracle Adapter | Per-feed staleness, deviation, band and rate limit | [`CCTAZFQ3...INL6SX`](https://stellar.expert/explorer/testnet/contract/CCTAZFQ35P5KAAWTD2MLTYGEETKVF3N5ZR6MM6SVPQ22M2TKALINL6SX) |
 

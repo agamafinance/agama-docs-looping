@@ -10,7 +10,11 @@ Private credit instruments settle off-chain. An originator repays in fiat, on it
 
 The custody picture follows from that. Idle USDC in the Vault and Etherfuse Stablebond positions are on-chain and non-custodial. Private credit allocations sit off-chain with the originator, governed by legal agreements, and the settlement fiat sits in a bank account controlled by an Agama entity. Two of the four components are therefore custodial.
 
-If a pool defaults, the reported NAV is written down, the admin delists the pool, and the existing exposure runs off rather than being force-unwound. Agama does not tranche its own positions in V1, so losses are socialized across holders rather than absorbed by a junior class first. A later partial repayment writes NAV back up. See [Settlement & NAV](/security/settlement) for the full flow and the custody table.
+If a pool defaults, the exposure is written down on-chain through an admin-gated, evented call that moves the Engine's book, the adapter's book and the Vault's deployed capital together, the admin delists the pool, and the existing exposure runs off rather than being force-unwound. A later partial repayment against exposure still on the book is an ordinary deallocation. Cash that arrives against a position already written off has no exposure left to deallocate against, so it comes home through `recover`, which sweeps whatever the adapter holds above its booked exposure to the Vault and releases the recognised loss against it.
+
+Recognising a loss buys the admin nothing. The write-down lowers what the protocol reports as deployed, and a reserve floor measured against that would fall with it, which would make a fabricated default a way to release cash the floor had already refused. So every write-down is also added to a loss counter that stays in the floor's denominator, and the one call that reduces it requires the cash to have reached the Vault and adds it to free reserves in the same transaction it takes the loss out of the base. The base never falls, so a write-down buys nothing and a recovery buys nothing back. It is also the more honest treatment of a real default: agUSD redeems one for one, so losing assets does not reduce what the Vault owes, and a book in that state should be holding more cash against its liabilities rather than less.
+
+**Who bears that loss is not decided by the contracts, and this page used to say otherwise.** There is no tranching in V1 and no loss-socialisation mechanism either: a deposit mints exactly what was deposited, a queued claim pays exactly what is recorded on it, and no contract reduces either against a loss. The withdrawal queue is paid strictly in order, so a shortfall lands on whoever is at the back of it when the cash runs out. That is a first-mover advantage and a run incentive, and how losses should be shared between agUSD and sagUSD holders remains an open product decision. See [Settlement & NAV](/security/settlement) for the full flow and the custody table.
 
 ## Withdrawal queue liquidity
 
@@ -26,7 +30,8 @@ Requesting a withdrawal burns agUSD and puts a numbered claim in a first-in, fir
 
 Two properties of the queue are worth understanding before joining it.
 
-- **Strict order, with no exceptions.** No priority tier, no fast lane, and no admin function that reorders it. That is the point of the queue, and it cuts both ways: a claim ahead of yours that its owner never returns to collect stalls the line behind it, because paying around it would be exactly the queue jumping the ordering exists to prevent. V1 accepts that liveness cost deliberately.
+- **Strict order, with no exceptions.** No priority tier, no fast lane, and no admin function that reorders it. That is the point of the queue.
+- **It cannot be held up by the claim in front of you, though.** An earlier version of this page said an unclaimed position at the head stalls the line and that V1 accepts that cost. It does not, and it no longer has to. `settle_withdrawal()` is permissionless: it pays whichever claim is at the head to the owner recorded on it, with no claim id and no recipient to supply, so anybody can move the queue on without being able to redirect a payment or skip ahead. And a claimant who cannot be paid at all, because USDC is a Stellar asset contract and the destination has no trustline, a frozen one, or a limit below the claim, is stepped over instead of trapping the payout: the claim is marked deferred, stays unpaid, stays owed, and its owner collects it later out of head order.
 - **The order is a queue, not a pro-rata.** Under stress, the constraint shows up as waiting time rather than as a partial fill.
 
 An exit that does not queue exists: agUSD trades against USDC on Soroswap. That trades the wait for price risk, since a swap fills at whatever the pool quotes rather than at 1:1.
@@ -53,12 +58,12 @@ The powers that remain are still real: an admin that widens the caps and realloc
 
 Several of the mitigations above are commitments in most protocols. Here they are guards inside `allocate()`, checked in the same transaction as the allocation, with any single failure reverting the whole call:
 
-- a cap on how much any one pool can hold, as a share of total assets
+- a cap on how much any one pool can hold, as a share of net assets
 - a cap on everything a single originator fronts, summed across its pools
 - a cap per jurisdiction
-- a reserve floor, a minimum share of total assets the Vault must be left holding as idle USDC, 2500 bps on testnet
+- a reserve floor, a minimum share of net assets *plus everything ever written off* that the Vault must be left holding as free USDC, 2500 bps on testnet, enforced by the Allocation Engine and again by the Vault itself
 
-Total assets are the denominator on purpose, so allocating in small pieces does not get around a cap. Caps start at zero and the floor starts at 10000 bps, which is 100%, on deployment, so an Engine that has not been configured cannot deploy capital at all. Every change to a cap or to the floor emits an event.
+Net assets are the denominator of the three caps on purpose, so allocating in small pieces does not get around them; the floor uses that same figure plus recognised losses, so a write-down cannot move it. Caps start at zero and the floor starts at 10000 bps, which is 100%, on deployment, so an Engine that has not been configured cannot deploy capital at all. Every change to a cap or to the floor emits an event.
 
 This does not make the exposure safe. It makes the limits on it readable on-chain by anyone, and enforced without trusting an operator to respect them.
 

@@ -2,7 +2,7 @@
 
 One pass through the protocol, from cash to a yield-bearing position and back out. Each step carries a tag saying whether it is live today or funded by the SCF grant.
 
-<Diagram src="/images/stellar-architecture.svg" alt="Agama on Stellar. Entry rails (Stellar wallet, MoneyGram SEP-24, CCTP domain 27, Bridge) feed USDC into the Agama dApp and the Soroban contract core: Vault Contract, Allocation Engine, Oracle Adapter, agUSD and sagUSD. The Allocation Engine routes into Etherfuse Stablebonds and private credit pools under concentration caps and a reserve floor requiring a minimum share of total assets to stay in the Vault as idle USDC. Soroswap provides an exit without queueing." width="900" caption="The Agama architecture on Stellar: entry rails, the Soroban contract core, the on-chain guards enforced by allocate(), and the allocation targets behind them." />
+<Diagram src="/images/stellar-architecture.svg" alt="Agama on Stellar. Entry rails (Stellar wallet, MoneyGram SEP-24, CCTP domain 27, Bridge) feed USDC into the Agama dApp and the Soroban contract core: Vault Contract, Allocation Engine, Oracle Adapter, agUSD and sagUSD. The Allocation Engine routes into Etherfuse Stablebonds and private credit pools under concentration caps and a reserve floor requiring a minimum share of net assets to stay in the Vault as free USDC. Soroswap provides an exit without queueing." width="900" caption="The Agama architecture on Stellar: entry rails, the Soroban contract core, the on-chain guards enforced by allocate(), and the allocation targets behind them." />
 
 ## 1. In
 
@@ -26,7 +26,7 @@ USDC reaches Stellar from a Stellar wallet, from another chain over [CCTP](/stel
 
 *(funded by this grant)*
 
-`allocate()` on the [Allocation Engine](/stellar/contracts#allocation-engine) routes capital into a whitelisted pool through a pool adapter. Every pool adapter exposes `allocate`, `deallocate` and `get_exposure`, so the Engine stays pool-agnostic. The call reverts on a cap breach, or if it would leave idle reserves below `reserve_floor_bps()` of total assets. All four limits are basis points of total assets, and the floor is 2500 bps on testnet.
+`allocate()` on the [Allocation Engine](/stellar/contracts#allocation-engine) routes capital into a whitelisted pool through a pool adapter. Every pool adapter exposes `allocate`, `deallocate`, `write_down`, `recover_surplus`, `get_exposure`, `engine` and `vault`, so the Engine stays pool-agnostic. The call reverts on a cap breach, measured on what a pool holds plus what has been written off against it and not recovered, or if it would leave free reserves below `reserve_floor_bps()` of `floor_base()`, which is net assets plus the same write-offs. All four limits are basis points, and the floor is 2500 bps on testnet. The Vault applies the floor again on its own numbers when it releases, so the limit does not depend on the Engine being the contract it claims to be.
 
 ## 5. Earn
 
@@ -42,11 +42,11 @@ Two queues, in order.
 
 `request_unstake()` burns the sagUSD shares and prices them at the current rate, then `claim()` pays the agUSD out once `cooldown()` has elapsed, 60 seconds on testnet. There is no single `unstake()` call: pricing at request rather than at claim is what stops the cooldown being a free option on the exchange rate.
 
-Then `request_withdrawal()` burns the agUSD and enqueues a FIFO claim, and `claim_withdrawal()` pays USDC once that claim is Ready. `claim_status()` reports which of Pending, Ready or Claimed a claim is in, computed from the queue position and the Vault's idle reserves rather than stored.
+Then `request_withdrawal()` burns the agUSD and enqueues a FIFO claim, and `claim_withdrawal()` pays USDC once that claim is Ready. `settle_withdrawal()` lets anyone pay the head claim to its recorded owner, and a claim the USDC contract refuses to deliver is deferred and stepped over rather than freezing the queue. `claim_status()` reports which of Pending, Ready or Claimed a claim is in, computed from the queue position and the Vault's idle reserves rather than stored.
 
 Liquidity is drawn in order:
 
-1. Idle reserves held above the on-chain reserve floor, 2500 bps of total assets on testnet
+1. Free reserves held above the on-chain reserve floor, 2500 bps of net assets on testnet
 2. New deposits
 3. Etherfuse Stablebond redemption, instant and on-chain
 4. Private credit repayment, D+15 to D+90

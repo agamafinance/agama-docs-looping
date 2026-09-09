@@ -33,7 +33,7 @@ The Engine does not choose. It checks the call, in the same transaction, and rev
 - the pool would hold more than its cap allows
 - the pools fronted by that originator would together exceed the originator cap
 - the pools under that legal regime would together exceed the jurisdiction cap
-- the release would leave the Vault holding less idle USDC than the reserve floor, which is a share of total assets rather than a fixed sum, and is 25% on testnet
+- the release would leave the Vault holding less free USDC than the reserve floor, which is a share of net assets plus everything ever written off rather than a fixed sum, and is 25% on testnet. Free rather than gross: USDC owed to a queued withdrawal is on the Vault's balance and is not deployable. The Vault checks the same floor itself when it releases the cash
 
 Any one of those failing reverts the whole call, so a refused allocation moves no money and books no exposure. Capital that passes goes into a whitelisted pool through an adapter: a credit vault, or Etherfuse Stablebonds for Stellar-native government bond exposure.
 
@@ -53,9 +53,9 @@ Exiting is deliberately less immediate than depositing, because the assets behin
 
 **Then the Vault queue, also two steps.** Requesting a withdrawal burns the agUSD immediately and gives you a numbered claim, and burning up front is what makes the queue mean something, since a position waiting in line cannot also be sold or staked. Claiming pays the USDC, once that claim has reached the front of the line and the Vault holds enough to cover it.
 
-The queue is strictly first in, first out. There is no priority tier, no fast lane, and no admin function that reorders it. Liquidity reaches it in this order:
+The queue is strictly first in, first out. There is no priority tier, no fast lane, and no admin function that reorders it. It cannot be held up by the claim in front of you either: anyone may call `settle_withdrawal()`, which pays the head claim to the owner recorded on it and takes no argument that could redirect it, and a claim the USDC contract refuses to deliver, because the destination has no trustline or a frozen one, is stepped over and left owed rather than freezing the line. Liquidity reaches it in this order:
 
-1. Idle reserves the Vault holds above the reserve floor, which is 25% of total assets on testnet
+1. Free reserves the Vault holds above the reserve floor, which is 25% on testnet
 2. New deposits
 3. Etherfuse Stablebond redemption, instant and on-chain
 4. Private credit repayment, fifteen to ninety days

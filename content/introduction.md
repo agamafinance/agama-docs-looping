@@ -31,7 +31,7 @@ There is one entry point and one asset: USDC into the Vault. The risk you take i
   ))}
 </div>
 
-Behind those three sits the [Allocation Engine](/stellar/contracts#allocation-engine), which routes Vault capital into the credit vaults and enforces the concentration caps and the reserve floor on every call, all four measured in basis points of total assets.
+Behind those three sits the [Allocation Engine](/stellar/contracts#allocation-engine), which routes Vault capital into the credit vaults and enforces the concentration caps and the reserve floor on every call, all four measured in basis points.
 
 See [Overview](/overview) for the architecture in one picture and [How It Works](/how-it-works) for the full path from cash to a yield-bearing position and back out.
 

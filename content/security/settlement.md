@@ -54,12 +54,24 @@ A deviation above the bound does not silently pass. It is rejected on-chain and 
 
 Private credit allocations involve custodial, off-chain components. This exposure carries counterparty risk: default, settlement delay and FX risk. That is fundamental to private credit and cannot be eliminated on-chain.
 
-What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse allocations and idle reserves are fully on-chain and non-custodial, and the reserve floor, a minimum share of total assets held as idle USDC, is enforced by `allocate()` rather than by policy.
+What the protocol does instead is bound it. Concentration caps limit exposure to any single pool, originator and jurisdiction, and those caps are enforced at contract level rather than by policy. Etherfuse allocations and idle reserves are fully on-chain and non-custodial, and the reserve floor, a minimum share of net assets plus losses recognised and not recovered, held as free USDC, is enforced by the Allocation Engine and again by the Vault itself when it releases the cash.
+
+Free, not gross. A withdrawal request burns its agUSD immediately and leaves the USDC in the Vault until the claim is paid, so between those two moments the money is on the balance sheet and already owed to somebody. The floor and the caps subtract it before they measure anything, so capital the queue is owed cannot be deployed out from under it.
 
 ## Default handling
 
-1. **Detection.** The backend flags a missed payment. The oracle receives a reduced NAV.
-2. **NAV write-down.** The reported value of the book falls, and the sagUSD exchange rate falls with it. agUSD itself has no share price: it stays a claim on a dollar, and a write-down reaches holders through sagUSD.
-3. **Loss distribution.** Socialized across all agUSD holders. There is no tranching in V1.
+1. **Detection.** The backend flags a missed payment. The oracle receives a reduced NAV on the pool's feed, within that feed's deviation bound and rate limit.
+2. **Write-down.** `write_down` on the Allocation Engine reduces the recorded exposure without requiring the cash back. It is admin-gated, it emits an event carrying a reason, and it moves three books in the same transaction so they cannot disagree: the Engine's exposure record, the adapter's own, and the Vault's deployed capital. The Vault leg needs the Vault admin's signature as well as the Engine's call, and the two roles rotate independently, so the call checks that they are still the same address before it checks anything else and refuses with `AdminMismatch` if they are not.
+3. **And it buys nothing.** The amount is added to a loss counter on both contracts that stays in the reserve floor's denominator until the capital behind it comes back. Without that, a write-down lowered the number the floor is a percentage of, so recognising a loss, real or fabricated, released cash the floor had already refused. The same amount is charged against the pool's concentration cap, and through it against its originator's and its jurisdiction's, so a write-down cannot reopen a limit either. It is also the more honest treatment of a real default: agUSD redeems one for one, so a loss reduces the assets and not what the Vault owes.
 4. **Pool removal.** Admin delists the defaulting pool. Existing exposure runs off naturally.
-5. **Recovery.** A partial repayment later writes NAV back up.
+5. **Recovery.** A partial repayment against exposure still on the book is an ordinary deallocation. Capital already written off has no exposure left to deallocate against, so it comes home through `recover` on the Engine, which sweeps whatever the adapter holds above its booked exposure to the Vault the adapter already names, releases the recognised loss against it and releases the pool's concentration charge by the same amount. Neither the destination nor the amount is a parameter, and the Vault refuses any amount it cannot see arriving in its own balance. There is still no path that writes an exposure back up, and the floor's base does not move: the loss the recovery removes from it is the cash the recovery adds to free reserves.
+
+### Where the loss lands
+
+A write-down makes the loss visible on-chain and stops the reserve ratio overstating the book. It does not distribute it, and nothing else in the contracts does either.
+
+Be precise about this, because an earlier version of this page was not. It said the loss was "socialized across all agUSD holders" and that a write-down reaches holders through the sagUSD exchange rate. Neither is what the contracts do. agUSD is a synthetic dollar: a deposit mints exactly the amount deposited, a claim pays exactly the amount recorded on it, and NAV is read on neither path. The sagUSD exchange rate moves with the agUSD the staking contract actually holds, and a credit loss in the Vault does not reach into it.
+
+What actually happens is that the withdrawal queue is paid strictly in order, so a shortfall lands on whoever is at the back of it when the cash runs out. That is a first-mover advantage and it is a run incentive, and it is written here rather than glossed.
+
+**How losses should be allocated between agUSD and sagUSD holders is an open product decision.** sagUSD is the yield-bearing layer and takes the upside, so the symmetrical arrangement is for it to take the first loss. That is a tranching decision with legal and disclosure consequences and it has not been made. Putting a loss-socialisation scheme into a contract to make this page read better would be encoding an answer nobody has agreed to.

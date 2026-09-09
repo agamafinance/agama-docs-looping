@@ -24,7 +24,7 @@ Two different things are called curation here, and it is worth separating them. 
 There is no direct deposit into a credit vault. Users deposit USDC into the [Vault contract](/stellar/contracts#vault-contract) and receive agUSD; capital reaches the credit vaults only through the [Allocation Engine](/stellar/contracts#allocation-engine), in two admin-gated steps.
 
 1. **Registration.** `register_pool()` whitelists a pool along with the metadata the caps aggregate over: its originator, its jurisdiction, and its own cap. A pool that is not registered cannot receive capital at all.
-2. **Allocation.** `allocate()` releases USDC from the Vault into the pool, and only if the resulting book still respects the cap on that pool, the cap on everything that originator fronts, the cap on that jurisdiction, and the reserve floor, a minimum share of total assets that stays in the Vault as idle USDC. Any one of them failing reverts the whole call.
+2. **Allocation.** `allocate()` releases USDC from the Vault into the pool, and only if the resulting book still respects the cap on that pool, the cap on everything that originator fronts, the cap on that jurisdiction, and the reserve floor, a minimum share of net assets plus recognised losses that stays in the Vault as free USDC. Any one of them failing reverts the whole call, and the Vault applies the floor again on its own numbers when it releases the cash.
 
 Both steps emit events, so the composition of the book and every change to it are reconstructable from the chain.
 
@@ -51,9 +51,9 @@ That off-chain leg is the protocol's core trust assumption and it is stated in f
 
 ## What isolation does and does not mean
 
-Each vault is a separate contract with separate accounting, and a problem in one does not corrupt the state of another. It does not follow that a loss in one vault is contained to a subset of holders. Agama does not tranche its own positions in V1, so credit losses are socialized across all holders whatever vault they came from.
+Each vault is a separate contract with separate accounting, and a problem in one does not corrupt the state of another. It does not follow that a loss in one vault is contained to a subset of holders. Agama does not tranche its own positions in V1, and it has no loss-socialisation mechanism either: a credit loss is recognised on-chain by a write-down and then lands on whoever is at the back of the withdrawal queue when the cash runs out, whatever vault it came from. How it should be shared is an open product decision. See [Risks](/risks).
 
-What limits the damage is the concentration caps, and they are contract-level rather than policy-level. The per-pool cap stops any single vault from taking the book. The per-originator cap catches the case where several vaults are fronted by the same counterparty and would otherwise add up to concentrated risk without any single cap being breached. The per-jurisdiction cap stops the book from being one legal regime deep. All three are measured against total assets, so allocating in small pieces does not get around them.
+What limits the damage is the concentration caps, and they are contract-level rather than policy-level. The per-pool cap stops any single vault from taking the book. The per-originator cap catches the case where several vaults are fronted by the same counterparty and would otherwise add up to concentrated risk without any single cap being breached. The per-jurisdiction cap stops the book from being one legal regime deep. All three are measured against net assets, so allocating in small pieces does not get around them.
 
 If a pool does default, the admin delists it and the existing exposure runs off naturally rather than being force-unwound.
 

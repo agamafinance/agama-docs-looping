@@ -58,6 +58,10 @@ A fourth pass went over the two entry points those changes added, on the rule th
 
 It is not a privilege escalation, because the same admin can widen the same limit outright with `set_caps`, and no guard can close it, because there is no fact to check the claim against. So it is written into the contract, into the architecture document and here, and there is a test that performs it: one pool written down, another recovered, the second one's cash booked against the first, the first one's cap released and the second one's charge left standing. Test count 155 to 164.
 
+The last of the three Mediums is now closed too, and it was the one whose finding was an absence rather than a mistake. A pool's effective concentration limit is the tighter of its own figure and the global one, and only the global one could ever move, so wherever a pool's own cap was the binding half it was binding for the life of the contract. The registry had no way to remove an entry either, which is also half of the High finding above: with nothing to clear a stale entry, the only answer was re-running the counterparty check on every call that moves capital.
+
+What did not change is the rule that a write-off stays charged against the pool it happened to, and through it against that pool's originator and jurisdiction, until the cash comes back. That is what stops a defaulted originator getting its limit back by defaulting, and it is why delisting refuses a pool that still carries a charge: the aggregate limits are built by walking the registry, so an entry leaving takes its charge out of them, and a defaulted pool could otherwise be delisted and replaced under the same originator with its whole limit available again. A pool in default is therefore freezable, with its own cap set to zero, and not delistable, and it becomes delistable when the loss is recovered rather than when it is forgotten. Test count 164 to 170.
+
 ### The exploits were submitted, not simulated
 
 Several findings were proved by attacking the superseded contracts, which are still live on the ledger. That makes them evidence about the chain rather than only about the source.

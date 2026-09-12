@@ -164,8 +164,8 @@ The constraint layer. It decides nothing about where capital goes, which in V1 i
 
 | Function | What it returns |
 |---|---|
-| `get_reserve_ratio() -> Result<u32, EngineError>` | Free Vault reserves over the floor's base, in bps. This is the number `set_reserve_floor` bounds, measured against the same base, so it does not jump upwards when a loss is recognised. |
-| `floor_base() -> Result<i128, EngineError>` | The Engine's read of the same number, so the limit and the reality are taken off one scale. It asks the Vault, which measures it on accounted cash. |
+| `get_reserve_ratio() -> Result<u32, EngineError>` | Free Vault reserves over this Engine's base, in bps. This is the number `set_reserve_floor` bounds, measured against the same base the Engine checks, so it does not jump upwards when a loss is recognised. Both sides read the raw balance, so unaccounted cash lifts it above what the Vault would actually release. |
+| `floor_base() -> Result<i128, EngineError>` | The base **this Engine** checks against: the Vault's `free_reserves()`, plus what this Engine has booked as deployed, plus `written_off()`. Not the same number as `Vault::floor_base()`, which is measured on accounted cash. This one reads the raw balance, so it is higher by any USDC that reached the Vault without its books being told, and therefore more permissive. `settle_allocation` re-checks on the Vault's base in the same transaction, so the gap costs a revert and not a release. |
 | `written_off() -> i128` | Written off across all pools and not recovered. |
 | `written_off_pool(pool_id: Address) -> i128` | Written off against one pool and not recovered. This is what a write-down costs that pool's cap. |
 | `charged_exposure(pool_id: Address) -> i128` | What the concentration caps are measured on: deployed plus written off. It differs from `get_exposure` only after a write-down, and that difference is the reason a write-down cannot reopen a cap. |

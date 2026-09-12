@@ -66,7 +66,7 @@ The anti-dust minimum on `request_withdrawal` is 1 agUSD, or `10000000`.
 | `deployed_capital() -> i128` | Capital released to pools and not seen back, from the Vault's own records rather than the Engine's. |
 | `booked_reserves() -> i128` | The idle balance the Vault can account for from its own flows. Anything above it arrived unannounced, which is what a repayment looks like from inside. |
 | `recognised_losses() -> i128` | Written off and not recovered. Falls only through `record_recovery`, which requires the cash. |
-| `floor_base() -> Result<i128, VaultError>` | The denominator the reserve floor is a share of: net assets plus recognised losses. A write-down cannot lower it, which is the point of it. |
+| `floor_base() -> Result<i128, VaultError>` | The denominator the reserve floor is a share of: `booked_reserves + deployed_capital + recognised_losses - outstanding_liabilities`, summed unclamped and clamped once at zero. It is measured on the cash this Vault can account for from its own flows rather than on its raw balance, because cash arriving without the books being told would otherwise raise the base on arrival and be spent again when something booked it. An invariant fuzzer found that in four operations. |
 | `get_total_assets() -> Result<i128, VaultError>` | Gross assets: idle reserves plus deployed capital. |
 | `get_net_assets() -> Result<i128, VaultError>` | Free reserves plus deployed capital. The honest measure of what the Vault is worth, and for that reason not the floor's base. |
 | `reserve_floor_bps() -> u32` | The Vault's own copy of the floor. |
@@ -165,7 +165,7 @@ The constraint layer. It decides nothing about where capital goes, which in V1 i
 | Function | What it returns |
 |---|---|
 | `get_reserve_ratio() -> Result<u32, EngineError>` | Free Vault reserves over the floor's base, in bps. This is the number `set_reserve_floor` bounds, measured against the same base, so it does not jump upwards when a loss is recognised. |
-| `floor_base() -> Result<i128, EngineError>` | Free reserves plus booked exposure plus everything written off and not recovered. |
+| `floor_base() -> Result<i128, EngineError>` | The Engine's read of the same number, so the limit and the reality are taken off one scale. It asks the Vault, which measures it on accounted cash. |
 | `written_off() -> i128` | Written off across all pools and not recovered. |
 | `written_off_pool(pool_id: Address) -> i128` | Written off against one pool and not recovered. This is what a write-down costs that pool's cap. |
 | `charged_exposure(pool_id: Address) -> i128` | What the concentration caps are measured on: deployed plus written off. It differs from `get_exposure` only after a write-down, and that difference is the reason a write-down cannot reopen a cap. |

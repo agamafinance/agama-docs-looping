@@ -68,6 +68,18 @@ The Vault's oracle pointer was the only one of its counterparties that was writt
 
 The adapters had two of three edges checked. Registration proves an adapter names this Engine and this Engine's Vault, and the adapter proves from its side that the Engine governs the Vault. Neither was about the asset, and an adapter stores one. With the right pointers and the wrong token an adapter is a one way door: the Vault sends what the Vault holds, so real USDC arrives, and repaying sends back the token the adapter stores, of which it has none, and traps. The books can be cleared with a write-down while the money stays exactly where it is, which is the failure that retired three generations of the private credit adapter. It is refused at construction now, which is earlier than the registry door and the right place, and the token is never a parameter again, so an adapter is bound to its asset for life. Test count 170 to 178.
 
+### What a fuzzer found that three reviews did not
+
+Property-based fuzzing over randomised operation sequences went in on the fourth day, because the architecture document had been claiming it for months and the repository had no fuzz targets at all. It found a real defect within its first run, in code written the day before.
+
+`Engine::book_recovery`, the fix for M1, could lower the reserve floor's base. Four operations: a transfer straight to the Vault, an allocation, a write-down, a booking. The Vault's idle reserves read the real token balance, so cash arriving without the books being told raises the base the moment it lands; booking it afterwards lowers recognised losses by the same amount with no further cash moving. Both terms are in the base, so the dollar is counted on arrival and spent again on booking.
+
+`recover` is immune, and the difference is where the cash sits when it is booked: in an adapter it is outside the base until the sweep brings it in, so the rise and the fall happen in one call and cancel. The comment written on `book_recovery` claimed the two were equivalent. They are not, and that is the sentence the counterexample refutes.
+
+The third review had declined to write that call, and said why: new authority over recognised losses is a product decision. That judgement was overridden and the fuzzer found the reason it was right. The call is removed, M1 is open again, and the proper fix, measuring the base on accounted cash rather than the raw balance, is written up with what it costs rather than taken on top of the bug it repairs.
+
+It is visible on the deployment. A smoke script had been restoring a written-down amount by transferring straight to the Vault, which is the same unbooked arrival the counterexample used, and those stroops cannot be cleared now that the only call that could book them is gone. The script routes through the adapter instead, so it stops adding to it.
+
 ### The exploits were submitted, not simulated
 
 Several findings were proved by attacking the superseded contracts, which are still live on the ledger. That makes them evidence about the chain rather than only about the source.

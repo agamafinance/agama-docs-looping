@@ -46,15 +46,17 @@ The anti-dust minimum on `request_withdrawal` is 1 agUSD, or `10000000`.
 | Function | What it does | Caller | Errors |
 |---|---|---|---|
 | `__constructor(admin: Address, usdc_token: Address)` | Deploy-time wiring. Takes USDC only, and checks it answers the token interface. agUSD and the Engine arrive later, through setters that interrogate them, because each is built against this Vault's address and cannot exist before it does. | `admin` | `InvalidUsdc` 325 |
-| `set_agusd(admin: Address, agusd_token: Address)` | Points the Vault at the token it mints. The token must name this Vault as its minter, and the pointer closes at the first deposit. | stored admin | `NotInitialized` 301, `NotAdmin` 302, `DepositsExist` 312, `AgUsdMismatch` 324 |
+| `set_agusd(admin: Address, agusd_token: Address)` | Points the Vault at the token it mints. The token must name this Vault as its minter, and the pointer closes at the first deposit. | stored admin  It must also count stroops the way this Vault's USDC does. `deposit` mints one stroop of agUSD for one stroop of USDC, so a token with different decimals leaves the internal arithmetic self consistent, the round trip exact, and everything outside wrong: an AMM pool or a lending market valuing a unit at a dollar would be out by a factor of ten with nothing on-chain contradicting it. | `NotInitialized` 301, `NotAdmin` 302, `DepositsExist` 312, `AgUsdMismatch` 324 | `NotAdmin` 302, `DepositsExist` 312, `AgUsdMismatch` 324, `DecimalMismatch` 327 |
 | `set_engine(admin: Address, allocation_engine: Address)` | Points the Vault at the Engine allowed to call `settle_allocation`. The Engine must answer that it governs this Vault and arrive with an empty book, and the pointer will not move while this Vault has capital out at a pool. | stored admin | `NotInitialized` 301, `NotAdmin` 302, `CapitalDeployed` 313, `EngineMismatch` 314 |
-| `set_oracle(admin: Address, oracle: Address, feed_id: Symbol)` | Points the Vault at the Oracle Adapter and the feed `get_nav` reads. | stored admin | `NotInitialized` 301, `NotAdmin` 302 |
+| `set_oracle(admin: Address, oracle: Address, feed_id: Symbol)` | Points the Vault at an Oracle Adapter and the feed `get_nav` reads. Interrogates the pair before accepting it, which it did not used to: the address has to answer `get_feed` for this exact feed, so it has to be a contract, an oracle, and one that knows the feed. It deliberately asks nothing about whether that feed has reported yet or whether its last value is fresh, because pointing at a newly deployed oracle, or at one whose reporter is down, is an ordinary operation and often the reason for repointing. What no check reaches is a real feed that is the wrong one for this Vault's book, which is why the pair is readable. | stored admin | `NotAdmin` 302, `OracleMismatch` 326 |
 | `set_reserve_floor(admin: Address, floor_bps: u32)` | Sets the share of the floor's base the Vault will not release. Ships closed at `10000` until this is called. | stored admin | `NotInitialized` 301, `NotAdmin` 302, `InvalidFloor` 319 |
 | `set_paused(admin: Address, paused: bool)` | Circuit breaker over `deposit`, `request_withdrawal` and `settle_allocation`. It does not touch the payout paths, because the agUSD behind a queued claim is already burned. | stored admin | `NotInitialized` 301, `NotAdmin` 302 |
 | `propose_admin(admin: Address, new_admin: Address)` | First half of a two step handover. The role does not move. | stored admin | `NotInitialized` 301, `NotAdmin` 302 |
 | `accept_admin(new_admin: Address)` | Second half. Only the proposed address can call it, and its signature is the proof the key is reachable. | `new_admin` | `NoPendingAdmin` 320, `NotPendingAdmin` 321 |
 
 ### Views
+
+`oracle() -> Result<Address, VaultError>` and `oracle_feed() -> Result<Symbol, VaultError>` read back the pair `set_oracle` writes. Every other counterparty this Vault points at could be read back and this one could not, so the only way to learn where it pointed was to call `get_nav()` and infer it from the number, and a wrong pointer produces a perfectly plausible number. The missing getter is what let the missing check go unnoticed.
 
 | Function | What it returns |
 |---|---|
@@ -90,7 +92,7 @@ The anti-dust minimum on `request_withdrawal` is 1 agUSD, or `10000000`.
 | 312 `DepositsExist` | 313 `CapitalDeployed` | 314 `EngineMismatch` | 315 `QueueEmpty` |
 | 316 `ReserveFloorBreached` | 317 `RepaymentNotReceived` | 318 `DeployedUnderflow` | 319 `InvalidFloor` |
 | 320 `NoPendingAdmin` | 321 `NotPendingAdmin` | 322 `PaymentRejected` | 323 `RecoveryNotReceived` |
-| 324 `AgUsdMismatch` | 325 `InvalidUsdc` | | |
+| 324 `AgUsdMismatch` | 325 `InvalidUsdc` | 326 `OracleMismatch` | 327 `DecimalMismatch` |
 
 ## agUSD
 
@@ -120,9 +122,10 @@ The staking contract. Yield reaches holders through share price appreciation rat
 | Function | What it does | Caller | Errors |
 |---|---|---|---|
 | `__constructor(admin: Address, agusd: Address, cooldown_seconds: u64, decimal: u32, name: String, symbol: String)` | Deploy-time. Records the admin, the agUSD accepted, the cooldown and the sagUSD metadata. | `admin` | |
-| `stake(from: Address, amount: i128) -> i128` | Takes agUSD and mints sagUSD shares at the current rate. Returns the shares minted. First staker gets 1:1. | `from` | traps: `amount must be positive`, `zero shares` |
-| `request_unstake(from: Address, shares: i128) -> i128` | Burns the shares immediately and records the agUSD owed, claimable after the cooldown. Returns the assets owed. A second request restarts the cooldown on the whole pending balance. | `from` | traps: `shares must be positive`, `no supply` |
-| `claim(from: Address) -> i128` | Pays out matured pending agUSD. | `from` | traps: `nothing pending`, `still in cooldown` |
+| `stake(from: Address, amount: i128) -> i128` | Takes agUSD and mints sagUSD shares at the current rate. Returns the shares minted. First staker gets 1:1. | `from` | `InvalidAmount` 806, `ZeroShares` 807 |
+| `request_unstake(from: Address, shares: i128) -> i128` | Burns the shares immediately and records the agUSD owed, claimable after the cooldown. Returns the assets owed. A second request restarts the cooldown on the whole pending balance. | `from` | `InvalidAmount` 806, `NoSupply` 808 |
+| `claim(from: Address) -> i128` | Pays out matured pending agUSD. | `from` | `NothingPending` 809, `StillInCooldown` 810 |
+| `bump_pending(addr: Address)` | Postpones the archival of a pending unstake by extending its TTL. The record is written once, at the request, and nothing writes to it again until it is claimed, so nothing extends it; a cooldown is by construction a period the staker has been told to go away for. | anyone. It cannot shorten a TTL, cannot alter what is owed or to whom, and the caller pays the rent | `NothingPending` 809 |
 | `distribute_yield(amount: i128)` | Moves `amount` agUSD from the admin into the contract and raises NAV by exactly that. Every share appreciates; there is nothing to claim and no rebase. It replaced a bare NAV setter, which was a setter on the denominator of the contract's own share price. | stored admin | traps: `amount must be positive` |
 | `set_agusd(admin: Address, agusd: Address)` | Repoints the accepted token, and only while the contract has never taken custody: no stakes, no NAV, no balance. | stored admin | `NotInitialized` 801, `NotAdmin` 802, `CustodyTaken` 803 |
 | `set_allocations(allocations: Vec<Allocation>)` | Records the off-chain strategy breakdown shown in the interface. Display metadata; nothing on-chain reads it. | stored admin | |
@@ -132,7 +135,11 @@ Views: `nav() -> i128`, `total_shares() -> i128`, `exchange_rate() -> i128` (agU
 
 SEP-41: `balance`, `transfer`, `transfer_from`, `approve`, `allowance`, `decimals`, `name`, `symbol`, `total_supply`. There is deliberately no `burn`: shares leave supply only through `request_unstake`.
 
-Error codes: 800 `AlreadyInitialized` (retired), 801 `NotInitialized`, 802 `NotAdmin`, 803 `CustodyTaken`, 804 `NoPendingAdmin`, 805 `NotPendingAdmin`.
+Error codes: 800 `AlreadyInitialized` (retired), 801 `NotInitialized`, 802 `NotAdmin`, 803 `CustodyTaken`, 804 `NoPendingAdmin`, 805 `NotPendingAdmin`, 806 `InvalidAmount`, 807 `ZeroShares`, 808 `NoSupply`, 809 `NothingPending`, 810 `StillInCooldown`, 811 `DecimalMismatch`.
+
+`ZeroShares` is worth naming separately from `InvalidAmount`: it is a stake large enough to be a positive number of assets and small enough to round to no shares at all, and taking it would be taking a deposit and giving nothing back for it.
+
+Events: `staked(staker, assets, shares, nav, supply)` · `unstake_requested(staker, shares, assets, claimable_at, nav, supply)` · `unstake_claimed(staker, assets)` · `yield_distributed(amount, nav, supply)` · `agusd_repointed(agusd)` · `admin_proposed(new_admin)` · `admin_changed(admin)`. The first four carry `nav` and `supply` as they stand after the call, because the share price is `nav / supply` and an indexer replaying the stream has no way back to a past pair: carrying both makes every price in a history a fact from the ledger rather than a sample somebody happened to take. `unstake_claimed` carries neither, on purpose, because the shares were burned at request time and nothing about the price moves at a payout.
 
 ## Allocation Engine
 
@@ -145,6 +152,8 @@ The constraint layer. It decides nothing about where capital goes, which in V1 i
 | `write_down(admin: Address, pool_id: Address, amount: i128, reason: Symbol)` | Recognises a loss across all three books at once: the adapter's, the Engine's and the Vault's. It buys the caller nothing: recognised losses stay in the reserve floor's denominator, and the amount is charged against the pool's concentration cap until the cash comes back. | stored admin, whose signature must also satisfy the Vault's admin | `NotInitialized` 401, `NotAdmin` 402, `InvalidAmount` 406, `PoolNotRegistered` 404, `WriteDownExceedsExposure` 415, `AdminMismatch` 418 |
 | `recover(admin: Address, pool_id: Address) -> i128` | Brings home whatever an adapter holds above its booked exposure, which is what a written-off position that recovers looks like, and what interest above principal looks like. Returns the amount. The destination is the adapter's stored Vault and the amount is not a parameter, so there is nothing here for a caller to aim, which holds only while that Vault is still the one this Engine governs, so the pairing is re-checked here too. | stored admin, whose signature must also satisfy the Vault's admin | `NotInitialized` 401, `NotAdmin` 402, `PoolNotRegistered` 404, `AdapterMismatch` 414, `AdminMismatch` 418, and the adapter's `NothingToRecover` |
 | `register_pool(admin: Address, pool_id: Address, originator: Symbol, jurisdiction: Symbol, cap_bps: u32)` | Whitelists an adapter with the metadata the caps aggregate over. The adapter must name this Engine and this Engine's Vault back. This is the first time that check runs rather than the only time: `allocate`, `deallocate` and `recover` re-run it, because `set_vault` can move the Engine's end of the pairing after a pool is registered. | stored admin | `NotInitialized` 401, `NotAdmin` 402, `InvalidCap` 405, `PoolAlreadyRegistered` 403, `AdapterMismatch` 414 |
+| `set_pool_cap(admin: Address, pool_id: Address, cap_bps: u32)` | Moves a registered pool's own cap. A pool's effective limit is the tighter of this and the global pool cap, and until this existed only the second could move, so wherever a pool's own figure was binding it was binding for the life of the Engine. The useful direction is down: a cap of zero stops new capital reaching a pool without touching what it holds or releasing what it has been charged, which is the delisting that works on a pool in default. | stored admin | `NotAdmin` 402, `PoolNotRegistered` 404, `InvalidCap` 405 |
+| `unregister_pool(admin: Address, pool_id: Address)` | Removes an entry. Refused while this Engine or the adapter still books capital in it, and refused while a write-off is still charged against it: the aggregate caps are built by walking this registry, so an entry leaving takes its charge out of them and a defaulted pool could otherwise be delisted and replaced under the same originator with its whole limit back. It runs no counterparty check, deliberately, because the entry most worth removing is the one whose adapter no longer names this Engine's Vault. | stored admin | `NotAdmin` 402, `PoolNotRegistered` 404, `PoolHasExposure` 420, `PoolHasWrittenOffCharge` 421 |
 | `set_caps(admin: Address, pool_cap_bps: u32, originator_cap_bps: u32, jurisdiction_cap_bps: u32)` | Sets the global concentration limits. A pool's effective limit is the tighter of its own and the global one. | stored admin | `NotInitialized` 401, `NotAdmin` 402, `InvalidCap` 405 |
 | `set_reserve_floor(admin: Address, floor_bps: u32)` | Sets the minimum share of the floor's base that stays as idle USDC in the Vault. Ships closed at `10000`. | stored admin | `NotInitialized` 401, `NotAdmin` 402, `InvalidCap` 405 |
 | `__constructor(admin: Address, vault: Address)` | Deploy-time. The Vault must answer `admin()`, and must answer with this Engine's admin, because the calls that recognise and reverse a loss need one signature that satisfies both contracts. | `admin` | `VaultMismatch` 419 |
@@ -175,6 +184,7 @@ The constraint layer. It decides nothing about where capital goes, which in V1 i
 | | | | |
 |---|---|---|---|
 | 400 `AlreadyInitialized` (retired) | 401 `NotInitialized` | 402 `NotAdmin` | 403 `PoolAlreadyRegistered` |
+| 420 `PoolHasExposure` | 421 `PoolHasWrittenOffCharge` | | |
 | 404 `PoolNotRegistered` | 405 `InvalidCap` | 406 `InvalidAmount` | 407 `PoolCapExceeded` |
 | 408 `OriginatorCapExceeded` | 409 `JurisdictionCapExceeded` | 410 `ReserveFloorBreached` | 411 `InsufficientReserves` |
 | 412 `ExposureUnderflow` | 413 `CapitalDeployed` | 414 `AdapterMismatch` | 415 `WriteDownExceedsExposure` |
@@ -199,6 +209,8 @@ NAV reporting, with the guards on the way in rather than on the way out. Errors 
 | `push_nav(reporter: Address, feed_id: Symbol, nav: i128, timestamp: u64)` | Strict report. Validates and stores, or fails the transaction. A deviation breach fails here rather than emitting a rejection, because a failing invocation's events are rolled back anyway. | `reporter`, and it must be in the reporter set | `UnauthorizedReporter` 503, `FeedNotRegistered` 504, `InvalidNav` 507, `NavOutOfBand` 513, `TimestampInFuture` 509, `NonMonotonicTimestamp` 508, `TooSoon` 514, `DeviationOutOfBounds` 510 |
 | `submit_nav(reporter: Address, feed_id: Symbol, nav: i128, timestamp: u64) -> PushOutcome` | The same validation, but a deviation breach returns `RejectedDeviation` and publishes a rejection event instead of failing. Returns `Accepted` otherwise. | `reporter`, in the reporter set | as `push_nav`, without 510 |
 | `register_feed(admin, feed_id: Symbol, staleness_secs: u64, deviation_bps: u32, min_nav: i128, max_nav: i128, min_interval_secs: u64)` | Write-once registration of a feed's guards. The band bounds every report including the first, which a deviation bound cannot reach, because a bound on a move needs something to move from. | stored admin | `NotInitialized` 501, `NotAdmin` 502, `InvalidFeedConfig` 506, `FeedAlreadyRegistered` 505 |
+| `set_quorum_threshold(admin, feed_id: Symbol, threshold: u32)` | How many distinct authorized reporters have to submit the same value for the same round before it commits. Defaults to 1, which is V1 exactly: the first vote is quorum and it lands. Above 1 a reporter gets one vote per round whatever it votes for, and partial agreement moves nothing. Reaching quorum changes how many reporters must agree before the band, staleness, deviation and interval guards run, never whether they run. | stored admin | `NotAdmin` 502, `FeedNotRegistered` 504, `InvalidQuorumThreshold` 517 |
+| `quorum_threshold(feed_id: Symbol) -> u32` / `quorum_votes(feed_id: Symbol, timestamp: u64, nav: i128) -> u32` | The threshold in force, and how many votes a particular value has in a particular round. | anyone | |
 | `add_reporter(admin, reporter: Address)` / `remove_reporter(admin, reporter: Address)` | Manages the set of addresses allowed to report. | stored admin | `NotInitialized` 501, `NotAdmin` 502 |
 | `get_nav(feed_id: Symbol) -> Result<i128, OracleError>` | The latest NAV, refusing to return one older than the feed's staleness window. It fails rather than handing back a stale number, and the Vault lets that failure propagate. | anyone | `FeedNotRegistered` 504, `NoNavReported` 512, `OracleStale` 511 |
 | `last_update(feed_id: Symbol) -> Result<NavPoint, OracleError>` | The raw stored point, including its age, for monitoring: `nav`, `timestamp`, `recorded_at`. | anyone | `NoNavReported` 512 |
@@ -215,6 +227,7 @@ The minimum interval is measured on `recorded_at`, which is ledger time, and nev
 |---|---|---|---|
 | 500 `AlreadyInitialized` (retired) | 501 `NotInitialized` | 502 `NotAdmin` | 503 `UnauthorizedReporter` |
 | 504 `FeedNotRegistered` | 505 `FeedAlreadyRegistered` | 506 `InvalidFeedConfig` | 507 `InvalidNav` |
+| 517 `InvalidQuorumThreshold` | 518 `AlreadyVoted` | | |
 | 508 `NonMonotonicTimestamp` | 509 `TimestampInFuture` | 510 `DeviationOutOfBounds` | 511 `OracleStale` |
 | 512 `NoNavReported` | 513 `NavOutOfBand` | 514 `TooSoon` | 515 `NoPendingAdmin` |
 | 516 `NotPendingAdmin` | | | |

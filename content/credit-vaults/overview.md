@@ -4,20 +4,20 @@ Credit vaults are where deposited USDC goes to work. Each one funds a specific r
 
 ## The six live vaults
 
-Six credit vaults are deployed on Stellar Testnet, curated with [Qiro](https://www.qiro.fi/investor) and [Tenka](https://tenka.fi/).
+Six credit vaults are deployed on Stellar Testnet, curated with [Qiro](https://www.qiro.fi/investor) and an ABF partner.
 
 | Vault | Curator | Strategy | Share token |
 |---|---|---|---|
 | Payment Financing | Qiro | Short-term payment receivables | qPAY |
 | Private Credit | Qiro | Diversified credit fund | qPCV |
 | Institutional Credit | Qiro | Institutional lender financing | qICV |
-| Flagship | Tenka | ABF senior | tFLAG |
-| High Yield | Tenka | ABF mezzanine | tHY |
-| Deal Vaults | Tenka | Deal-by-deal | tDEAL |
+| Flagship | ABF partner | ABF senior | tFLAG |
+| High Yield | ABF partner | ABF mezzanine | tHY |
+| Deal Vaults | ABF partner | Deal-by-deal | tDEAL |
 
 Contract addresses for all six are on [Deployments](/stellar/deployments) and verifiable on Stellar Expert.
 
-Two different things are called curation here, and it is worth separating them. Qiro and Tenka curate the strategies: they source the credit and run the vaults. Curator with a capital C is a protocol role, held by the admin multi-sig in V1, which whitelists a pool in the Allocation Engine and sets the risk parameters that bound it. See [Threat Model](/security/threat-model) for the full role table.
+Two different things are called curation here, and it is worth separating them. Qiro and the ABF partner curate the strategies: they source the credit and run the vaults. Curator with a capital C is a protocol role, held by the admin multi-sig in V1, which whitelists a pool in the Allocation Engine and sets the risk parameters that bound it. See [Threat Model](/security/threat-model) for the full role table.
 
 ## How capital reaches a vault
 

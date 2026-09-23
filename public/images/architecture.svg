@@ -64,7 +64,7 @@
 <rect x="150" y="594" width="200" height="86" rx="12" fill="#2e4a3c" stroke="#6e8c7d" stroke-width="1.5"/>
 <text x="250" y="621" fill="#ffffff" font-size="13.5" font-weight="700" text-anchor="middle">Credit vaults</text>
 <text x="250" y="641" fill="#c2d6cb" font-size="10.5" text-anchor="middle">six live on testnet, curated</text>
-<text x="250" y="658" fill="#c2d6cb" font-size="10.5" text-anchor="middle">with Qiro and Tenka</text>
+<text x="250" y="658" fill="#c2d6cb" font-size="10.5" text-anchor="middle">with Qiro and an ABF partner</text>
 
 <rect x="370" y="594" width="200" height="86" rx="12" fill="#2e4a3c" stroke="#9fd9b8" stroke-width="1.5"/>
 <text x="470" y="621" fill="#ffffff" font-size="13.5" font-weight="700" text-anchor="middle">Etherfuse Stablebonds</text>

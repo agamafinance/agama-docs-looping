@@ -61,6 +61,6 @@ Swap agUSD for USDC on Soroswap in a single Soroban transaction.
 
 ## What is live and what the grant builds
 
-Live on Stellar Testnet today and verifiable on [Stellar Expert](/stellar/deployments): agUSD, sagUSD and the six credit vault contracts curated with Qiro and Tenka. Everything else in this flow is what the grant builds.
+Live on Stellar Testnet today and verifiable on [Stellar Expert](/stellar/deployments): agUSD, sagUSD and the six credit vault contracts curated with Qiro and an ABF partner. Everything else in this flow is what the grant builds.
 
 The two modules SCF named are both in step 4: the Allocation Engine and its pool adapters, Etherfuse and private credit. Step 5 is the Oracle Adapter, a separate module that values those positions.

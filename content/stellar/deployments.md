@@ -78,7 +78,7 @@ These are testnet contracts and hold no user funds. They are documented rather t
 
 ## Credit vaults
 
-Six credit vaults are live on testnet, curated by [Qiro](https://www.qiro.fi/investor) and [Tenka](https://tenka.fi/). Each vault is an independent Soroban contract with its own share token.
+Six credit vaults are live on testnet, curated by [Qiro](https://www.qiro.fi/investor) and an ABF partner. Each vault is an independent Soroban contract with its own share token.
 
 These six are deployed instances of an earlier build of the same staking contract that issues sagUSD, from before its yield entry point took the `distribute_yield` name. They answer to `accrue_yield` and to `share_price`, not to `distribute_yield` and `exchange_rate`. Anything integrating against them directly should read the interface each instance publishes rather than assume the sagUSD one.
 
@@ -87,9 +87,9 @@ These six are deployed instances of an earlier build of the same staking contrac
 | Payment Financing | Qiro | Short-term payment receivables | qPAY | [`CAUFXVGK...YQEF4`](https://stellar.expert/explorer/testnet/contract/CAUFXVGKB2OKEDDO6SDWH4ZSWXJ37T2WYKEVUTBOCWZAFEUTGCFYQEF4) |
 | Private Credit | Qiro | Diversified credit fund | qPCV | [`CADVWAZ3...VECN3`](https://stellar.expert/explorer/testnet/contract/CADVWAZ324KZYLDGYJVHPLQ5BXSQWTWZLH64OHIHIDYPX76BRL7VECN3) |
 | Institutional Credit | Qiro | Institutional lender financing | qICV | [`CC3MOBKH...MJBK2`](https://stellar.expert/explorer/testnet/contract/CC3MOBKHGNTHGALTQKZHICW5MYD4VYPGZEA3UC7GFYRK3VYK47EMJBK2) |
-| Flagship | Tenka | ABF senior | tFLAG | [`CBOF52TX...ULKKS`](https://stellar.expert/explorer/testnet/contract/CBOF52TX36HR62LX7HVMWMYVPUDBZXTRD74H2Q7NZKLUGAVBNBJULKKS) |
-| High Yield | Tenka | ABF mezzanine | tHY | [`CCWXOUPQ...NHOPG`](https://stellar.expert/explorer/testnet/contract/CCWXOUPQFZLGENWWT3JLMXOBDE6N6EE5STS7IHESCADX72DDFUSNHOPG) |
-| Deal Vaults | Tenka | Deal-by-deal | tDEAL | [`CBXKGXB4...2IDO5G`](https://stellar.expert/explorer/testnet/contract/CBXKGXB46PD2NDGPS6YRIWJ33A5YEJP5YPYGRBJZTTGWBQ7ASY2IDO5G) |
+| Flagship | ABF partner | ABF senior | tFLAG | [`CBOF52TX...ULKKS`](https://stellar.expert/explorer/testnet/contract/CBOF52TX36HR62LX7HVMWMYVPUDBZXTRD74H2Q7NZKLUGAVBNBJULKKS) |
+| High Yield | ABF partner | ABF mezzanine | tHY | [`CCWXOUPQ...NHOPG`](https://stellar.expert/explorer/testnet/contract/CCWXOUPQFZLGENWWT3JLMXOBDE6N6EE5STS7IHESCADX72DDFUSNHOPG) |
+| Deal Vaults | ABF partner | Deal-by-deal | tDEAL | [`CBXKGXB4...2IDO5G`](https://stellar.expert/explorer/testnet/contract/CBXKGXB46PD2NDGPS6YRIWJ33A5YEJP5YPYGRBJZTTGWBQ7ASY2IDO5G) |
 
 Every contract above is verifiable on [Stellar Expert](https://stellar.expert/explorer/testnet).
 

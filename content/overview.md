@@ -18,7 +18,7 @@ The other half of the problem is the one that gets less attention. Once capital 
 
 The protocol has four parts.
 
-1. **Credit vaults.** Six are live on Stellar Testnet, curated with [Qiro](https://www.qiro.fi/investor) and [Tenka](https://tenka.fi/), each an independent Soroban contract with its own share token. They are where deposited capital earns: short-term payment receivables, diversified credit funds, institutional lender financing, asset-backed senior and mezzanine tranches. See [Credit Vaults](/credit-vaults/overview).
+1. **Credit vaults.** Six are live on Stellar Testnet, curated with [Qiro](https://www.qiro.fi/investor) and an ABF partner, each an independent Soroban contract with its own share token. They are where deposited capital earns: short-term payment receivables, diversified credit funds, institutional lender financing, asset-backed senior and mezzanine tranches. See [Credit Vaults](/credit-vaults/overview).
 
 2. **agUSD.** A synthetic dollar. The Vault mints it 1:1 against USDC and is the only address allowed to mint it. Burning is the holder's own: `burn` and `burn_from` are the standard SEP-41 paths, and the Vault uses that same path when it burns a withdrawer's agUSD. Supply can only go up through the Vault, and down through anyone holding the token. It is a plain SEP-41 token with no transfer restriction, so other Soroban protocols can hold it and compose with it. agUSD on its own earns nothing. See [agUSD](/agusd/overview).
 

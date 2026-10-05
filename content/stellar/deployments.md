@@ -16,10 +16,10 @@ Agama runs natively on Stellar. All protocol logic is implemented as Soroban sma
 | Contract | Standard | Address |
 |---|---|---|
 | USDC (Circle) | Stellar asset contract | [`CBIELTK6...XQDAMA`](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA) |
-| Vault | Custody, mint, FIFO withdrawal queue, its own reserve floor | [`CANIR7O2...HTG247`](https://stellar.expert/explorer/testnet/contract/CANIR7O2VQYQ5ZM2LIOREGPAXNXPWXHBAJVZPF3J2HBVT6VXOZHTG247) |
-| agUSD | SEP-41, minted only by the Vault | [`CDK6A24G...LSW4MO`](https://stellar.expert/explorer/testnet/contract/CDK6A24G3ZS5S46OXDNNIV2HU4J45QXN2Y6GUNDJOJ4H5L66BQLSW4MO) |
-| sagUSD | SEP-41, share-price accounting shares | [`CCCOP5UK...VEPZ2K`](https://stellar.expert/explorer/testnet/contract/CCCOP5UKU3MOJYC5VFN2AGBRWHNXY5WF2BAGK435SNC6GJ4AFFVEPZ2K) |
-| Allocation Engine | Caps in bps of net assets, reserve floor in bps of `floor_base`, per-pool cap and delisting | [`CDYT5BFC...C5TUFL`](https://stellar.expert/explorer/testnet/contract/CDYT5BFC2ABBK2QWWUTU4AM6JGFN2BP3XHCUGVEI3O5NCCIBUXC5TUFL) |
+| Vault | Custody, mint, FIFO withdrawal queue, its own reserve floor | [`CCVNCXPJ...PZTTJF`](https://stellar.expert/explorer/testnet/contract/CCVNCXPJXCA5GKJKNUNZRMJEEWYL74ASYYTL2DULPO5TZDGSHUPZTTJF) |
+| agUSD | Classic Stellar asset `agUSD:GAXM76GV3KKUK4XC3DKKHBEXCGUPYOALOB35HITI4WBKAAC7MUT5ZZEB`, seen from Soroban through its Stellar Asset Contract. Minted only by the Vault, which holds the SAC admin; the issuer account is locked | [`CADD22PH...AHH33R`](https://stellar.expert/explorer/testnet/contract/CADD22PHOXWHYVCQ3K5DWIHPUNA5USTHBPOCBE2KDCYNUEBUGFAHH33R) |
+| sagUSD | SEP-41, share-price accounting shares | [`CABRKOPP...EUWKIJ`](https://stellar.expert/explorer/testnet/contract/CABRKOPPYG4IIWGNH3DX4FY6CQFANFYRWMB3Y27HGUWWWERMCPEUWKIJ) |
+| Allocation Engine | Caps in bps of net assets, reserve floor in bps of `floor_base`, per-pool cap and delisting | [`CBDVZPMB...ZE6FFD`](https://stellar.expert/explorer/testnet/contract/CBDVZPMBUQQ6OML3WTT4TP6QIOJDRC4BWYXR7UZQAAZG2LETAVZE6FFD) |
 | Oracle Adapter | Per-feed staleness, deviation, band, rate limit and quorum threshold | [`CAUOHPPN...TWIQUS`](https://stellar.expert/explorer/testnet/contract/CAUOHPPNHUIYQI3KIVPLP75CGWKFBGSXK3RW75UO52PKY3YKQRTWIQUS) |
 
 The USDC issuer on Stellar is `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`.
@@ -32,8 +32,8 @@ That check runs on every call that moves a pool's capital, not only at registrat
 
 | Adapter | Settlement | Address |
 |---|---|---|
-| Private credit | D+15 to D+90, off-chain originator | [`CAQQLSSX...T4VEDF`](https://stellar.expert/explorer/testnet/contract/CAQQLSSXJJKO6YTH54AIXU7YPFOI7HTPTU2OOQ4MKBF2BYJAONT4VEDF) |
-| Etherfuse | Instant, on-chain redemption | [`CBLYG64B...6G6GCF`](https://stellar.expert/explorer/testnet/contract/CBLYG64BCFJHOUQW4EEYEJTCXS7VEVXGEH2B3GEQ26JIJKMVN46G6GCF) |
+| Private credit | D+15 to D+90, off-chain originator | [`CDNWXGSS...WLP3VE`](https://stellar.expert/explorer/testnet/contract/CDNWXGSSP3BOAIKIYTGDHST2BBSZNWIW6RMDQERM3HOQ24EO43WLP3VE) |
+| Etherfuse | Instant, on-chain redemption | [`CBLRTQBX...APCLCP`](https://stellar.expert/explorer/testnet/contract/CBLRTQBXHL6SQBI2CBX7XUC3TBNPTS3ZUJXOB4ASYUVKHCEF34APCLCP) |
 
 ## Superseded deployments
 

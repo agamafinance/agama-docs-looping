@@ -16,8 +16,8 @@ Agama runs natively on Stellar. All protocol logic is implemented as Soroban sma
 | Contract | Standard | Address |
 |---|---|---|
 | USDC (Circle) | Stellar asset contract | [`CBIELTK6...XQDAMA`](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA) |
-| Vault | Custody, mint, FIFO withdrawal queue, its own reserve floor | [`CANIR7O2...HTG247`](https://stellar.expert/explorer/testnet/contract/CANIR7O2VQYQ5ZM2LIOREGPAXNXPWXHBAJVZPF3J2HBVT6VXOZHTG247) |
-| agUSD | SEP-41, minted only by the Vault | [`CDK6A24G...LSW4MO`](https://stellar.expert/explorer/testnet/contract/CDK6A24G3ZS5S46OXDNNIV2HU4J45QXN2Y6GUNDJOJ4H5L66BQLSW4MO) |
+| Vault | Custody, mint, FIFO withdrawal queue, its own reserve floor | [`CCVNCXPJ...PZTTJF`](https://stellar.expert/explorer/testnet/contract/CCVNCXPJXCA5GKJKNUNZRMJEEWYL74ASYYTL2DULPO5TZDGSHUPZTTJF) |
+| agUSD | Classic Stellar asset `agUSD:GAXM76GV3KKUK4XC3DKKHBEXCGUPYOALOB35HITI4WBKAAC7MUT5ZZEB`, seen from Soroban through its Stellar Asset Contract. Minted only by the Vault, which holds the SAC admin; the issuer account is locked | [`CADD22PH...AHH33R`](https://stellar.expert/explorer/testnet/contract/CADD22PHOXWHYVCQ3K5DWIHPUNA5USTHBPOCBE2KDCYNUEBUGFAHH33R) |
 | sagUSD | SEP-41, share-price accounting shares | [`CCCOP5UK...VEPZ2K`](https://stellar.expert/explorer/testnet/contract/CCCOP5UKU3MOJYC5VFN2AGBRWHNXY5WF2BAGK435SNC6GJ4AFFVEPZ2K) |
 | Allocation Engine | Caps in bps of net assets, reserve floor in bps of `floor_base`, per-pool cap and delisting | [`CDYT5BFC...C5TUFL`](https://stellar.expert/explorer/testnet/contract/CDYT5BFC2ABBK2QWWUTU4AM6JGFN2BP3XHCUGVEI3O5NCCIBUXC5TUFL) |
 | Oracle Adapter | Per-feed staleness, deviation, band, rate limit and quorum threshold | [`CAUOHPPN...TWIQUS`](https://stellar.expert/explorer/testnet/contract/CAUOHPPNHUIYQI3KIVPLP75CGWKFBGSXK3RW75UO52PKY3YKQRTWIQUS) |

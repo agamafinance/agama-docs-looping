@@ -96,7 +96,17 @@ The anti-dust minimum on `request_withdrawal` is 1 agUSD, or `10000000`.
 
 ## agUSD
 
-The synthetic dollar the Vault mints, one for one against a deposit. A SEP-41 token that does nothing except keep balances and let exactly one address create them. Errors are in the 200 range.
+The synthetic dollar the Vault mints, one for one against a deposit.
+
+**agUSD is a classic Stellar asset, and the contract address in the deployment record is its Stellar Asset Contract.** Those are not two tokens: a balance moved by the contract's `transfer` turns up in Horizon's classic `balances` for the same account. It was a Soroban contract until October 2026, and the move is what let the SDEX quote it, because a path payment trades classic assets and a token minted by a contract is not one at any price.
+
+The interface is therefore the host's, not ours: `allowance`, `approve`, `authorized`, `admin`, `balance`, `burn`, `burn_from`, `clawback`, `decimals`, `mint`, `name`, `set_admin`, `set_authorized`, `symbol`, `transfer`, `transfer_from`. **There is no `total_supply`**, because a Stellar Asset Contract does not publish one and there is no call that would return it; circulation is read from Horizon instead. There is no rebase of any kind.
+
+Supply is the Vault's alone, and that takes two locks rather than one. The SAC's `admin`, which is what `mint` obeys, was handed to the Vault; the issuing account's master key weight was then set to zero, which is irreversible. Without the second, the issuer could still pay new units into existence by classic payment behind the Vault's back, which was verified on a throwaway asset before it was done here.
+
+### The contract this replaced
+
+`agusd-core` is the Soroban token agUSD used to be. It is retired and its address is in the deployment record's superseded list. Errors are in the 200 range. It is documented here because the generation it belongs to is still on-chain and still readable.
 
 | Function | What it does | Caller | Errors |
 |---|---|---|---|
@@ -109,7 +119,7 @@ The synthetic dollar the Vault mints, one for one against a deposit. A SEP-41 to
 | `mints() -> u64` | Mints since deployment. Zero means the minter can still be corrected, which is the one number an auditor needs to check that the promise holds. | anyone | |
 | `admin() -> Result<Address, AgUsdCoreError>`, `pending_admin() -> Option<Address>` | | anyone | `NotInitialized` 201 |
 
-SEP-41: `balance(id)`, `transfer(from, to, amount)`, `transfer_from(spender, from, to, amount)`, `approve(from, spender, amount, expiration_ledger)`, `allowance(from, spender)`, `burn(from, amount)`, `burn_from(spender, from, amount)`, `decimals()`, `name()`, `symbol()`, `total_supply()`.
+SEP-41, on the retired `agusd-core`: `balance(id)`, `transfer(from, to, amount)`, `transfer_from(spender, from, to, amount)`, `approve(from, spender, amount, expiration_ledger)`, `allowance(from, spender)`, `burn(from, amount)`, `burn_from(spender, from, amount)`, `decimals()`, `name()`, `symbol()`, `total_supply()`.
 
 `burn` and `burn_from` are the standard holder-authorized ones, because that is what `Vault::request_withdrawal` relies on. Supply therefore goes up only through the Vault and down only through the holder.
 
@@ -121,25 +131,28 @@ The staking contract. Yield reaches holders through share price appreciation rat
 
 | Function | What it does | Caller | Errors |
 |---|---|---|---|
-| `__constructor(admin: Address, agusd: Address, cooldown_seconds: u64, decimal: u32, name: String, symbol: String)` | Deploy-time. Records the admin, the agUSD accepted, the cooldown and the sagUSD metadata. | `admin` | |
+| `__constructor(admin: Address, agusd: Address, cooldown_seconds: u64)` | Deploy-time. Records the admin, the agUSD accepted and the cooldown. It no longer takes token metadata, because the contract no longer is the token: `set_shares` points it at the sagUSD Stellar Asset Contract it issues through. | `admin` | |
 | `stake(from: Address, amount: i128) -> i128` | Takes agUSD and mints sagUSD shares at the current rate. Returns the shares minted. First staker gets 1:1. | `from` | `InvalidAmount` 806, `ZeroShares` 807 |
 | `request_unstake(from: Address, shares: i128) -> i128` | Burns the shares immediately and records the agUSD owed, claimable after the cooldown. Returns the assets owed. A second request restarts the cooldown on the whole pending balance. | `from` | `InvalidAmount` 806, `NoSupply` 808 |
 | `claim(from: Address) -> i128` | Pays out matured pending agUSD. | `from` | `NothingPending` 809, `StillInCooldown` 810 |
 | `bump_pending(addr: Address)` | Postpones the archival of a pending unstake by extending its TTL. The record is written once, at the request, and nothing writes to it again until it is claimed, so nothing extends it; a cooldown is by construction a period the staker has been told to go away for. | anyone. It cannot shorten a TTL, cannot alter what is owed or to whom, and the caller pays the rent | `NothingPending` 809 |
 | `distribute_yield(amount: i128)` | Moves `amount` agUSD from the admin into the contract and raises NAV by exactly that. Every share appreciates; there is nothing to claim and no rebase. It replaced a bare NAV setter, which was a setter on the denominator of the contract's own share price. | stored admin | traps: `amount must be positive` |
 | `set_agusd(admin: Address, agusd: Address)` | Repoints the accepted token, and only while the contract has never taken custody: no stakes, no NAV, no balance. | stored admin | `NotInitialized` 801, `NotAdmin` 802, `CustodyTaken` 803 |
+| `set_shares(admin: Address, shares_token: Address)` | Points the contract at the sagUSD it issues through, and refuses any token that does not already name this contract as its admin, so a share token this contract cannot mint is rejected here rather than discovered at the first stake. Decimals must match the agUSD accepted, because the first staker is priced one for one and a mismatch makes a rate of 1.0 not one to one in value. Shut once the contract has taken custody of anything. | stored admin | `NotInitialized` 801, `NotAdmin` 802, `CustodyTaken` 803, `DecimalMismatch` 811, `SharesMismatch` 812 |
 | `set_allocations(allocations: Vec<Allocation>)` | Records the off-chain strategy breakdown shown in the interface. Display metadata; nothing on-chain reads it. | stored admin | |
 | `propose_admin(admin: Address, new_admin: Address)` / `accept_admin(new_admin: Address)` | Two step handover. | stored admin, then `new_admin` | `NotInitialized` 801, `NotAdmin` 802, `NoPendingAdmin` 804, `NotPendingAdmin` 805 |
 
-Views: `nav() -> i128`, `total_shares() -> i128`, `exchange_rate() -> i128` (agUSD per share at 7 decimals), `share_price() -> i128` (an alias kept because the first generation agUSD calls it), `pending(addr) -> Pending` with fields `assets` and `claimable_at`, `cooldown() -> u64`, `allocations() -> Vec<Allocation>`, `stakes() -> u64`, `agusd() -> Address`, `admin() -> Address`, `pending_admin() -> Option<Address>`.
+Views: `nav() -> i128`, `total_shares() -> i128`, `total_supply() -> i128`, `exchange_rate() -> i128` (agUSD per share at 7 decimals), `share_price() -> i128` (an alias kept because the first generation agUSD calls it), `pending(addr) -> Pending` with fields `assets` and `claimable_at`, `cooldown() -> u64`, `allocations() -> Vec<Allocation>`, `stakes() -> u64`, `agusd() -> Address`, `shares() -> Address`, `admin() -> Address`, `pending_admin() -> Option<Address>`.
 
-SEP-41: `balance`, `transfer`, `transfer_from`, `approve`, `allowance`, `decimals`, `name`, `symbol`, `total_supply`. There is deliberately no `burn`: shares leave supply only through `request_unstake`.
+**sagUSD is a classic Stellar asset too, and this contract issues through its Stellar Asset Contract rather than being the token.** So it has no `transfer`, `transfer_from`, `approve` or `allowance` of its own: those are the SAC's, and so are the `mint`, `burn`, `transfer` and `approve` events. `balance` and `decimals` delegate to the SAC. There is deliberately no `burn` here, because shares leave supply through `request_unstake`.
 
-Error codes: 800 `AlreadyInitialized` (retired), 801 `NotInitialized`, 802 `NotAdmin`, 803 `CustodyTaken`, 804 `NoPendingAdmin`, 805 `NotPendingAdmin`, 806 `InvalidAmount`, 807 `ZeroShares`, 808 `NoSupply`, 809 `NothingPending`, 810 `StillInCooldown`, 811 `DecimalMismatch`.
+`total_supply` is counted in this contract rather than read off the share token, because a Stellar Asset Contract publishes no supply. Only this contract mints, so the count cannot read low. It can read high, since a holder may call `burn` on the share token directly and destroy shares without unstaking, which this contract cannot observe. That is the safe direction: a supply read too high prices every share too low. The end to end suite asserts this count against what Horizon reports in circulation, so a divergence fails a run.
+
+Error codes: 800 `AlreadyInitialized` (retired), 801 `NotInitialized`, 802 `NotAdmin`, 803 `CustodyTaken`, 804 `NoPendingAdmin`, 805 `NotPendingAdmin`, 806 `InvalidAmount`, 807 `ZeroShares`, 808 `NoSupply`, 809 `NothingPending`, 810 `StillInCooldown`, 811 `DecimalMismatch`, 812 `SharesMismatch`, 813 `SharesNotSet`.
 
 `ZeroShares` is worth naming separately from `InvalidAmount`: it is a stake large enough to be a positive number of assets and small enough to round to no shares at all, and taking it would be taking a deposit and giving nothing back for it.
 
-Events: `staked(staker, assets, shares, nav, supply)` · `unstake_requested(staker, shares, assets, claimable_at, nav, supply)` · `unstake_claimed(staker, assets)` · `yield_distributed(amount, nav, supply)` · `agusd_repointed(agusd)` · `admin_proposed(new_admin)` · `admin_changed(admin)`. The first four carry `nav` and `supply` as they stand after the call, because the share price is `nav / supply` and an indexer replaying the stream has no way back to a past pair: carrying both makes every price in a history a fact from the ledger rather than a sample somebody happened to take. `unstake_claimed` carries neither, on purpose, because the shares were burned at request time and nothing about the price moves at a payout.
+Events: `staked(staker, assets, shares, nav, supply)` · `unstake_requested(staker, shares, assets, claimable_at, nav, supply)` · `unstake_claimed(staker, assets)` · `yield_distributed(amount, nav, supply)` · `agusd_repointed(agusd)` · `admin_proposed(new_admin)` · `admin_changed(admin)`. `set_shares` emits nothing, which is the one gap in this list: it can only run before the first stake, so the pointer is readable through `shares()` and cannot move under anybody's position, but a pointer that changes with no event is still a change an indexer has to go and ask about. The first four carry `nav` and `supply` as they stand after the call, because the share price is `nav / supply` and an indexer replaying the stream has no way back to a past pair: carrying both makes every price in a history a fact from the ledger rather than a sample somebody happened to take. `unstake_claimed` carries neither, on purpose, because the shares were burned at request time and nothing about the price moves at a payout.
 
 ## Allocation Engine
 

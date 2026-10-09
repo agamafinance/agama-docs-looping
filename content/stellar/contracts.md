@@ -75,17 +75,21 @@ A withdrawal request burns the agUSD immediately and leaves the USDC in the Vaul
 
 Paying a claim is a token transfer, and USDC is a Stellar asset contract over a classic asset, so it fails whenever the destination has no trustline, has had one frozen by the issuer, has a limit below the claim, or no longer exists. A failed payout used to trap the whole call, so the head pointer never moved and every withdrawal behind it stopped permanently. Delivery is now attempted: a claim the token refuses is marked deferred and stepped over, unpaid, still counted in `outstanding_liabilities` so its cash stays reserved, and collected later by its recorded owner through `claim_withdrawal`, out of head order and only once. A deferred claim loses its place in the queue, which is a real cost and falls on the only party who can fix its cause.
 
-## agUSD Token (SEP-41)
+## agUSD Token
 
-Composable synthetic dollar. `mint` is restricted to the recorded minter, which is the Vault Contract address. It is the only address that can bring agUSD into existence, and `set_minter` stops working at the first mint, so every unit in circulation was created by the minter named in the deployment record.
+Composable synthetic dollar.
+
+**agUSD is a classic Stellar asset, and the address in the deployment record is its Stellar Asset Contract.** Not two tokens: a balance the contract's `transfer` moves appears in Horizon's classic `balances` for the same account. It was a Soroban token until October 2026, and the move is what let the SDEX quote it, because a path payment trades classic assets and a contract-minted token is not one at any price.
+
+`mint` obeys the SAC's `admin`, which is the Vault. That alone is not enough, so the issuing account's master key weight was also set to zero, which is irreversible: without it the issuer could still pay new units into existence by classic payment behind the Vault's back. Both halves were verified on a throwaway asset first.
 
 `burn` and `burn_from` are not minter-gated. They are the standard SEP-41 holder-authorized paths: any holder can burn their own agUSD, and a spender can burn against an allowance. The Vault's `request_withdrawal` uses that same path, calling `burn` on the withdrawer inside a transaction the withdrawer has already signed, rather than a privilege of its own.
 
 Supply can therefore only go up through the Vault, and can go down through anyone holding the token. That is the right asymmetry for a redeemable synthetic dollar: burning agUSD destroys a claim rather than creating one, so a holder-authorized burn cannot cost anybody else anything.
 
-Standard SEP-41 interface: `transfer`, `transfer_from`, `approve`, `allowance`, `balance`, `burn`, `burn_from`, `decimals`, `name`, `symbol`, `total_supply`.
+The interface is the host's: `allowance`, `approve`, `authorized`, `admin`, `balance`, `burn`, `burn_from`, `clawback`, `decimals`, `mint`, `name`, `set_admin`, `set_authorized`, `symbol`, `transfer`, `transfer_from`. **There is no `total_supply`**: a Stellar Asset Contract does not publish one and no call returns it, so circulation is read from Horizon. There is no rebase.
 
-Events: `mint`, `burn`, `transfer`, `approve` from SEP-41, plus `MinterSet`.
+Events: `mint`, `burn`, `transfer`, `approve`, `set_admin`, emitted by the Stellar Asset Contract.
 
 agUSD carries no transfer restriction. It is permissionless and composable, which is what makes it usable as collateral by other Soroban protocols.
 
@@ -105,6 +109,10 @@ Yield-bearing staked agUSD with share-based accounting, following the same share
 | `share_price() -> i128` | Alias of `exchange_rate()`, the name this contract shipped with. Same computation, kept because the first-generation agUSD calls it on the credit vaults. |
 | `nav() -> i128` | Total agUSD the contract is accountable for. |
 | `total_shares() -> i128` | sagUSD in circulation. |
+| `set_shares(admin, shares_token)` / `shares() -> Address` | Points the contract at the sagUSD it issues through, and reads that pointer back. Refuses a token that does not already name this contract as its admin, requires matching decimals, and shuts once the contract has taken custody of anything. |
+| `total_supply() -> i128` | Shares issued less shares burned, counted here because a Stellar Asset Contract publishes no supply. Cannot read low, since only this contract mints; can read high if a holder burns on the share token directly, which is the safe direction. |
+
+**sagUSD is a classic Stellar asset too.** This contract issues through its Stellar Asset Contract rather than being the token, so it has no `transfer`, `transfer_from`, `approve` or `allowance` of its own; `balance` and `decimals` delegate, and the token events come from the SAC.
 
 **Unstaking is two steps, not one.** There is no single `unstake()` call. `request_unstake` burns the shares at request time and prices them there, so a queued position cannot keep earning, be sold, or be re-requested while it waits. `claim` pays it out once `cooldown()` has elapsed. Pricing at request rather than at claim is what stops the cooldown being used as a free option on the exchange rate.
 

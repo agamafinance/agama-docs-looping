@@ -34,7 +34,7 @@ That check runs on every call that moves a pool's capital, not only at registrat
 | Adapter | Settlement | Address |
 |---|---|---|
 | Private credit | D+15 to D+90, off-chain originator | [`CDNWXGSS...WLP3VE`](https://stellar.expert/explorer/testnet/contract/CDNWXGSSP3BOAIKIYTGDHST2BBSZNWIW6RMDQERM3HOQ24EO43WLP3VE) |
-| Etherfuse | Instant, on-chain redemption | [`CBLRTQBX...APCLCP`](https://stellar.expert/explorer/testnet/contract/CBLRTQBXHL6SQBI2CBX7XUC3TBNPTS3ZUJXOB4ASYUVKHCEF34APCLCP) |
+| Etherfuse | Instant, on-chain redemption | [`CCXO2ZIM...KM7BXN`](https://stellar.expert/explorer/testnet/contract/CCXO2ZIMK7KZMMUBE24KOLWDJHVXQKXDNEP4QH7N5ZK5U6ESCWKM7BXN) |
 
 ## Superseded deployments
 

@@ -210,7 +210,9 @@ Every adapter implements the same interface, which is what lets the Engine route
 
 `allocate(amount: i128)`, `deallocate(amount: i128)`, `write_down(amount: i128)`, `recover_surplus(caller: Address) -> i128`, `get_exposure() -> i128`, `engine() -> Address`, `vault() -> Address`, `admin() -> Address`, `pool_kind() -> Symbol`, `oracle_feed() -> Symbol`, `set_counterparties(admin, engine, vault)`, `propose_admin`, `accept_admin`, `pending_admin`.
 
-The settlement figure is the one place the two adapters differ, and they differ because the instruments do. Private credit publishes `settlement_window() -> (u32, u32)`, a range of 15 to 90 days; Etherfuse publishes `settlement_days() -> u32`, which is zero, because a Stablebond redemption is on-chain and returns in the same call. Nothing on-chain enforces either. They are published so that the Engine's operators and the withdrawal queue can be sized against the real cash conversion time of the book.
+Both adapters publish their settlement figure as `settlement_window() -> (u32, u32)`, a range in days. Private credit answers `(15, 90)`; Etherfuse answers `(0, 0)`, because a Stablebond redemption is on-chain and returns in the same call. Nothing on-chain enforces either. They are published so that the Engine's operators and the withdrawal queue can be sized against the real cash conversion time of the book.
+
+They did not always agree on the name. Etherfuse published `settlement_days() -> u32` until October 2026, a different name and a different return type for the same question, and because nothing on-chain reads either, nothing caught it: a caller sizing the queue against the book had to know which adapter it was holding, and every adapter added afterwards would have been another case. Etherfuse keeps `settlement_days() -> u32` for anything already reading it.
 
 Error ranges: 600 for the private credit adapter, 700 for Etherfuse, with matching variants. `NotEmpty` 605 and 705 is the refusal to repoint an adapter that is still holding something; `NothingToRecover` 611 and 711 is `recover_surplus` finding no surplus.
 

@@ -27,7 +27,7 @@ The USDC issuer on Stellar is `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3
 
 ## Pool adapters
 
-Both implement the same interface (`allocate`, `deallocate`, `write_down`, `recover_surplus`, `get_exposure`, `engine`, `vault`), so the Allocation Engine stays agnostic to pool type. `register_pool` reads the last two and refuses any adapter that does not name the Engine registering it and that Engine's Vault: an adapter pointed elsewhere would take capital from this Vault and repay a third party while the Engine's book decremented as though the money had come home.
+All three implement the same interface (`allocate`, `deallocate`, `write_down`, `recover_surplus`, `get_exposure`, `engine`, `vault`), so the Allocation Engine stays agnostic to pool type. The cross chain adapter adds `messenger` and `set_destination`, because it is the one whose capital does not stay on Stellar: `allocate` burns it through CCTP towards the chain the credit book is on, and the destination it burns to is stored and locked while any exposure is booked rather than chosen per call. `register_pool` reads the last two and refuses any adapter that does not name the Engine registering it and that Engine's Vault: an adapter pointed elsewhere would take capital from this Vault and repay a third party while the Engine's book decremented as though the money had come home.
 
 That check runs on every call that moves a pool's capital, not only at registration. Half of the condition is a fact about the Engine, and `set_vault` can change it, so a pool registered before a Vault repoint goes on naming the Vault the Engine has stopped governing. `allocate`, `deallocate` and `recover` re-read `engine()` and `vault()` and refuse with `AdapterMismatch` until `set_counterparties` brings the adapter across. `write_down` does not, deliberately: it moves no capital, and it is the only call that can unwind an adapter whose Vault pointer has already gone stale.
 
@@ -35,6 +35,7 @@ That check runs on every call that moves a pool's capital, not only at registrat
 |---|---|---|
 | Private credit | D+15 to D+90, off-chain originator | [`CDNWXGSS...WLP3VE`](https://stellar.expert/explorer/testnet/contract/CDNWXGSSP3BOAIKIYTGDHST2BBSZNWIW6RMDQERM3HOQ24EO43WLP3VE) |
 | Etherfuse | Instant, on-chain redemption | [`CCXO2ZIM...KM7BXN`](https://stellar.expert/explorer/testnet/contract/CCXO2ZIMK7KZMMUBE24KOLWDJHVXQKXDNEP4QH7N5ZK5U6ESCWKM7BXN) |
+| Cross chain | D+1 to D+14, settled on another chain | [`CDSO4GJR...WUWFML`](https://stellar.expert/explorer/testnet/contract/CDSO4GJRY7BFVMQ4PYP3ISVOFPQLPA3C7ZFT5HQOUDM3VXTGOUWUWFML) |
 
 ## Superseded deployments
 

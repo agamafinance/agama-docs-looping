@@ -34,4 +34,4 @@ Real-world borrowers: private credit obligors and government bond issuers. Repay
 agUSD, sagUSD and the six credit vaults are deployed on Stellar Testnet and verifiable on Stellar Expert. The Vault, the Allocation Engine and the Oracle Adapter are written and tested, with testnet deployment scheduled. See [Deployments](/stellar/deployments) for addresses and [End-to-End Flow](/stellar/flow) for the status of each step.
 
 **Have the contracts been audited?**
-Not yet. An external review by OtterSec is scheduled after the testnet code freeze and before mainnet contracts hold user funds. The contracts are public under Apache-2.0 in the meantime. See [Audit Status](/security/audit).
+Not yet. An external review is scheduled after the testnet code freeze and before mainnet contracts hold user funds. The contracts are public under Apache-2.0 in the meantime. See [Audit Status](/security/audit).

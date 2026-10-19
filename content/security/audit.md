@@ -7,12 +7,12 @@ This page tracks the security review of the Agama Soroban contracts. It is updat
 | | |
 |---|---|
 | Stage | Pre-audit. Contracts in development on testnet. |
-| Auditor | OtterSec |
+| Auditor | To be confirmed through the Soroban Audit Bank |
 | Scope | Vault, agUSD (SEP-41), sagUSD staking, Allocation Engine and its pool adapters, Oracle Adapter |
 | Report | Published on this page after remediation |
 | Before the audit | Three adversarial reviews, run internally. Every Critical and High closed, tested and redeployed. |
 
-OtterSec is one of the audit firms coordinating with the Stellar Development Foundation through the Soroban Audit Bank. Its Stellar track record includes Soroswap.
+The firm is selected through the Soroban Audit Bank, the programme the Stellar Development Foundation runs with audit firms experienced on Soroban. It is named here once the engagement is signed, rather than before, so this page says who is doing the work and not who might.
 
 ## Before the audit: three adversarial reviews
 
@@ -108,7 +108,7 @@ None of this is a substitute for the external audit. It is what the contracts lo
 ## Process
 
 1. **Code freeze.** The codebase is frozen at the end of the testnet phase, after a sustained stress-testing campaign, and handed over for audit.
-2. **Audit.** External review by OtterSec against the scope above.
+2. **Audit.** External review against the scope above.
 3. **Remediation.** Every finding is either remediated or formally acknowledged with a documented rationale. There is no third category.
 4. **Publication.** The final report and a remediation log are published on this page before mainnet contracts hold user funds.
 

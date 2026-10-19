@@ -69,6 +69,6 @@ This does not make the exposure safe. It makes the limits on it readable on-chai
 
 ## Smart contract risk
 
-The contracts are on testnet and have not been audited. An external review by OtterSec is scheduled after the testnet code freeze and before mainnet contracts hold user funds, and the report will be published with a remediation log. See [Audit Status](/security/audit) for the scope and process, and [Threat Model](/security/threat-model) for the STRIDE analysis and the test coverage.
+The contracts are on testnet and have not been audited. An external review is scheduled after the testnet code freeze and before mainnet contracts hold user funds, and the report will be published with a remediation log. See [Audit Status](/security/audit) for the scope and process, and [Threat Model](/security/threat-model) for the STRIDE analysis and the test coverage.
 
 All contracts are public at [github.com/agamafinance/agama-soroban](https://github.com/agamafinance/agama-soroban) under Apache-2.0, with no private development phase, so the code can be read now rather than after the fact.

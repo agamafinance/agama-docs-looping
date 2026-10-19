@@ -10,6 +10,14 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PrevNext } from '@/components/PrevNext';
 import type { Metadata } from 'next';
 
+// The set of pages is the set of files in content/, enumerated below, and
+// anything else is a 404. Saying so matters for more than tidiness: with
+// dynamicParams left at its default, Vercel caches an unknown path for one
+// second, which means a crawler walking made up URLs invokes this function on
+// every request, forever. Turning it off makes a path that does not exist a
+// static 404 served by the CDN, with no function behind it.
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const slugs = await listAllSlugs();
   return slugs.map((slug) => ({ slug: slug.length > 0 ? slug : undefined }));

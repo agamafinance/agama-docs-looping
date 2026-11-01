@@ -21,7 +21,7 @@ Agama runs natively on Stellar. All protocol logic is implemented as Soroban sma
 | sagUSD | SEP-41, share-price accounting shares | [`CBOHG5YG...4CACV3`](https://stellar.expert/explorer/testnet/contract/CBOHG5YGAE7ORFDE5GIUN6MYYSXMHYWGLZTH3Y563HZCBBWFVQ4CACV3) |
 | sagUSD share token | Classic Stellar asset `sagUSD:GDG7JGDAC2V3SV7KE5YGJGI5YGEDXCXY3S5FEG3EBLOI4GNG3EOO346F`, seen from Soroban through its Stellar Asset Contract. Minted only by the staking contract, which holds the SAC admin; the issuer account is locked | [`CCQG6FDE...M7NBD5`](https://stellar.expert/explorer/testnet/contract/CCQG6FDEYA52IVWLXQ2IFZ56UTNKKBLOADGG5BASXNLTX53SBSM7NBD5) |
 | Allocation Engine | Caps in bps of net assets, reserve floor in bps of `floor_base`, per-pool cap and delisting | [`CBDVZPMB...ZE6FFD`](https://stellar.expert/explorer/testnet/contract/CBDVZPMBUQQ6OML3WTT4TP6QIOJDRC4BWYXR7UZQAAZG2LETAVZE6FFD) |
-| Oracle Adapter | Per-feed staleness, deviation, band, rate limit and quorum threshold | [`CAUOHPPN...TWIQUS`](https://stellar.expert/explorer/testnet/contract/CAUOHPPNHUIYQI3KIVPLP75CGWKFBGSXK3RW75UO52PKY3YKQRTWIQUS) |
+| Oracle Adapter | Per-feed staleness, deviation, band, rate limit and quorum threshold | [`CBJ3OZ4W...QRLCV`](https://stellar.expert/explorer/testnet/contract/CBJ3OZ4W7ZUUMYFVO3T62FAE6H4APV7L4YPETT7VJAHDKEPEWOQQRLCV) |
 
 The USDC issuer on Stellar is `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`.
 

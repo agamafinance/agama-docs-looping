@@ -33,7 +33,7 @@ That check runs on every call that moves a pool's capital, not only at registrat
 
 | Adapter | Settlement | Address |
 |---|---|---|
-| Private credit | D+15 to D+90, off-chain originator | [`CDNWXGSS...WLP3VE`](https://stellar.expert/explorer/testnet/contract/CDNWXGSSP3BOAIKIYTGDHST2BBSZNWIW6RMDQERM3HOQ24EO43WLP3VE) |
+| Private credit | D+15 to D+90, off-chain originator | [`CDYSHPCK...RZATOJ`](https://stellar.expert/explorer/testnet/contract/CDYSHPCKRZE5CDSXTTZV3KHGFYVPSHDSMRIHMLR3OV3D57I77VRZATOJ) |
 | Private credit, second originator | D+15 to D+90, off-chain originator | [`CBAO767N...XIBCVO`](https://stellar.expert/explorer/testnet/contract/CBAO767N6WXGQZHAKD3ONU7BJSIDYPPZZX453JRE2VDVI23KFIXIBCVO) | Same contract as above, deployed again with its own feed `PC_NAV2`, its own originator and its own concentration cap. `set_oracle_feed` repoints it while it is empty. |
 | Etherfuse | Instant, on-chain redemption | [`CCXSQEUM...DBNJKC`](https://stellar.expert/explorer/testnet/contract/CCXSQEUMW42BNEB7HUNBVAAYRPAJ5SAR5VUWVSCE735HDMG7M7DBNJKC) |
 | Cross chain | D+1 to D+14, settled on another chain | [`CDSO4GJR...WUWFML`](https://stellar.expert/explorer/testnet/contract/CDSO4GJRY7BFVMQ4PYP3ISVOFPQLPA3C7ZFT5HQOUDM3VXTGOUWUWFML) |
